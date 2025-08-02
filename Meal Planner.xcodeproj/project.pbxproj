@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		6BF09EB92E3E9A34001D7E9B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 6BF09EB82E3E9A2D001D7E9B /* README.md */; };
+		6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF09EE82E3E9FD1001D7E9B /* Alamofire */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		6B757D3C2E3E9558008F47F8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,11 +32,25 @@
 		6B757D2C2E3E9556008F47F8 /* Meal Planner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meal Planner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B757D3B2E3E9558008F47F8 /* Meal PlannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Meal PlannerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B757D452E3E9558008F47F8 /* Meal PlannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Meal PlannerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6BF09EB82E3E9A2D001D7E9B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		6BF09ED22E3E9BF9001D7E9B /* Exceptions for "Meal Planner" folder in "Meal Planner" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models/RecipeItemDto.swift,
+			);
+			target = 6B757D2B2E3E9556008F47F8 /* Meal Planner */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		6B757D2E2E3E9556008F47F8 /* Meal Planner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				6BF09ED22E3E9BF9001D7E9B /* Exceptions for "Meal Planner" folder in "Meal Planner" target */,
+			);
 			path = "Meal Planner";
 			sourceTree = "<group>";
 		};
@@ -52,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +95,7 @@
 		6B757D232E3E9556008F47F8 = {
 			isa = PBXGroup;
 			children = (
+				6BF09EB82E3E9A2D001D7E9B /* README.md */,
 				6B757D2E2E3E9556008F47F8 /* Meal Planner */,
 				6B757D3E2E3E9558008F47F8 /* Meal PlannerTests */,
 				6B757D482E3E9558008F47F8 /* Meal PlannerUITests */,
@@ -112,6 +133,7 @@
 			);
 			name = "Meal Planner";
 			packageProductDependencies = (
+				6BF09EE82E3E9FD1001D7E9B /* Alamofire */,
 			);
 			productName = "Meal Planner";
 			productReference = 6B757D2C2E3E9556008F47F8 /* Meal Planner.app */;
@@ -195,6 +217,9 @@
 			);
 			mainGroup = 6B757D232E3E9556008F47F8;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				6BF09EE72E3E9FD1001D7E9B /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6B757D2D2E3E9556008F47F8 /* Products */;
 			projectDirPath = "";
@@ -212,6 +237,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6BF09EB92E3E9A34001D7E9B /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,6 +584,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		6BF09EE72E3E9FD1001D7E9B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6BF09EE82E3E9FD1001D7E9B /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6BF09EE72E3E9FD1001D7E9B /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 6B757D242E3E9556008F47F8 /* Project object */;
 }
