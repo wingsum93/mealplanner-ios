@@ -1,13 +1,14 @@
 //
-//  CategoryChip.swift
+//  RecipeItemChip.swift
 //  Meal Planner
 //
 //  Created by eric ho on 3/8/2025.
 //
+
 import SwiftUI
 
-struct CategoryChip: View {
-    let label: String
+struct RecipeItemChip: View {
+    let text: String
     let imageUrl: String
     let selected: Bool
     let onTap: () -> Void
@@ -15,7 +16,7 @@ struct CategoryChip: View {
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 4) {
-                Text(label)
+                Text(text)
                     .font(.caption)
                     .fontWeight(selected ? .semibold : .regular)
                     .foregroundColor(selected ? .accentColor : .primary)
@@ -57,8 +58,7 @@ struct CategoryChip: View {
 }
 
 #Preview{
-    CategoryChip(label: "XXX", imageUrl: "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg/medium", selected: false) {
+    RecipeItemChip(text: "Beef Burger", imageUrl: "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg/medium", selected: false) {
         
     }
 }
-

@@ -8,23 +8,27 @@ import SwiftUI
 
 struct CategoryList: View {
     @State private var selected: String = "Beef"
-    let categories = ["Beef", "Chicken", "Dessert", "Seafood", "Vegan"]
+        let items = [
+            ("Beef", "https://www.themealdb.com/images/category/beef.png"),
+            ("Dessert", "https://www.themealdb.com/images/category/dessert.png"),
+            ("Chicken", "https://www.themealdb.com/images/category/chicken.png")
+        ]
+    
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(categories, id: \.self) { category in
-                    CategoryChip(
-                        label: category,
-                        selected: category == selected,
-                        onTap: {
-                            selected = category
-                        }
-                    )
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(items, id: \.0) { (label, url) in
+                        CategoryChip(
+                            label: label,
+                            imageUrl: url,
+                            selected: label == selected,
+                            onTap: { selected = label }
+                        )
+                    }
                 }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
-        }
     }
 }
 
