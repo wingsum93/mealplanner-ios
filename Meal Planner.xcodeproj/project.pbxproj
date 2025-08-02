@@ -35,22 +35,9 @@
 		6BF09EB82E3E9A2D001D7E9B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		6BF09ED22E3E9BF9001D7E9B /* Exceptions for "Meal Planner" folder in "Meal Planner" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Models/RecipeItemDto.swift,
-			);
-			target = 6B757D2B2E3E9556008F47F8 /* Meal Planner */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		6B757D2E2E3E9556008F47F8 /* Meal Planner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				6BF09ED22E3E9BF9001D7E9B /* Exceptions for "Meal Planner" folder in "Meal Planner" target */,
-			);
 			path = "Meal Planner";
 			sourceTree = "<group>";
 		};
