@@ -8,12 +8,31 @@ import SwiftUI
 import SwiftData
 
 struct HomeScreen: View {
-  
+    @State private var showLoginDialog = false
+
     
     var body: some View{
-        Text("Eric is the best")
-            .bold()
-            .font(.largeTitle)
+        
+        TabView{
+            RecipeMainPage()
+                .tabItem{Label("Home", systemImage: "house")}
+            
+            FavouriteScreen()
+                .tabItem{
+                    Label("Favourite", systemImage: "star.fill")
+                }
+            SelfEsteem(click: { showLoginDialog = !showLoginDialog})
+                .tabItem{
+                    Label("Me", systemImage: "star.fill")
+                }
+            
+        }.sheet(isPresented: $showLoginDialog) {
+            LoginBottomSheet(
+                onAppleLogin: { print("Apple login") },
+                onGoogleLogin: { print("Google login") },
+                onGuestLogin: { print("Guest login") }
+            )
+        }
     }
     
 }

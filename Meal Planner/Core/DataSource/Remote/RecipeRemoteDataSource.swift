@@ -6,7 +6,7 @@
 //
 
 protocol RecipeRemoteDataSource{
-    func getAllIngredients() async throws -> [RecipeItemDto]
+    func getAllIngredients() async throws -> [IngredientDto]
     func getAllCategory() async throws -> [String]
     func getAllArea() async throws -> [String]
     func getBySingleIngredient(_ ingredient: String) async throws -> [RecipeItemDto]

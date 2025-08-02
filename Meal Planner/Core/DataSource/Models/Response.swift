@@ -28,3 +28,6 @@ struct AreaResponse:Decodable{
 struct AreaWrapper: Decodable {
     let strArea: String
 }
+struct IngredientResponse: Decodable {
+    let meals: [IngredientDto]
+}

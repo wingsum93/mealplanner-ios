@@ -13,9 +13,20 @@ final class RecipeRemoteDataSourceImpl: RecipeRemoteDataSource {
     // my v2 api key -> 65232507
     private let baseURL = "www.themealdb.com/api/json/v2"+"65232507/"
 
-    func getAllIngredients() async throws -> [RecipeItemDto] {
+    func getAllIngredients() async throws -> [IngredientDto] {
         let url = "\(baseURL)/list.php?i=list"
-        return try await requestList(from: url)
+        return try await withCheckedThrowingContinuation { continuation in
+                AF.request(url)
+                    .validate()
+                    .responseDecodable(of: IngredientResponse.self) { response in
+                        switch response.result {
+                        case .success(let result):
+                            continuation.resume(returning: result.meals)
+                        case .failure(let error):
+                            continuation.resume(throwing: error)
+                        }
+                    }
+        }
     }
 
     func getAllCategory() async throws -> [String] {
