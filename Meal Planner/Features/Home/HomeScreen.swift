@@ -28,8 +28,6 @@ struct HomeScreen: View {
             
         }.sheet(isPresented: $showLoginDialog) {
             LoginBottomSheet(
-                onAppleLogin: { print("Apple login") },
-                onGoogleLogin: { print("Google login") },
                 onGuestLogin: { print("Guest login") }
             )
         }
