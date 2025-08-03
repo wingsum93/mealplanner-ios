@@ -8,28 +8,45 @@ import SwiftUI
 
 struct ProfileScreen:View{
     @Environment(\.loginLocalDataSource) private var localDataSource
-    @StateObject private var authViewModel:AuthViewModel
-
-    init() {
-        _authViewModel = StateObject(wrappedValue: AuthViewModel(localDataSource: LoginLocalDataSourceImpl()))
+    @ObservedObject var authViewModel: AuthViewModel
+    let onLoginBtnClicked:() -> Void
+    
+    init(authViewModel: AuthViewModel,_ onLoginBtnClicked:@escaping ()->Void = {}) {
+        self.authViewModel = authViewModel
+        self.onLoginBtnClicked = onLoginBtnClicked
     }
+    
+    // MARK: - Convenience initializer for preview
+    init(isLoggedIn: Bool = false) {
+        let mockVM = AuthViewModel(localDataSource: MockLoginLocalDataSource())
+        self.init(authViewModel: mockVM)
+        if isLoggedIn {
+            mockVM.onIntent(.loginSuccess)
+        }
+    }
+    
     var body: some View{
         VStack {
-                    if authViewModel.state.isLoggedIn {
-                        ProfileContentView()
-                    } else {
-                        UnloggedInView {
-                            authViewModel.onIntent(.loginSuccess)
-                        }
-                    }
+            if authViewModel.state.isLoggedIn {
+                ProfileContentView{
+                    _authViewModel.wrappedValue.onIntent(.logout)
                 }
-                .onAppear {
-                    authViewModel.onIntent(.load)
+            } else {
+                UnloggedInView {
+                    onLoginBtnClicked()
                 }
-                .navigationTitle("Profile")
+            }
+        }
+        .onAppear {
+            authViewModel.onIntent(.load)
+        }
     }
 }
 
-#Preview {
-    ProfileScreen().environment(\.loginLocalDataSource, LoginLocalDataSourceImpl())
+#Preview("Logged Out") {
+    ProfileScreen(isLoggedIn: false)
+}
+
+#Preview("Logged In") {
+    ProfileScreen(isLoggedIn: true)
 }

@@ -8,7 +8,7 @@ import Foundation
 
 final class LoginLocalDataSourceImpl: LoginLocalDataSource {
     func login(username: String, password: String) async -> Bool {
-        let isValid = username == "eric" && password == "test"
+        let isValid = username.lowercased() == "eric" && password == "test"
         
         if isValid {
             UserDefaults.standard.set(username, forKey: "stored_username")

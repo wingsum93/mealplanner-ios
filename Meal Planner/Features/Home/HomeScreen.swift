@@ -9,7 +9,12 @@ import SwiftData
 
 struct HomeScreen: View {
     @State private var showLoginDialog = false
-
+    @StateObject private var authViewModel:AuthViewModel
+    
+    init() {
+        _authViewModel = StateObject(wrappedValue: AuthViewModel(localDataSource: LoginLocalDataSourceImpl()))
+        
+    }
     
     var body: some View{
         
@@ -21,15 +26,19 @@ struct HomeScreen: View {
                 .tabItem{
                     Label("Favourite", systemImage: "star.fill")
                 }
+            ProfileScreen(authViewModel: authViewModel){
+                showLoginDialog = true
+            }
+                .tabItem{
+                    Label("Profile", systemImage: "person.circle")
+                }
             SelfEsteem(click: { showLoginDialog = !showLoginDialog})
                 .tabItem{
                     Label("Me", systemImage: "star.fill")
                 }
             
         }.sheet(isPresented: $showLoginDialog) {
-            LoginBottomSheet(
-                onGuestLogin: { print("Guest login") }
-            )
+            LoginBottomSheet(authViewModel: authViewModel)
         }
     }
     

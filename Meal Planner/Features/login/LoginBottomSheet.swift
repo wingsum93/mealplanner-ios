@@ -9,38 +9,65 @@ import SwiftUI
 import Foundation
 
 struct LoginBottomSheet:View {
-    var onGuestLogin: () -> Void = {}
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var authViewModel: AuthViewModel
+    
+    @State private var email = ""
+    @State private var password = ""
+    @State private var showPassword = false
+    @State private var showError = false
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Title
-            Text("Login to unlock features")
-                .font(.headline)
-                .multilineTextAlignment(.center)
+        VStack(spacing: 16) {
+            Text("RecipeApp-IOS").font(.title2).bold()
+            Image("AppIcon").resizable().frame(width: 72, height: 72).clipShape(Circle())
             
-            Text("Favorite recipes, history, more")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+            TextField("Email", text: $authViewModel.email)
+                .textInputAutocapitalization(.none)
+                .padding()
+                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
             
-            Divider()
-                .padding(.horizontal)
-            
-            // Buttons
-            VStack(spacing: 12) {
+            ZStack(alignment: .trailing) {
+                Group {
+                    if authViewModel.showPassword {
+                        TextField("Password", text: $authViewModel.password)
+                    } else {
+                        SecureField("Password", text: $authViewModel.password)
+                    }
+                }
+                .padding()
+                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
                 
-                LoginOptionButton(
-                    label: "Continue as Guest",
-                    icon: "person.fill",
-                    backgroundColor: Color(.systemGray6),
-                    textColor: .primary,
-                    action: onGuestLogin
-                )
+                Button {
+                    authViewModel.showPassword.toggle()
+                } label: {
+                    Image(systemName: authViewModel.showPassword ? "eye" : "eye.slash")
+                        .foregroundColor(.gray)
+                        .padding()
+                }
             }
             
-            Spacer(minLength: 8)
+            if let error = authViewModel.loginErrorMessage {
+                Text(error)
+                    .foregroundColor(.red)
+                    .font(.caption)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+            Button("Login") {
+                authViewModel.performLogin {
+                    authViewModel.resetInputFields()
+                    dismiss()
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.orange)
+            .foregroundColor(.white)
+            .cornerRadius(24)
         }
         .padding()
-        .presentationDetents([.height(300)])
+        .presentationDetents([.height(420)])
     }
+    
 }
