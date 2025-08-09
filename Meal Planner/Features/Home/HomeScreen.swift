@@ -8,18 +8,20 @@ import SwiftUI
 import SwiftData
 
 struct HomeScreen: View {
+    @Environment(\.modelContext) private var context
     @State private var showLoginDialog = false
     @StateObject private var authViewModel:AuthViewModel
+    @StateObject private var homeViewModel:HomeViewModel
     
-    init() {
+    init( homeViewModel:HomeViewModel) {
         _authViewModel = StateObject(wrappedValue: AuthViewModel(localDataSource: LoginLocalDataSourceImpl()))
-        
+        _homeViewModel = StateObject(wrappedValue:homeViewModel)
     }
     
     var body: some View{
         
         TabView{
-            RecipeMainPage()
+            RecipeMainPage(viewModel: homeViewModel)
                 .tabItem{Label("Home", systemImage: "house")}
             
             FavouriteScreen()
@@ -45,6 +47,7 @@ struct HomeScreen: View {
 }
 
 #Preview {
-    HomeScreen()
+    HomeScreen(homeViewModel: .preview)
         .modelContainer(for: Item.self, inMemory: true)
+    
 }

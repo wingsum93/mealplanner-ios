@@ -9,7 +9,12 @@ import Foundation
 import Alamofire
 
 final class RecipeRemoteDataSourceImpl: RecipeRemoteDataSource {
-
+    private let client : NetworkClient
+    
+    init (_ networkClient: NetworkClient){
+        client = networkClient
+    }
+    
     // my v2 api key -> 65232507
     private let baseURL = "www.themealdb.com/api/json/v2"+"65232507/"
 

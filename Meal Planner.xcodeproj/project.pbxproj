@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6BD039BF2E4786DE0068938A /* ai-project-overview.md in Sources */ = {isa = PBXBuildFile; fileRef = 6BD039BE2E4786D20068938A /* ai-project-overview.md */; };
 		6BF09EB92E3E9A34001D7E9B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 6BF09EB82E3E9A2D001D7E9B /* README.md */; };
 		6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF09EE82E3E9FD1001D7E9B /* Alamofire */; };
 /* End PBXBuildFile section */
@@ -32,6 +33,7 @@
 		6B757D2C2E3E9556008F47F8 /* Meal Planner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Meal Planner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B757D3B2E3E9558008F47F8 /* Meal PlannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Meal PlannerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B757D452E3E9558008F47F8 /* Meal PlannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Meal PlannerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6BD039BE2E4786D20068938A /* ai-project-overview.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "ai-project-overview.md"; sourceTree = "<group>"; };
 		6BF09EB82E3E9A2D001D7E9B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -82,6 +84,7 @@
 		6B757D232E3E9556008F47F8 = {
 			isa = PBXGroup;
 			children = (
+				6BD039BE2E4786D20068938A /* ai-project-overview.md */,
 				6BF09EB82E3E9A2D001D7E9B /* README.md */,
 				6B757D2E2E3E9556008F47F8 /* Meal Planner */,
 				6B757D3E2E3E9558008F47F8 /* Meal PlannerTests */,
@@ -249,6 +252,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6BD039BF2E4786DE0068938A /* ai-project-overview.md in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -423,7 +427,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ericho.Meal-Planner";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ericho.MealPlanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -451,7 +455,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.ericho.Meal-Planner";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ericho.MealPlanner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -541,7 +545,7 @@
 				6B757D4E2E3E9558008F47F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		6B757D4F2E3E9558008F47F8 /* Build configuration list for PBXNativeTarget "Meal Planner" */ = {
 			isa = XCConfigurationList;
@@ -550,7 +554,7 @@
 				6B757D512E3E9558008F47F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		6B757D522E3E9558008F47F8 /* Build configuration list for PBXNativeTarget "Meal PlannerTests" */ = {
 			isa = XCConfigurationList;
@@ -559,7 +563,7 @@
 				6B757D542E3E9558008F47F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		6B757D552E3E9558008F47F8 /* Build configuration list for PBXNativeTarget "Meal PlannerUITests" */ = {
 			isa = XCConfigurationList;
@@ -568,7 +572,7 @@
 				6B757D572E3E9558008F47F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 

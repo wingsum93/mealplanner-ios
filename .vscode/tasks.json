@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run on iOS Simulator",
+      "type": "shell",
+      "command": "zsh",
+      "args": [
+        "-lc",
+        "set -euo pipefail; " ,
+        "SIM_NAME='iPhone 17.5'; " ,
+        "SCHEME='Meal Planner'; " ,
+        "PROJECT='Meal Planner.xcodeproj'; " ,
+        "CONFIG='Debug'; " ,
+        "APP_NAME='Meal Planner'; " ,
+        "BUNDLE_ID='com.ericho.MealPlanner'; " ,
+        "xcrun simctl boot \"$SIM_NAME\" || true; open -a Simulator; " ,
+        "xcodebuild -project \"$PROJECT\" -scheme \"$SCHEME\" -configuration \"$CONFIG\" -destination \"platform=iOS Simulator,name=$SIM_NAME\" -derivedDataPath build clean build; " ,
+        "UDID=$(xcrun simctl list devices | awk -F'[()]' '/^\\s*'"$SIM_NAME"' \\(/ && /Booted/{print $2; exit}'); " ,
+        "APP_PATH=\"build/Build/Products/$CONFIG-iphonesimulator/$APP_NAME.app\"; " ,
+        "if [ ! -d \"$APP_PATH\" ]; then echo \"App not found at $APP_PATH\"; ls -la \"build/Build/Products/$CONFIG-iphonesimulator\"; exit 66; fi; " ,
+        "xcrun simctl install \"$UDID\" \"$APP_PATH\" || (xcrun simctl uninstall \"$UDID\" \"$BUNDLE_ID\" || true; xcrun simctl install \"$UDID\" \"$APP_PATH\"); " ,
+        "xcrun simctl launch \"$UDID\" \"$BUNDLE_ID\""
+      ],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "echo": true }
+    },
+    {
+      "label": "Tail iOS Logs (current simulator)",
+      "type": "shell",
+      "command": "zsh",
+      "args": [
+        "-lc",
+        "set -euo pipefail; " ,
+        "SIM_NAME='iPhone 16 Pro'; " ,
+        "UDID=$(xcrun simctl list devices | awk -F'[()]' '/^\\s*'"$SIM_NAME"' \\(/ && /Booted/{print $2; exit}'); ",
+        "xcrun simctl spawn \"$UDID\" log stream --level=debug --style=compact"
+      ],
+      "presentation": { "reveal": "always", "panel": "shared", "echo": true }
+    }
+  ]
+}

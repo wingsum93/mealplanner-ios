@@ -6,8 +6,17 @@
 //
 import SwiftUI
 
-struct HomeScreenState{
+struct HomeScreenState {
     var isLoading: Bool = false
-        var recipes: [UIRecipeItem] = []
-        var errorMessage: String? = nil
+    var errorMessage: String? = nil
+    
+    // Data loaded from APIs
+    var randomRecipe: UIRecipeItem? = nil
+    var areaList: [String] = []
+    var categoryList: [String] = []
+    var beefRecipes: [UIRecipeItem] = []
+    
+
+    static let initial = HomeScreenState()
 }
+

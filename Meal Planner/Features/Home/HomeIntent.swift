@@ -7,6 +7,6 @@
 
 enum HomeIntent {
     case load
-    case retry
+    case refresh
     case selectRecipe(id: String)
 }

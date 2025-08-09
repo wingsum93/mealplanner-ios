@@ -13,6 +13,8 @@ struct Meal_PlannerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
+            RecipeEntity.self,
+            IngredientEntity.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -24,9 +26,14 @@ struct Meal_PlannerApp: App {
     }()
 
     var body: some Scene {
+        
         WindowGroup {
-            HomeScreen()
+            let di = AppDIContainer(
+                modelContext: ModelContext(sharedModelContainer),
+                networkClient: AlamofireNetworkClient()
+            )
+            HomeScreen(homeViewModel: di.makeHomeViewModel())
+                .modelContainer(sharedModelContainer)
         }
-        .modelContainer(sharedModelContainer)
     }
 }
