@@ -80,6 +80,7 @@ final class FeatureViewModel: ObservableObject {
     
     // HOME
     private func loadHome() {
+        print("load hoem")
         homeTask?.cancel()
         state.home.phase = .loading
         homeTask = Task { [weak self] in
@@ -100,13 +101,25 @@ final class FeatureViewModel: ObservableObject {
             }
             do {
                 let (f, a, c, r10) = try await (featured, areas, cats, random10)
+                // Debug log：原始數據
+                print("🔍 Featured raw:", f)
+                print("🔍 Areas count:", a.count, "->", a)
+                print("🔍 Categories count:", c.count, "->", c)
+                print("🔍 Random 10 count:", r10.count)
+                // 轉 UI model 後
+                let fUI = f.toUI()
+                print("✅ Featured UI model:", fUI)
+                
                 state.home.featured = f.toUI()
                 state.home.areas = a
                 state.home.categories = c
                 state.home.randomTen = r10
+                print("eric here")
+                print(f.toUI())
                 let has = state.home.featured != nil || !a.isEmpty || !c.isEmpty || !r10.isEmpty
                 state.home.phase = has ? .content : .empty
             } catch {
+                print("❌ Home load error:", error.localizedDescription)
                 state.home.phase = .error("Couldn’t load home. Pull to retry.")
             }
         }

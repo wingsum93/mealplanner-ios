@@ -31,8 +31,9 @@ class RecipeRepositoryImpl: RecipeRepository{
             return cached
         }
         let result = try await remote.getAllArea()
-        try local.saveAllAreas(result)
-        return result
+        let myResult = result.getAppSupportArea()
+        try local.saveAllAreas(myResult)
+        return myResult
     }
     func getAllIngredients() async throws -> [Ingredient] {
         let cachedEntities = try local.getAllIngredients()

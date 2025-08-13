@@ -16,7 +16,10 @@ final class RecipeRemoteDataSourceImpl: RecipeRemoteDataSource {
     }
     
     // my v2 api key -> 65232507
-    private let baseURL = "www.themealdb.com/api/json/v2"+"65232507/"
+    private let apiKey = "65232507"
+    private var baseURL:String {
+        "https://www.themealdb.com/api/json/v2/\(apiKey)"
+    }
 
     func getAllIngredients() async throws -> [IngredientDto] {
         let url = "\(baseURL)/list.php?i=list"
@@ -93,7 +96,7 @@ final class RecipeRemoteDataSourceImpl: RecipeRemoteDataSource {
     }
 
     func getRandomRecipe() async throws -> RecipeItemDto {
-        let url = "\(baseURL)/random"
+        let url = "\(baseURL)/random.php"
         guard let recipe = try await requestSingle(from: url) else {
             throw URLError(.badServerResponse)
         }
