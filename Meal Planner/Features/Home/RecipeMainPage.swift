@@ -8,31 +8,29 @@
 import SwiftUI
 
 struct RecipeMainPage: View {
-    @ObservedObject var viewModel: HomeViewModel
+    @StateObject var viewModel: FeatureViewModel
+    @Namespace private var heroNS
     
-    init(viewModel: HomeViewModel) {
-        self.viewModel = viewModel
-    }
     var body: some View {
-        if viewModel.state.isLoading {
-            SkeletonHomePageView()
-        } else if let error = viewModel.state.errorMessage {
-            VStack(spacing: 16) {
-                Text("⚠️ \(error)")
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
-                
-                Button("Retry") {
-                    viewModel.onIntent(.refresh)
+        NavigationStack(path: $viewModel.state.path) {
+            HomeScreen(vm: viewModel, heroNS: heroNS)
+                .navigationDestination(for: Route.self) { route in
+                    switch route {
+                    case .area(let a):
+                        AreaListScreen(vm: viewModel, heroNS: heroNS, area: a)
+                    case .category(let c):
+                        CategoryListScreen(vm: viewModel, heroNS: heroNS, category: c)
+                    case .search:
+                        SearchScreen(vm: viewModel)
+                    case .detail(let id):
+                        DetailScreen(vm: viewModel, heroNS: heroNS, id: id)
+                    }
                 }
-                .padding()
-                .background(Color.orange)
-                .foregroundColor(.white)
-                .cornerRadius(10)
-            }
-            .padding()
-        }else {
-            LoadedHomePageView(state: viewModel.state)
+                .task { // first load only once
+                    if viewModel.state.home.phase == .idle {
+                        viewModel.onIntent(.loadHome)
+                    }
+                }
         }
     }
 }

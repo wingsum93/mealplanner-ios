@@ -44,11 +44,10 @@ extension RecipeItem {
     func toUI() -> UIRecipeItem {
         UIRecipeItem(
             id: String(id),
-            title: title,
-            imageUrl: imageUrl,
-            duration: "20 Mins",
-            rating: Int(rating),
-            difficulty: "hard",
+            name: title,
+            area: area,
+            category: category,
+            thumbURL: URL(string: imageUrl),
             isFavorite: isFavorite
         )
     }

@@ -56,6 +56,10 @@ class RecipeRepositoryImpl: RecipeRepository{
         return try await remote.getByCategory(category).map{$0.toDomain()}
     }
     
+    func getByArea(_ area: String) async throws -> [RecipeItem]{
+        return try await remote.getByArea(area).map{$0.toDomain()}
+    }
+    
     func searchByName(_ keyword: String) async throws -> [RecipeItem] {
         return try await remote.searchByName(keyword).map{$0.toDomain()}
     }

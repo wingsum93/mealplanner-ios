@@ -45,8 +45,8 @@ final class AppDIContainer {
     var recipeRepository: RecipeRepository { _recipeRepository }
     
     // MARK: - ViewModels
-    func makeHomeViewModel() -> HomeViewModel {
+    func makeHomeViewModel() -> FeatureViewModel {
         // HomeViewModel is typically @MainActor, so creating it here is safe.
-        HomeViewModel(repository: _recipeRepository)
+        FeatureViewModel(repository: _recipeRepository)
     }
 }

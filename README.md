@@ -13,6 +13,7 @@ use themealdb api
 * All Categories[Here](https://www.themealdb.com/api/json/v1/1/list.php?c=list)
 * All Areas[Here](https://www.themealdb.com/api/json/v1/1/list.php?a=list)
 * Filter by ingredient[Here](https://www.themealdb.com/api/json/v1/1/filter.php?i=chicken_breast)
+* Filter by Area[Here](https://www.themealdb.com/api/json/v1/1/filter.php?a=Canadian)
 * Filter by Category[Here](https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood)
 * Search by Name[Here](https://www.themealdb.com/api/json/v1/1/search.php?s=beef)
 * Get Recipe Detail[Here](https://www.themealdb.com/api/json/v1/1/lookup.php?i=52772)

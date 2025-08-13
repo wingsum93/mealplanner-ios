@@ -8,6 +8,10 @@
 import Foundation
 
 final class DummyRecipeRepository: RecipeRepository {
+    func getByArea(_ area: String) async throws -> [RecipeItem] {
+        return [sampleRecipeItem(id: 123, title: "\(area) pizza")]
+    }
+    
     func getRandom10Recipe() async throws -> [RecipeItem] {
         return []
     }
