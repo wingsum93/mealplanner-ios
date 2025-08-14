@@ -70,9 +70,7 @@ final class FeatureViewModel: ObservableObject {
             loadDetail(id)
         case .toggleFavorite(let id, let isFavorite):
             //tbc
-            print("toggle favorite")
-            
-        
+            toggleFavorite(id: id, to: isFavorite)
         }
     
     }
@@ -196,6 +194,55 @@ final class FeatureViewModel: ObservableObject {
                 state.detail.phase = .content
             } catch {
                 state.detail.phase = .error("Failed to load recipe.")
+            }
+        }
+    }
+    
+    @MainActor
+    private func toggleFavorite(id: String, to newValue: Bool) {
+        // Optimistic update across all relevant substates
+        func updateInPlace() {
+            // home.randomTen
+            if let index = state.home.randomTen.firstIndex(where: { $0.id == id }) {
+                state.home.randomTen[index].isFavorite = newValue
+            }
+            // featured
+            if state.home.featured?.id == id {
+                state.home.featured?.isFavorite = newValue
+            }
+            // area list
+            if let index = state.area.items.firstIndex(where: { $0.id == id }) {
+                state.area.items[index].isFavorite = newValue
+            }
+            // category list
+            if let index = state.category.items.firstIndex(where: { $0.id == id }) {
+                state.category.items[index].isFavorite = newValue
+            }
+            // search results
+            if let index = state.search.results.firstIndex(where: { $0.id == id }) {
+                state.search.results[index].isFavorite = newValue
+            }
+            // detail
+            if state.detail.item?.id == id {
+                state.detail.item?.isFavorite = newValue
+            }
+        }
+
+        // Save old state in case we need to roll back
+        let oldState = state
+
+        // 1. Optimistic update
+        updateInPlace()
+
+        // 2. Persist asynchronously
+        Task {
+            do {
+                let number = Int64(id)!
+                try repo.updateFavorite(id: number, isFavorite: newValue)
+            } catch {
+                // Roll back on failure
+                state = oldState
+                print("❌ Failed to update favorite: \(error)")
             }
         }
     }

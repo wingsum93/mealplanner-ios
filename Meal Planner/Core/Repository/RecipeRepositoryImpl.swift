@@ -83,7 +83,11 @@ class RecipeRepositoryImpl: RecipeRepository{
     func updateFavorite(id: Int64, isFavorite: Bool) throws {
         try local.updateFavorite(id: id, isFavorite: isFavorite)
     }
-
+    
+    func isFavourite(id: Int64) -> Bool {
+        return local.isFavourite(id: id)
+    }
+    
     func getAllFavoriteRecipes() throws -> [RecipeItem] {
         let entities = try local.getAllFavoriteRecipes()
         return entities.map { $0.toDomain() }

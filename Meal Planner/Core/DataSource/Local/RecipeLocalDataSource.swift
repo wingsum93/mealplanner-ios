@@ -20,5 +20,6 @@ protocol RecipeLocalDataSource{
     
     // favourite
     func updateFavorite(id: Int64, isFavorite: Bool) throws
+    func isFavourite(id:Int64)-> Bool
     func getAllFavoriteRecipes() throws -> [RecipeEntity]
 }

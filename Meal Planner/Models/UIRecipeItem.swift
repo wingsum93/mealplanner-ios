@@ -12,7 +12,7 @@ struct UIRecipeItem: Identifiable, Equatable,Hashable {
     let area: String?
     let category: String?
     let thumbURL: URL?
-    let isFavorite: Bool
+    var isFavorite: Bool
 }
 
 extension UIRecipeItem {

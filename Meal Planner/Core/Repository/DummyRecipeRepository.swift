@@ -56,6 +56,10 @@ final class DummyRecipeRepository: RecipeRepository {
         // No-op in dummy
     }
     
+    func isFavourite(id: Int64) -> Bool {
+        return false
+    }
+    
     func getAllFavoriteRecipes() throws -> [RecipeItem] {
         return [sampleRecipeItem(id: 200, title: "Fav Recipe")]
     }

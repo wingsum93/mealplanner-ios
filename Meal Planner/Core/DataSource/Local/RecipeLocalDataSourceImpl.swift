@@ -70,6 +70,17 @@ public final class RecipeLocalDataSourceImpl: RecipeLocalDataSource {
             try context.save()
         }
     }
+    
+    func isFavourite(id: Int64) -> Bool {
+        let descriptor = FetchDescriptor<RecipeEntity>(
+            predicate: #Predicate { $0.id == id }
+        )
+        do {
+            return try context.fetch(descriptor).first?.isFavorite ?? false
+        } catch {
+            return false
+        }
+    }
 
     func getAllFavoriteRecipes() throws -> [RecipeEntity] {
         let descriptor = FetchDescriptor<RecipeEntity>(

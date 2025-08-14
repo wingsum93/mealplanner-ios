@@ -12,6 +12,12 @@ struct HomeScreen: View {
 
     var body: some View {
         ScrollView {
+            // 5) Search bar (navigates to Search page)
+            SearchBar(placeholder: "Search recipes…") {
+                vm.onIntent(.goToSearch)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
             // 1) Featured random recipe
             if let featured = vm.state.home.featured {
                 RecipeHeroCard(item: featured, heroNS: heroNS)
@@ -26,7 +32,7 @@ struct HomeScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.areas, id: \.self) { area in
-                        AreaSquareChip(title: area)
+                        ImageSquareChip(text: area, imageLink: area.getAreaImageURL())
                             .onTapGesture { vm.onIntent(.goToArea(area)) }
                     }
                 }.padding(.horizontal, 16)
@@ -37,7 +43,7 @@ struct HomeScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.categories, id: \.self) { cat in
-                        CategorySquareChip(title: cat)
+                        ImageSquareChip(text: cat, imageLink: cat.mealCategoryImageLink)
                             .onTapGesture { vm.onIntent(.goToCategory(cat)) }
                     }
                 }.padding(.horizontal, 16)
@@ -53,13 +59,6 @@ struct HomeScreen: View {
                     }
                 }.padding(.horizontal, 16)
             }
-
-            // 5) Search bar (navigates to Search page)
-            SearchBar(placeholder: "Search recipes…") {
-                vm.onIntent(.goToSearch)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
         }
         .overlay {
             if case .loading = vm.state.home.phase {

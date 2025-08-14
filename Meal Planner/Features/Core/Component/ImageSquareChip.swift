@@ -6,16 +6,17 @@
 //
 import SwiftUI
 
-struct CategorySquareChip: View {
-    var title: String
+struct ImageSquareChip: View {
+    var text: String
+    var imageURL: URL? = nil
     var size: CGFloat = 88
-
-    private var imageURL: URL? {
-        // TheMealDB category images follow this pattern:
-        // https://www.themealdb.com/images/category/{name}.png
-        let formatted = title.replacingOccurrences(of: " ", with: "%20")
-        return URL(string: "https://www.themealdb.com/images/category/\(formatted).png")
+    
+    init(text: String,imageLink:String ,size: CGFloat=88) {
+        self.text = text
+        self.imageURL = URL(string: imageLink)
+        self.size = size
     }
+    
 
     var body: some View {
         ZStack {
@@ -48,7 +49,7 @@ struct CategorySquareChip: View {
                 .fill(Color.black.opacity(0.3))
 
             // Centered text
-            Text(title)
+            Text(text)
                 .font(.footnote.bold())
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
@@ -60,3 +61,13 @@ struct CategorySquareChip: View {
     }
 }
 
+#Preview {
+    ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 16) {
+            ForEach(1..<10) { index in
+                ImageSquareChip(text: "Chicken",imageLink: "https://www.themealdb.com/images/category/Chicken.png")
+            }
+        }
+        .padding(.horizontal)
+    }
+}
