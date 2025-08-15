@@ -7,7 +7,7 @@
 import SwiftUI
 import Kingfisher
 
-struct RecipeRow: View {
+struct SearchRecipeRow: View {
     let item: UIRecipeItem
     var showFavorite: Bool = false
     var onFavoriteToggle: ((Bool) -> Void)? = nil

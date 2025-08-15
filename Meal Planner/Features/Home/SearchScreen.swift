@@ -49,7 +49,7 @@ struct SearchScreen: View {
         case .content:
             List {
                 ForEach(vm.state.search.results, id: \.id) { item in
-                    RecipeRow(item: item)
+                    SearchRecipeRow(item: item)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             vm.onIntent(.goToDetail(item.id))
