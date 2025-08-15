@@ -25,6 +25,13 @@ struct RecipeApp: App {
     var body: some Scene {
         WindowGroup {
             RootTabs(homeViewModel: homeVM, authViewModel: authVM)
+                .environment(\.openURL, OpenURLAction { url in
+                    // 自訂行為：統一加 UTM、做 analytics、block 黑名單等
+                    print("Opening: \(url)")
+                    return .systemAction  // 交返系統處理
+                    // return .handled    // 你已自行處理
+                    // return .discarded  // 忽略
+                })
         }
     }
 }

@@ -20,7 +20,9 @@ struct SearchRecipeRow: View {
                     Color.gray // 載入中顯示
                 }
                 .resizable()
-                .scaledToFit()
+                .frame(width: 120, height: 80)
+                .scaledToFill()
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
             // Text content
             VStack(alignment: .leading, spacing: 4) {
@@ -45,8 +47,14 @@ struct SearchRecipeRow: View {
                         .foregroundColor(item.isFavorite ? .red : .secondary)
                 }
                 .buttonStyle(.plain)
+                .padding(.trailing, 8)
             }
         }
         .padding(.vertical, 8)
     }
+}
+
+
+#Preview {
+    SearchRecipeRow(item: UIRecipeItem.sample, showFavorite: true, onFavoriteToggle: {_ in })
 }

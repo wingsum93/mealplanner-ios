@@ -77,7 +77,9 @@ final class DummyRecipeRepository: RecipeRepository {
             imageUrl: "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg",
             youtubeLink: "https://youtube.com/mockvideo",
             ingredients: ["MockIngredient: 1 cup", "Salt: 1 tsp"],
+            measures: [],
             instructions: ["Step 1", "Step 2"],
+            tags: [],
             isFavorite: false,
             rating: 4)
     }

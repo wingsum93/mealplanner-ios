@@ -14,7 +14,9 @@ struct RecipeItem: Identifiable, Equatable {
     let imageUrl: String
     let youtubeLink: String
     let ingredients: [String]
+    let measures: [String]
     let instructions: [String]
+    let tags: [String]
     let isFavorite: Bool
     let rating: Int64
 }

@@ -17,7 +17,9 @@ final class RecipeEntity {
     var imageUrl: String
     var youtubeLink: String
     var ingredients: [String]
+    var measures: [String]
     var instructions: [String]
+    var tags: [String]
     var isFavorite: Bool
     var rating: Int64
 
@@ -30,7 +32,9 @@ final class RecipeEntity {
         imageUrl: String,
         youtubeLink: String,
         ingredients: [String],
+        measures: [String],
         instructions: [String],
+        tags: [String],
         isFavorite: Bool,
         rating: Int64
     ) {
@@ -42,7 +46,9 @@ final class RecipeEntity {
         self.imageUrl = imageUrl
         self.youtubeLink = youtubeLink
         self.ingredients = ingredients
+        self.measures = measures
         self.instructions = instructions
+        self.tags = tags
         self.isFavorite = isFavorite
         self.rating = rating
     }

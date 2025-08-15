@@ -17,7 +17,9 @@ extension RecipeEntity {
             imageUrl: imageUrl,
             youtubeLink: youtubeLink,
             ingredients: ingredients,
+            measures: measures,
             instructions: instructions,
+            tags: tags,
             isFavorite: isFavorite,
             rating: rating
         )
@@ -35,7 +37,9 @@ extension RecipeItem {
             imageUrl: imageUrl,
             youtubeLink: youtubeLink,
             ingredients: ingredients,
+            measures: measures,
             instructions: instructions,
+            tags: tags,
             isFavorite: isFavorite,
             rating: rating
         )
@@ -45,10 +49,15 @@ extension RecipeItem {
         UIRecipeItem(
             id: String(id),
             name: title,
+            description: description,
             area: area,
             category: category,
             thumbURL: URL(string: imageUrl),
             ingredients: ingredients,
+            measures: measures,
+            instructions: instructions,
+            tags: tags,
+            youtubeLink: youtubeLink,
             isFavorite: isFavorite
         )
     }
@@ -80,12 +89,34 @@ extension RecipeItemDto {
                                        strIngredient18,
                                        strIngredient19,
                                        strIngredient20)
+        let measures = toSafeStringList( strMeasure1,
+                                       strMeasure2,
+                                       strMeasure3,
+                                       strMeasure4,
+                                       strMeasure5,
+                                       strMeasure6,
+                                       strMeasure7,
+                                       strMeasure8,
+                                       strMeasure9,
+                                       strMeasure10,
+                                       strMeasure11,
+                                       strMeasure12,
+                                       strMeasure13,
+                                       strMeasure14,
+                                       strMeasure15,
+                                       strMeasure16,
+                                       strMeasure17,
+                                       strMeasure18,
+                                       strMeasure19,
+                                       strMeasure20)
         
         let cleanedInstructions = strInstructions?
             .components(separatedBy: ".")
             .map { $0.replacingOccurrences(of: "\r\n", with: "").trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
             .map { $0.capitalizingFirstLetter() } ?? []
+        
+        let tags = strTags?.toStringList(separator: ",") ?? []
         
         return RecipeItem(
             id: Int64(idInt),
@@ -96,7 +127,9 @@ extension RecipeItemDto {
             imageUrl: strMealThumb ?? "",
             youtubeLink: strYoutube ?? "",
             ingredients: ingredients,
+            measures: measures,
             instructions: cleanedInstructions,
+            tags:tags,
             isFavorite: false,
             rating: 3
         )
@@ -123,6 +156,11 @@ extension RecipeItemDto {
 extension String {
     func capitalizingFirstLetter() -> String {
         prefix(1).capitalized + dropFirst()
+    }
+    func toStringList(separator:String = ",") -> [String]{
+        self
+            .split(separator: separator)           // 拆開
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 }
 

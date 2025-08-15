@@ -30,7 +30,28 @@ struct RecipeMainPage: View {
                             onTapItem: {id in viewModel.onIntent(.goToDetail(id))}
                         )
                     case .search:
-                        SearchScreen(vm: viewModel)
+                        SearchScreen(
+                            query: Binding(
+                                get: { viewModel.state.search.query },
+                                set: { viewModel.onIntent(.updateQuery($0)) }
+                            ),
+                            placeholder: "Search recipes…",
+                            searchPhase: viewModel.state.search.phase,
+                            searchResults: Binding(
+                                get: { viewModel.state.search.results },
+                                set: { _ in } // ignore external mutation
+                            ),
+                            onCommit: {
+                                viewModel.onIntent(.performSearch)
+                            },
+                            onClear: {
+                                viewModel.onIntent(.updateQuery(""))
+                                // vm.onIntent(.resetSearch)
+                            },
+                            onItemTap: { id in
+                                viewModel.onIntent(.goToDetail(id))
+                            }
+                        )
                     case .detail(let id):
                         DetailScreen(vm: viewModel, id: id)
                     }

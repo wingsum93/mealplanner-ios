@@ -112,6 +112,11 @@ private struct DetailContent: View {
                                 MetaChip(text: cat, systemImage: "square.grid.2x2")
                             }
                         }
+                        HStack(spacing: 8) {
+                            ForEach(item.tags,id: \.self){ tag in
+                                TextChip(text: tag)
+                            }
+                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 12)
@@ -144,15 +149,54 @@ private struct DetailContent: View {
                 }
                 .padding(.horizontal, 16)
 
-                // —— More sections later ——
-                // ⚠️ 如果 TagChipsRow 需要寬度，傳 actual CGFloat，而唔係 .infinity
-                // 例如用 GeometryReader 包住外層計算：
-                GeometryReader { proxy in
-                    TagChipsRow(tags: item.ingredients, availableWidth: proxy.size.width - 32)
-                        .frame(width: proxy.size.width, alignment: .leading)
+                //Description
+                Text("Description")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity,alignment: .leading)
+                    .padding(.leading, 8)
+                Text(item.description)
+                    .font(.caption)
+                    .fontWeight(.regular)
+                    .frame(maxWidth: .infinity,alignment: .leading)
+                    .padding(.leading, 8)
+                
+                //Instruction
+                Label("Instructions", systemImage: "arrow.triangle.2.circlepath")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity,alignment: .leading)
+                    .padding(.leading, 8)
+                VStack(alignment: .leading){
+                    ForEach(item.instructions.indices,id:\.self){ num in
+                        let text = "\(num+1). " + item.instructions[num]
+                        Text(text)
+                            .font(.footnote)
+                        if num != item.instructions.count-1 {
+                            Spacer(minLength: 10)
+                        }
+                    }
                 }
-                .frame(height: 1) // 避免把 ScrollView 撐高；TagChipsRow 內部自己計行數
-                .padding(10)
+                
+                
+                // Ingredients
+                Label("Ingredients", systemImage: "arrow.triangle.2.circlepath")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity,alignment: .leading)
+                    .padding(.leading, 8)
+                ForEach(item.ingredients,id:\.self){ ins in
+                    Text(ins)
+                        .font(.footnote)
+                }
+                
+                // Watch Button
+                YoutubeRoundedButton(
+                    title: "Watch Video", systemImage: "arrowtriangle.right.fill", link: item.youtubeLink
+                )
             }
             .padding(.bottom, 24)
         }
@@ -230,3 +274,8 @@ private extension View {
     }
 }
 
+#Preview("have data"){
+    DetailContent(item: .sample) {
+        print("abc .")
+    }
+}
