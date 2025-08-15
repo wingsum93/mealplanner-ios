@@ -5,10 +5,10 @@
 //  Created by eric ho on 13/8/2025.
 //
 import SwiftUI
+import Kingfisher
 
 struct DetailScreen: View {
     @ObservedObject var vm: FeatureViewModel
-    let heroNS: Namespace.ID
     let id: String
 
     var body: some View {
@@ -41,7 +41,7 @@ struct DetailScreen: View {
 
         case .content, .idle:
             if let item = vm.state.detail.item {
-                DetailContent(item: item, heroNS: heroNS) {
+                DetailContent(item: item) {
                     // ✅ add the missing label for the second argument
                     vm.onIntent(.toggleFavorite(id: item.id, isFavorite: !item.isFavorite))
                 }
@@ -68,7 +68,6 @@ struct DetailScreen: View {
 // MARK: - Detail content (hero image + meta + actions)
 private struct DetailContent: View {
     let item: UIRecipeItem
-    let heroNS: Namespace.ID
     var onToggleFavorite: () -> Void
 
     var body: some View {
@@ -76,57 +75,51 @@ private struct DetailContent: View {
             VStack(spacing: 16) {
                 // Hero header
                 ZStack(alignment: .bottomLeading) {
-                    AsyncImage(url: item.thumbURL) { phase in
-                        switch phase {
-                        case .empty:
-                            Rectangle().fill(Color(.systemGray5))
-                        case .success(let image):
-                            image.resizable().scaledToFill()
-                        case .failure:
-                            Rectangle()
-                                .fill(Color(.systemGray5))
-                                .overlay(Image(systemName: "photo").foregroundColor(.secondary))
-                        @unknown default:
-                            Rectangle().fill(Color(.systemGray5))
+                    KFImage(item.thumbURL)
+                        .placeholder {
+                            Color.gray // 載入中顯示
                         }
-                    }
-                    .frame(height: 280)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-                    .matchedGeometryEffect(id: item.id, in: heroNS)
+                        .resizable()
+                        .scaledToFill()
+                        .overlay(// gradient locked to same bounds
+                            Rectangle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.clear, .black.opacity(0.55)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .allowsHitTesting(false)
+                            , alignment: .bottom
+                        )
+                        .clipped()
 
-                    // bottom fade + overlay title
-                    LinearGradient(
-                        colors: [.clear, .black.opacity(0.5)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 120)
-                    .frame(maxWidth: .infinity, alignment: .bottom)
-                    .allowsHitTesting(false)
-                    .overlay(
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(item.name)
-                                .font(.title2.bold())
-                                .foregroundStyle(.white)
-                                .lineLimit(2)
-                                .shadow(radius: 4)
-
-                            HStack(spacing: 8) {
-                                if let area = item.area, !area.isEmpty {
-                                    MetaChip(text: area, systemImage: "globe.asia.australia.fill")
-                                }
-                                if let cat = item.category, !cat.isEmpty {
-                                    MetaChip(text: cat, systemImage: "square.grid.2x2")
-                                }
+                    // Title + meta chips (also clipped by parent)
+                    // Title + meta chips (also clipped by parent)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(item.name)
+                            .font(.title2.bold())
+                            .foregroundStyle(.white)
+                            .lineLimit(2)
+                            .shadow(radius: 4)
+                        
+                        HStack(spacing: 8) {
+                            if let area = item.area, !area.isEmpty {
+                                MetaChip(text: area, systemImage: "globe.asia.australia.fill")
+                            }
+                            if let cat = item.category, !cat.isEmpty {
+                                MetaChip(text: cat, systemImage: "square.grid.2x2")
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 12),
-                        alignment: .bottomLeading
-                    )
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
                 }
-
+                .frame(maxWidth: .infinity)                // take full screen width
+                .aspectRatio(1, contentMode: .fit)         // square header sized by width
+                .contentShape(Rectangle())                 // clearer hit test bounds
+                .clipped()
                 // Actions row
                 HStack(spacing: 12) {
                     Button(action: onToggleFavorite) {
@@ -152,6 +145,14 @@ private struct DetailContent: View {
                 .padding(.horizontal, 16)
 
                 // —— More sections later ——
+                // ⚠️ 如果 TagChipsRow 需要寬度，傳 actual CGFloat，而唔係 .infinity
+                // 例如用 GeometryReader 包住外層計算：
+                GeometryReader { proxy in
+                    TagChipsRow(tags: item.ingredients, availableWidth: proxy.size.width - 32)
+                        .frame(width: proxy.size.width, alignment: .leading)
+                }
+                .frame(height: 1) // 避免把 ScrollView 撐高；TagChipsRow 內部自己計行數
+                .padding(10)
             }
             .padding(.bottom, 24)
         }

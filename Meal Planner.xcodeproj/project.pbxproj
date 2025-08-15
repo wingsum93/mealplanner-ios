@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6BAD860B2E4E80DC009D3A45 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6BAD860A2E4E80DC009D3A45 /* Kingfisher */; };
 		6BD039BF2E4786DE0068938A /* ai-project-overview.md in Sources */ = {isa = PBXBuildFile; fileRef = 6BD039BE2E4786D20068938A /* ai-project-overview.md */; };
 		6BF09EB92E3E9A34001D7E9B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 6BF09EB82E3E9A2D001D7E9B /* README.md */; };
 		6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF09EE82E3E9FD1001D7E9B /* Alamofire */; };
@@ -60,6 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6BAD860B2E4E80DC009D3A45 /* Kingfisher in Frameworks */,
 				6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -124,6 +126,7 @@
 			name = "Meal Planner";
 			packageProductDependencies = (
 				6BF09EE82E3E9FD1001D7E9B /* Alamofire */,
+				6BAD860A2E4E80DC009D3A45 /* Kingfisher */,
 			);
 			productName = "Meal Planner";
 			productReference = 6B757D2C2E3E9556008F47F8 /* Meal Planner.app */;
@@ -209,6 +212,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				6BF09EE72E3E9FD1001D7E9B /* XCRemoteSwiftPackageReference "Alamofire" */,
+				6BAD86092E4E80DC009D3A45 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6B757D2D2E3E9556008F47F8 /* Products */;
@@ -577,6 +581,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		6BAD86092E4E80DC009D3A45 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.5.0;
+			};
+		};
 		6BF09EE72E3E9FD1001D7E9B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
@@ -588,6 +600,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		6BAD860A2E4E80DC009D3A45 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6BAD86092E4E80DC009D3A45 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
 		6BF09EE82E3E9FD1001D7E9B /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 6BF09EE72E3E9FD1001D7E9B /* XCRemoteSwiftPackageReference "Alamofire" */;

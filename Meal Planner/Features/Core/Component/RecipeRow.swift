@@ -5,6 +5,7 @@
 //  Created by eric ho on 10/8/2025.
 //
 import SwiftUI
+import Kingfisher
 
 struct RecipeRow: View {
     let item: UIRecipeItem
@@ -14,33 +15,12 @@ struct RecipeRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Thumbnail
-            AsyncImage(url: item.thumbURL) { phase in
-                switch phase {
-                case .empty:
-                    Rectangle()
-                        .fill(Color(.systemGray5))
-                        .frame(width: 80, height: 80)
-                        .cornerRadius(8)
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 80, height: 80)
-                        .clipped()
-                        .cornerRadius(8)
-                case .failure:
-                    Rectangle()
-                        .fill(Color(.systemGray5))
-                        .overlay(
-                            Image(systemName: "photo")
-                                .foregroundColor(.secondary)
-                        )
-                        .frame(width: 80, height: 80)
-                        .cornerRadius(8)
-                @unknown default:
-                    EmptyView()
+            KFImage(item.thumbURL)
+                .placeholder {
+                    Color.gray // 載入中顯示
                 }
-            }
+                .resizable()
+                .scaledToFit()
 
             // Text content
             VStack(alignment: .leading, spacing: 4) {

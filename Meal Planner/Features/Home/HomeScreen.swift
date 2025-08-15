@@ -8,7 +8,6 @@
 import SwiftUI
 struct HomeScreen: View {
     @ObservedObject var vm: FeatureViewModel
-    let heroNS: Namespace.ID
 
     var body: some View {
         ScrollView {
@@ -20,11 +19,14 @@ struct HomeScreen: View {
             .padding(.vertical, 8)
             // 1) Featured random recipe
             if let featured = vm.state.home.featured {
-                RecipeHeroCard(item: featured, heroNS: heroNS)
+                RecipeHeroCard(item: featured)
                     .onTapGesture { vm.onIntent(.goToDetail(featured.id)) }
                     .padding(.horizontal, 16)
+                    
             } else if vm.state.home.phase == .loading {
-                SkeletonHeroCard().padding(.horizontal, 16)
+                RecipeHeroCard(item: .sample)
+                    .padding(.horizontal, 16)
+                    .shimmer(vm.state.home.phase == .loading)
             }
 
             // 2) Areas horizontal
@@ -32,9 +34,15 @@ struct HomeScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.areas, id: \.self) { area in
-                        ImageSquareChip(text: area, imageLink: area.getAreaImageURL())
-                            .onTapGesture { vm.onIntent(.goToArea(area)) }
+                        Button {
+                            vm.onIntent(.goToArea(area))
+                        } label: {
+                            ImageSquareChip(text: area, imageLink: area.getAreaImageURL())
+                                .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
+                        }
+                        .buttonStyle(.plain)
                     }
+                    
                 }.padding(.horizontal, 16)
             }
 
@@ -43,8 +51,13 @@ struct HomeScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.categories, id: \.self) { cat in
-                        ImageSquareChip(text: cat, imageLink: cat.mealCategoryImageLink)
-                            .onTapGesture { vm.onIntent(.goToCategory(cat)) }
+                        Button {
+                            vm.onIntent(.goToCategory(cat))
+                        } label: {
+                            ImageSquareChip(text: cat, imageLink: cat.mealCategoryImageLink)
+                                .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
+                        }
+                        .buttonStyle(.plain)
                     }
                 }.padding(.horizontal, 16)
             }
@@ -54,7 +67,7 @@ struct HomeScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.randomTen, id: \.id) { item in
-                        RecipeCardSmall(item: item, heroNS: heroNS)
+                        RecipeCardSmall(item: item)
                             .onTapGesture { vm.onIntent(.goToDetail(item.id)) }
                     }
                 }.padding(.horizontal, 16)

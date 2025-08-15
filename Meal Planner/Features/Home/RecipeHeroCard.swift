@@ -5,38 +5,24 @@
 //  Created by eric ho on 14/8/2025.
 //
 import SwiftUI
+import Kingfisher
 
 struct RecipeHeroCard: View {
     let item: UIRecipeItem
-    let heroNS: Namespace.ID
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             // Background image
-            AsyncImage(url: item.thumbURL) { phase in
-                switch phase {
-                case .empty:
-                    Rectangle().fill(Color(.systemGray5))
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    Rectangle()
-                        .fill(Color(.systemGray5))
-                        .overlay(
-                            Image(systemName: "photo")
-                                .foregroundColor(.secondary)
-                        )
-                @unknown default:
-                    Rectangle().fill(Color(.systemGray5))
+            KFImage(item.thumbURL)
+                .placeholder {
+                    Color.gray // 載入中顯示
                 }
-            }
-            .frame(height: 200)
-            .frame(maxWidth: .infinity)
-            .clipped()
-            .cornerRadius(14)
-            .matchedGeometryEffect(id: item.id, in: heroNS)
+                .resizable()
+                .scaledToFill()
+                .frame(height: 200)
+                .frame(maxWidth: .infinity)
+                .clipped()
+                .cornerRadius(14)
 
             // Overlay gradient
             RoundedRectangle(cornerRadius: 14)
@@ -69,4 +55,6 @@ struct RecipeHeroCard: View {
         .contentShape(RoundedRectangle(cornerRadius: 14))
     }
 }
-
+#Preview {
+    RecipeHeroCard(item: .sample)
+}

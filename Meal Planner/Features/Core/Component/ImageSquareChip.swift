@@ -5,6 +5,7 @@
 //  Created by eric ho on 13/8/2025.
 //
 import SwiftUI
+import Kingfisher
 
 struct ImageSquareChip: View {
     var text: String
@@ -21,33 +22,20 @@ struct ImageSquareChip: View {
     var body: some View {
         ZStack {
             // Background image
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .empty:
-                    Rectangle().fill(Color(.systemGray5))
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    Rectangle()
-                        .fill(Color(.systemGray5))
-                        .overlay(
-                            Image(systemName: "photo")
-                                .foregroundColor(.secondary)
-                        )
-                @unknown default:
-                    Rectangle().fill(Color(.systemGray5))
+            KFImage(imageURL)
+                .placeholder {
+                    Color.gray // 載入中顯示
                 }
-            }
-            .frame(width: size, height: size)
-            .clipped()
-            .cornerRadius(10)
-
-            // Dark overlay
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.black.opacity(0.3))
-
+                .scaledToFill()
+                .frame(width: size, height: size)
+                .clipped()
+                .cornerRadius(10)
+                .overlay {
+                    // Dark overlay
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.black.opacity(0.3))
+                }
+            
             // Centered text
             Text(text)
                 .font(.footnote.bold())

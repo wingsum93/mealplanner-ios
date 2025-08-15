@@ -48,6 +48,7 @@ extension RecipeItem {
             area: area,
             category: category,
             thumbURL: URL(string: imageUrl),
+            ingredients: ingredients,
             isFavorite: isFavorite
         )
     }
@@ -59,29 +60,26 @@ extension RecipeItemDto {
             fatalError("Invalid idMeal: \(idMeal ?? "nil")")
         }
         
-        let ingredientPairs: [String?] = [
-            combineIngredient(strIngredient1, strMeasure1),
-            combineIngredient(strIngredient2, strMeasure2),
-            combineIngredient(strIngredient3, strMeasure3),
-            combineIngredient(strIngredient4, strMeasure4),
-            combineIngredient(strIngredient5, strMeasure5),
-            combineIngredient(strIngredient6, strMeasure6),
-            combineIngredient(strIngredient7, strMeasure7),
-            combineIngredient(strIngredient8, strMeasure8),
-            combineIngredient(strIngredient9, strMeasure9),
-            combineIngredient(strIngredient10, strMeasure10),
-            combineIngredient(strIngredient11, strMeasure11),
-            combineIngredient(strIngredient12, strMeasure12),
-            combineIngredient(strIngredient13, strMeasure13),
-            combineIngredient(strIngredient14, strMeasure14),
-            combineIngredient(strIngredient15, strMeasure15),
-            combineIngredient(strIngredient16, strMeasure16),
-            combineIngredient(strIngredient17, strMeasure17),
-            combineIngredient(strIngredient18, strMeasure18),
-            combineIngredient(strIngredient19, strMeasure19),
-            combineIngredient(strIngredient20, strMeasure20)
-        ]
-        let ingredients = ingredientPairs.compactMap { $0 }
+        let ingredients = toSafeStringList( strIngredient1,
+                                       strIngredient2,
+                                       strIngredient3,
+                                       strIngredient4,
+                                       strIngredient5,
+                                       strIngredient6,
+                                       strIngredient7,
+                                       strIngredient8,
+                                       strIngredient9,
+                                       strIngredient10,
+                                       strIngredient11,
+                                       strIngredient12,
+                                       strIngredient13,
+                                       strIngredient14,
+                                       strIngredient15,
+                                       strIngredient16,
+                                       strIngredient17,
+                                       strIngredient18,
+                                       strIngredient19,
+                                       strIngredient20)
         
         let cleanedInstructions = strInstructions?
             .components(separatedBy: ".")
@@ -103,7 +101,16 @@ extension RecipeItemDto {
             rating: 3
         )
     }
-    
+    private func toSafeStringList(_ input: String?...) -> [String] {
+        input.compactMap { item in
+            // trim 掉前後空格，如果結果為空就排除
+            if let trimmed = item?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !trimmed.isEmpty {
+                return trimmed
+            }
+            return nil
+        }
+    }
     private func combineIngredient(_ ingredient: String?, _ measure: String?) -> String? {
         let trimmedIngredient = ingredient?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let i = trimmedIngredient, !i.isEmpty {

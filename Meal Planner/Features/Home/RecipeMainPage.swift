@@ -9,21 +9,30 @@ import SwiftUI
 
 struct RecipeMainPage: View {
     @StateObject var viewModel: FeatureViewModel
-    @Namespace private var heroNS
     
     var body: some View {
         NavigationStack(path: $viewModel.state.path) {
-            HomeScreen(vm: viewModel, heroNS: heroNS)
+            HomeScreen(vm: viewModel)
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .area(let a):
-                        AreaListScreen(vm: viewModel, heroNS: heroNS, area: a)
+                        TitleListScreen(
+                            title: a,
+                            items: $viewModel.state.area.items,
+                            onTapItem: {id in
+                                print("Tapped id =", id)
+                                viewModel.onIntent(.goToDetail(id))}
+                        )
                     case .category(let c):
-                        CategoryListScreen(vm: viewModel, heroNS: heroNS, category: c)
+                        TitleListScreen(
+                            title: c,
+                            items: $viewModel.state.category.items,
+                            onTapItem: {id in viewModel.onIntent(.goToDetail(id))}
+                        )
                     case .search:
                         SearchScreen(vm: viewModel)
                     case .detail(let id):
-                        DetailScreen(vm: viewModel, heroNS: heroNS, id: id)
+                        DetailScreen(vm: viewModel, id: id)
                     }
                 }
                 .task { // first load only once

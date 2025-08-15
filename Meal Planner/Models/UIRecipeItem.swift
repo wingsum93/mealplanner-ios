@@ -12,7 +12,8 @@ struct UIRecipeItem: Identifiable, Equatable,Hashable {
     let area: String?
     let category: String?
     let thumbURL: URL?
-    var isFavorite: Bool
+    let ingredients: [String]
+    var isFavorite: Bool = false
 }
 
 extension UIRecipeItem {
@@ -22,6 +23,7 @@ extension UIRecipeItem {
         area: "hk",
         category: "burger",
         thumbURL: URL(string: "https://www.themealdb.com/images/media/meals/rwuyqx1511383174.jpg"),
+        ingredients: ["beef","burger","apple"],
         isFavorite: false
     )
 }
