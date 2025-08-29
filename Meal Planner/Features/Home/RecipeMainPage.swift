@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RecipeMainPage: View {
     @StateObject var viewModel: FeatureViewModel
+    @EnvironmentObject private var detailVM: DetailViewModel
     
     var body: some View {
         NavigationStack(path: $viewModel.state.path) {
@@ -19,15 +20,19 @@ struct RecipeMainPage: View {
                         TitleListScreen(
                             title: a,
                             items: $viewModel.state.area.items,
-                            onTapItem: {id in
-                                print("Tapped id =", id)
-                                viewModel.onIntent(.goToDetail(id))}
+                            onTapItem: {item in
+                                print("Tapped id =", item.id)
+                                detailVM.onIntent(.setItem(item))
+                            }
                         )
                     case .category(let c):
                         TitleListScreen(
                             title: c,
                             items: $viewModel.state.category.items,
-                            onTapItem: {id in viewModel.onIntent(.goToDetail(id))}
+                            onTapItem: {item in
+                                print("Tapped id =", item.id)
+                                detailVM.onIntent(.setItem(item))
+                            }
                         )
                     case .search:
                         SearchScreen(
@@ -48,12 +53,11 @@ struct RecipeMainPage: View {
                                 viewModel.onIntent(.updateQuery(""))
                                 // vm.onIntent(.resetSearch)
                             },
-                            onItemTap: { id in
-                                viewModel.onIntent(.goToDetail(id))
+                            onItemTap: { item in
+                                detailVM.onIntent(.setItem(item))
                             }
                         )
-                    case .detail(let id):
-                        DetailScreen(vm: viewModel, id: id)
+                    
                     }
                 }
                 .task { // first load only once
@@ -63,5 +67,5 @@ struct RecipeMainPage: View {
                 }
         }
     }
+    
 }
-

@@ -9,6 +9,7 @@ import SwiftData
 
 struct RootTabs: View {
     @State private var showLoginDialog = false
+    @EnvironmentObject private var detailVM: DetailViewModel
     @StateObject private var authViewModel:AuthViewModel
     @StateObject private var vm:FeatureViewModel
     @Namespace private var heroNS  // shared namespace
@@ -39,8 +40,17 @@ struct RootTabs: View {
                     Label("Me", systemImage: "star.fill")
                 }
             
-        }.sheet(isPresented: $showLoginDialog) {
-            LoginBottomSheet(authViewModel: authViewModel)
+        }.sheet(isPresented: Binding(get: {detailVM.state.showDetail }, set: { newValue in
+            if(newValue == false){
+                detailVM.onIntent(.dismiss)
+            }
+        })) {
+            DetailSheetView(vm: detailVM)
+            // Optional detents if you like:
+                .presentationDetents([ .large,.medium])
+                .presentationDragIndicator(.visible)
+                .background(Color(.systemGray6))  
+                .presentationSizing(.page)
         }
     }
     

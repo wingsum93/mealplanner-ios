@@ -10,7 +10,6 @@ enum HomeIntent {
     case goToArea(String)
     case goToCategory(String)
     case goToSearch
-    case goToDetail(String)
     case pop
     
     // home
@@ -25,7 +24,4 @@ enum HomeIntent {
     case updateQuery(String)
     case performSearch
     
-    // detail
-    case loadDetail(String)
-    case toggleFavorite(id: String, isFavorite: Bool)
 }

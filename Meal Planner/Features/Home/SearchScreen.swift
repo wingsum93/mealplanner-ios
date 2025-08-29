@@ -13,7 +13,7 @@ struct SearchScreen: View {
     @Binding var searchResults: [UIRecipeItem]
     var onCommit: () -> Void
     var onClear: () -> Void
-    var onItemTap: (String) -> Void
+    var onItemTap: (UIRecipeItem) -> Void
 
     init(
         query: Binding<String>,
@@ -22,7 +22,7 @@ struct SearchScreen: View {
         searchResults: Binding<[UIRecipeItem]>,
         onCommit: @escaping () -> Void = {},
         onClear: @escaping () -> Void = {},
-        onItemTap: @escaping (String) -> Void = { _ in }
+        onItemTap: @escaping (UIRecipeItem) -> Void = { _ in }
     ) {
         self._query = query
         self.placeholder = placeholder
@@ -69,7 +69,7 @@ struct SearchScreen: View {
                         SearchRecipeRow(item: item,showFavorite: true)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                onItemTap(item.id)
+                                onItemTap(item)
                             }
                     }
                 }

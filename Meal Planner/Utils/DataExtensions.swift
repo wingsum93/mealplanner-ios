@@ -20,8 +20,7 @@ extension RecipeEntity {
             measures: measures,
             instructions: instructions,
             tags: tags,
-            isFavorite: isFavorite,
-            rating: rating
+            isFavorite: isFavorite
         )
     }
 }
@@ -40,8 +39,7 @@ extension RecipeItem {
             measures: measures,
             instructions: instructions,
             tags: tags,
-            isFavorite: isFavorite,
-            rating: rating
+            isFavorite: isFavorite
         )
     }
     
@@ -130,8 +128,7 @@ extension RecipeItemDto {
             measures: measures,
             instructions: cleanedInstructions,
             tags:tags,
-            isFavorite: false,
-            rating: 3
+            isFavorite: false
         )
     }
     private func toSafeStringList(_ input: String?...) -> [String] {

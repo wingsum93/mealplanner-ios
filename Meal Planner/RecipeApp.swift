@@ -13,6 +13,8 @@ struct RecipeApp: App {
     @State private var di: AppDIContainer
     @StateObject private var homeVM: FeatureViewModel
     @StateObject private var authVM: AuthViewModel
+    @StateObject private var detailVM: DetailViewModel
+    @StateObject private var favVM: FavouriteViewModel
     init() {
         let mc = try! ModelContainer(for: RecipeEntity.self, IngredientEntity.self)
         let container = AppDIContainer(modelContext: ModelContext(mc),
@@ -20,6 +22,8 @@ struct RecipeApp: App {
         _di = State(initialValue: container)
         _homeVM = StateObject(wrappedValue: FeatureViewModel(repository: container.recipeRepository))
         _authVM = StateObject(wrappedValue: AuthViewModel(localDataSource: LoginLocalDataSourceImpl())) // your existing one
+        _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
+        _favVM = StateObject(wrappedValue: FavouriteViewModel(repository: container.recipeRepository))
     }
     
     var body: some Scene {
@@ -32,6 +36,8 @@ struct RecipeApp: App {
                     // return .handled    // 你已自行處理
                     // return .discarded  // 忽略
                 })
+                .environmentObject(detailVM)
+                .environmentObject(favVM)
         }
     }
 }

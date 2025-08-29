@@ -89,8 +89,16 @@ class RecipeRepositoryImpl: RecipeRepository{
     }
     
     func getAllFavoriteRecipes() throws -> [RecipeItem] {
-        let entities = try local.getAllFavoriteRecipes()
-        return entities.map { $0.toDomain() }
+        
+//        let entities = try local.getAllFavoriteRecipes()
+//        return entities.map { $0.toDomain() }
+        if let one = try local.getRecipeById(Int64(52946)) {
+            one.isFavorite = true
+            return [one.toDomain()]
+        } else {
+            return []
+        }
+
     }
     
 }

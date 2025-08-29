@@ -3,7 +3,15 @@ Swift UI mvi project :
 use themealdb api
 
 
+## Roadmap
+- [ ] pretty detail screen
+- [ ] lottie view
+- [ ] favorite screen, separate vm
+- [ ] login fullscreen?
 
+### Obstacle
+- [] have not decide the data structure of fav 
+- [] attractive layout of favourite page
 
 
 ## Data Source

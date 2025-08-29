@@ -80,7 +80,6 @@ final class DummyRecipeRepository: RecipeRepository {
             measures: [],
             instructions: ["Step 1", "Step 2"],
             tags: [],
-            isFavorite: false,
-            rating: 4)
+            isFavorite: false)
     }
 }

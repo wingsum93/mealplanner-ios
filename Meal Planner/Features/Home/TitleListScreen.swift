@@ -11,35 +11,41 @@ import Kingfisher
 struct TitleListScreen: View {
     let title: String
     @Binding var items: [UIRecipeItem]           // 你的模型類型
-    let onTapItem:(String)->Void
+    let onTapItem:(UIRecipeItem)->Void
+    
+    let hPadding: CGFloat = 16
+    let interItemSpacing: CGFloat = 12
+    
+    // ❗️注意：用 UIScreen 係固定寬度，旋轉/多工視窗唔會更新
+    private let screenW = UIScreen.main.bounds.width
+    private var cellWidth: CGFloat {
+        (screenW - hPadding * 2 - interItemSpacing) / 2
+    }
     
     init(title:String,
          items: Binding<[UIRecipeItem]>,
-         onTapItem: @escaping(String)->Void = {_ in }){
+         onTapItem: @escaping(UIRecipeItem)->Void = {_ in }){
         self.title = title
         self._items = items      // ✅ 注意用底線
         self.onTapItem = onTapItem
     }
-
-    private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
-    ]
-
+    
+    private var columns: [GridItem] {
+        [
+            GridItem(.flexible(), spacing: interItemSpacing),
+            GridItem(.flexible(), spacing: interItemSpacing)
+        ]
+    }
+    
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: columns, spacing: interItemSpacing) {
                 ForEach(items, id: \.id) { item in
-                    Button {
-                        onTapItem(item.id)
-                    } label: {
-                        RecipeCardSmall(item: item)
-                            .contentShape(Rectangle()) // 放大可點擊區
-                    }
-                    .buttonStyle(.plain)           // 不要系統的藍色高亮
+                    RecipeCardSmall(item: item, width: cellWidth)
+                        .onTapGesture { onTapItem(item) }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, hPadding)
             .padding(.top, 12)
             .padding(.bottom, 24)
         }

@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		6BAD860B2E4E80DC009D3A45 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6BAD860A2E4E80DC009D3A45 /* Kingfisher */; };
 		6BAD86B52E4F443A009D3A45 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6BAD86B42E4F443A009D3A45 /* Lottie */; };
-		6BD039BF2E4786DE0068938A /* ai-project-overview.md in Sources */ = {isa = PBXBuildFile; fileRef = 6BD039BE2E4786D20068938A /* ai-project-overview.md */; };
 		6BF09EB92E3E9A34001D7E9B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 6BF09EB82E3E9A2D001D7E9B /* README.md */; };
 		6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF09EE82E3E9FD1001D7E9B /* Alamofire */; };
 /* End PBXBuildFile section */
@@ -267,7 +266,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6BD039BF2E4786DE0068938A /* ai-project-overview.md in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

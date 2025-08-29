@@ -8,6 +8,7 @@
 import SwiftUI
 struct HomeScreen: View {
     @ObservedObject var vm: FeatureViewModel
+    @EnvironmentObject var detailVM: DetailViewModel
 
     var body: some View {
         ScrollView {
@@ -20,7 +21,7 @@ struct HomeScreen: View {
             // 1) Featured random recipe
             if let featured = vm.state.home.featured {
                 RecipeHeroCard(item: featured)
-                    .onTapGesture { vm.onIntent(.goToDetail(featured.id)) }
+                    .onTapGesture { detailVM.onIntent(.setItem(featured)) }
                     .padding(.horizontal, 16)
                     
             } else if vm.state.home.phase == .loading {
@@ -67,8 +68,8 @@ struct HomeScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.randomTen, id: \.id) { item in
-                        RecipeCardSmall(item: item)
-                            .onTapGesture { vm.onIntent(.goToDetail(item.id)) }
+                        RecipeCardSmall(item: item, width: 150)
+                            .onTapGesture { detailVM.onIntent(.setItem(item)) }
                     }
                 }.padding(.horizontal, 16)
             }

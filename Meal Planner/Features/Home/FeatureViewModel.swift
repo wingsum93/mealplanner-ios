@@ -42,10 +42,6 @@ final class FeatureViewModel: ObservableObject {
         case .goToSearch:
             state.path.append(.search)
             
-        case .goToDetail(let id):
-            state.path.append(.detail(id))
-            onIntent(.loadDetail(id))
-            
         case .pop:
             if !state.path.isEmpty { _ = state.path.removeLast() }
             
@@ -65,12 +61,6 @@ final class FeatureViewModel: ObservableObject {
         case .performSearch:
             search(query: state.search.query)
             
-            // MARK: Detail
-        case .loadDetail(let id):
-            loadDetail(id)
-        case .toggleFavorite(let id, let isFavorite):
-            //tbc
-            toggleFavorite(id: id, to: isFavorite)
         }
     
     }
@@ -127,13 +117,36 @@ final class FeatureViewModel: ObservableObject {
     private func loadArea(_ area: String) {
         areaTask?.cancel()
         state.area = AreaListState(phase: .loading, area: area, items: [])
-        areaTask = Task {
+        areaTask = Task {[weak self] in
+            guard let self else { return }
             do {
-                let items = try await repo.getByArea(area).map { $0.toUI() }
-                state.area.items = items
-                state.area.phase = items.isEmpty ? .empty : .content
+                // 1) Base list
+                let base = try await repo.getByArea(area).map { $0.toUI() }
+                if Task.isCancelled { return }
+                
+                // 2) Concurrently fetch details and prefer them if available
+                let enriched = try await withThrowingTaskGroup(of: (String, UIRecipeItem?).self) { group in
+                    for item in base {
+                        group.addTask {
+                            // getRecipeDetail might return nil; prefer base item if so
+                            let detail = try await self.repo.getRecipeDetail(id: item.id).toUI()
+                            return (item.id, detail)
+                        }
+                    }
+                    var dict: [String: UIRecipeItem] = [:]
+                    for try await (id, detail) in group {
+                        if let d = detail { dict[id] = d }
+                    }
+                    // Preserve original order; fallback to base when no detail
+                    return base.map { dict[$0.id] ?? $0 }
+                }
+                
+                if Task.isCancelled { return }
+                self.state.area.items = enriched
+                self.state.area.phase = enriched.isEmpty ? .empty : .content
             } catch {
-                state.area.phase = .error("Failed to load \(area).")
+                if Task.isCancelled { return }
+                self.state.area.phase = .error("Failed to load \(area).")
             }
         }
     }
@@ -142,13 +155,36 @@ final class FeatureViewModel: ObservableObject {
     private func loadCategory(_ category: String) {
         categoryTask?.cancel()
         state.category = CategoryListState(phase: .loading, category: category, items: [])
-        categoryTask = Task {
+        categoryTask = Task {[weak self] in
+            guard let self else { return }
             do {
-                let items = try await repo.getByCategory(category).map { $0.toUI() }
-                state.category.items = items
-                state.category.phase = items.isEmpty ? .empty : .content
+                // 1) Base list
+                let base = try await repo.getByCategory(category).map { $0.toUI() }
+                if Task.isCancelled { return }
+                
+                // 2) Concurrently fetch details and prefer them if available
+                let enriched = try await withThrowingTaskGroup(of: (String, UIRecipeItem?).self) { group in
+                    for item in base {
+                        group.addTask {
+                            // getRecipeDetail might return nil; prefer base item if so
+                            let detail = try await self.repo.getRecipeDetail(id: item.id).toUI()
+                            return (item.id, detail)
+                        }
+                    }
+                    var dict: [String: UIRecipeItem] = [:]
+                    for try await (id, detail) in group {
+                        if let d = detail { dict[id] = d }
+                    }
+                    // Preserve original order; fallback to base when no detail
+                    return base.map { dict[$0.id] ?? $0 }
+                }
+                
+                if Task.isCancelled { return }
+                self.state.category.items = enriched
+                self.state.category.phase = enriched.isEmpty ? .empty : .content
             } catch {
-                state.category.phase = .error("Failed to load \(category).")
+                if Task.isCancelled { return }
+                self.state.category.phase = .error("Failed to load \(category).")
             }
         }
     }
@@ -179,70 +215,6 @@ final class FeatureViewModel: ObservableObject {
                 state.search.phase = items.isEmpty ? .empty : .content
             } catch {
                 state.search.phase = .error("Search failed.")
-            }
-        }
-    }
-    
-    // DETAIL
-    private func loadDetail(_ id: String) {
-        detailTask?.cancel()
-        state.detail = DetailState(phase: .loading, recipeID: id, item: nil)
-        detailTask = Task {
-            do {
-                let item = try await repo.getRecipeDetail(id: id).toUI()
-                state.detail.item = item
-                state.detail.phase = .content
-            } catch {
-                state.detail.phase = .error("Failed to load recipe.")
-            }
-        }
-    }
-    
-    @MainActor
-    private func toggleFavorite(id: String, to newValue: Bool) {
-        // Optimistic update across all relevant substates
-        func updateInPlace() {
-            // home.randomTen
-            if let index = state.home.randomTen.firstIndex(where: { $0.id == id }) {
-                state.home.randomTen[index].isFavorite = newValue
-            }
-            // featured
-            if state.home.featured?.id == id {
-                state.home.featured?.isFavorite = newValue
-            }
-            // area list
-            if let index = state.area.items.firstIndex(where: { $0.id == id }) {
-                state.area.items[index].isFavorite = newValue
-            }
-            // category list
-            if let index = state.category.items.firstIndex(where: { $0.id == id }) {
-                state.category.items[index].isFavorite = newValue
-            }
-            // search results
-            if let index = state.search.results.firstIndex(where: { $0.id == id }) {
-                state.search.results[index].isFavorite = newValue
-            }
-            // detail
-            if state.detail.item?.id == id {
-                state.detail.item?.isFavorite = newValue
-            }
-        }
-
-        // Save old state in case we need to roll back
-        let oldState = state
-
-        // 1. Optimistic update
-        updateInPlace()
-
-        // 2. Persist asynchronously
-        Task {
-            do {
-                let number = Int64(id)!
-                try repo.updateFavorite(id: number, isFavorite: newValue)
-            } catch {
-                // Roll back on failure
-                state = oldState
-                print("❌ Failed to update favorite: \(error)")
             }
         }
     }

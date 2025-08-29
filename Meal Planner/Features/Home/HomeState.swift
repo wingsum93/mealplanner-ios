@@ -33,17 +33,10 @@ struct SearchState: Equatable {
   var results: [UIRecipeItem] = []
 }
 
-struct DetailState: Equatable {
-  var phase: Phase = .idle
-  var recipeID: String = ""
-  var item: UIRecipeItem?
-}
-
 enum Route: Hashable {
   case area(String)
   case category(String)
   case search
-  case detail(String)
 }
 
 struct FeatureState: Equatable {
@@ -51,8 +44,7 @@ struct FeatureState: Equatable {
   var area = AreaListState()
   var category = CategoryListState()
   var search = SearchState()
-  var detail = DetailState()
   var path: [Route] = []             // NavigationStack path
-  var selectedMatchedID: String? = nil // for hero animation
+  
 }
 
