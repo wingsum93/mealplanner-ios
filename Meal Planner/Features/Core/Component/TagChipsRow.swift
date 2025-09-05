@@ -18,34 +18,34 @@ struct TagChipsRow: View {
     @State private var moreWidth: CGFloat = 0
 
     var body: some View {
-            let layout = computeLayout(
-                availableWidth: availableWidth,
-                chipWidths: chipWidths,
-                spacing: spacing,
-                tagsCount: tags.count,
-                moreWidth: moreWidth
-            )
-
-            HStack(spacing: spacing) {
-                ForEach(0..<layout.visibleCount, id: \.self) { i in
-                    let tag = tags[i]
-                    TagChip(text: tag)
-                        .onTapGesture { onTapTag?(tag) }
-                        .fixedSize()
-                        .background(WidthReader(index: i, key: ChipWidthKey.self))
-                }
-
-                if layout.overflow > 0 {
-                    TagChip(text: "+\(layout.overflow)")
-                        .onTapGesture { onTapMore?() }
-                        .fixedSize()
-                        .background(WidthReaderForMore(key: MoreWidthKey.self))
-                }
+        let layout = computeLayout(
+            availableWidth: availableWidth,
+            chipWidths: chipWidths,
+            spacing: spacing,
+            tagsCount: tags.count,
+            moreWidth: moreWidth
+        )
+        
+        HStack(spacing: spacing) {
+            ForEach(0..<layout.visibleCount, id: \.self) { i in
+                let tag = tags[i]
+                TagChip(text: tag)
+                    .onTapGesture { onTapTag?(tag) }
+                    .fixedSize()
+                    .background(WidthReader(index: i, key: ChipWidthKey.self))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .onPreferenceChange(ChipWidthKey.self) { chipWidths = $0 }
-            .onPreferenceChange(MoreWidthKey.self) { moreWidth = $0 }
+            
+            if layout.overflow > 0 {
+                TagChip(text: "+\(layout.overflow)")
+                    .onTapGesture { onTapMore?() }
+                    .fixedSize()
+                    .background(WidthReaderForMore(key: MoreWidthKey.self))
+            }
         }
+        .frame(maxWidth: availableWidth, alignment: .leading)
+        .onPreferenceChange(ChipWidthKey.self) { chipWidths = $0 }
+        .onPreferenceChange(MoreWidthKey.self) { moreWidth = $0 }
+    }
 
         // Decide how many chips fit, reserving space for "+N" when needed
         private func computeLayout(

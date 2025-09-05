@@ -129,7 +129,6 @@ struct DetailSheetView: View {
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .lineLimit(1)
-                                .foregroundStyle(.primary)
                                 .accessibilityAddTraits(.isHeader)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)

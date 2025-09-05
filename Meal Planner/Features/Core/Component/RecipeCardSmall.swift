@@ -25,9 +25,9 @@ struct RecipeCardSmall: View {
             Text(item.name)
                 .font(.subheadline)
                 .lineLimit(1)
-
+            let sortedTags = item.ingredients.sorted { $0.count < $1.count }
             TagChipsRow(
-                tags: item.ingredients,
+                tags: sortedTags,
                 availableWidth: width,
                 spacing: 6
             )

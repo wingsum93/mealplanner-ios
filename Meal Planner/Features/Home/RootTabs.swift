@@ -32,13 +32,9 @@ struct RootTabs: View {
             ProfileScreen(authViewModel: authViewModel){
                 showLoginDialog = true
             }
-                .tabItem{
-                    Label("Profile", systemImage: "person.circle")
-                }
-            SelfEsteem(click: { showLoginDialog = !showLoginDialog})
-                .tabItem{
-                    Label("Me", systemImage: "star.fill")
-                }
+            .tabItem{
+                Label("Profile", systemImage: "person.circle")
+            }
             
         }.sheet(isPresented: Binding(get: {detailVM.state.showDetail }, set: { newValue in
             if(newValue == false){
@@ -49,7 +45,7 @@ struct RootTabs: View {
             // Optional detents if you like:
                 .presentationDetents([ .large,.medium])
                 .presentationDragIndicator(.visible)
-                .background(Color(.systemGray6))  
+                .background(Color(.systemGray6))
                 .presentationSizing(.page)
         }
     }
