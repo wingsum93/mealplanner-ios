@@ -31,7 +31,6 @@ struct RecipeCardSmall: View {
                 availableWidth: width,
                 spacing: 6
             )
-            .foregroundColor(.secondary)
         }
         .frame(width: width,height: width + 40, alignment: .leading)
         .padding(.bottom,8)

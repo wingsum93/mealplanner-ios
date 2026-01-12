@@ -40,11 +40,12 @@ struct DetailSheetView: View {
                                     .shadow(radius: 4)
 
                                 HStack(spacing: 8) {
+                                    // Image for 2 icons
                                     if let area = item.area, !area.isEmpty {
                                         MetaChip(text: area, systemImage: "globe.asia.australia.fill")
                                     }
                                     if let cat = item.category, !cat.isEmpty {
-                                        MetaChip(text: cat, systemImage: "square.grid.2x2")
+                                        IconTextRow(text: cat, systemImage: ImageUtil.getCategorySystemImage(category: cat))
                                     }
                                 }
                             }
@@ -84,7 +85,7 @@ struct DetailSheetView: View {
                     
                     //Instruction
                     HStack(spacing: 8){
-                        Image(systemName: "applelogo")              // 修正 "apple.fill" -> "applelogo"
+                        Image(systemName: "info.circle")              // 修正 "apple.fill" -> "applelogo"
                                 .imageScale(.medium)
                                 .font(.title2)                          // 跟文字同尺寸，動態字級會一起放大
                                 .symbolRenderingMode(.monochrome)
@@ -120,7 +121,7 @@ struct DetailSheetView: View {
                     VStack(alignment: .leading){
                         // Ingredients
                         HStack(spacing: 8){
-                            Image(systemName: "arrow.triangle.2.circlepath")              // 修正 "apple.fill" -> "applelogo"
+                            Image(systemName: "leaf.fill")              // 修正 "apple.fill" -> "applelogo"
                                     .imageScale(.medium)
                                     .font(.title2)                          // 跟文字同尺寸，動態字級會一起放大
                                     .symbolRenderingMode(.monochrome)

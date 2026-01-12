@@ -5,13 +5,13 @@ use themealdb api
 
 ## Roadmap
 - [ ] pretty detail screen
-- [ ] lottie view
+- [x] lottie view
 - [ ] favorite screen, separate vm
 - [ ] login fullscreen?
 
 ### Obstacle
 - [] have not decide the data structure of fav 
-- [] attractive layout of favourite page
+- [] attractive layout of favourite page, middle tab
 
 
 ## Data Source
