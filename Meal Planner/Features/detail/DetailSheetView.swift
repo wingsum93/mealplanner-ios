@@ -127,38 +127,44 @@ struct DetailSheetView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        ForEach(item.ingredients.indices, id:\.self) { index in
-                            HStack(spacing: 12) {
-                                let ingredient = item.ingredients[index]
+                        VStack(spacing: 0) {
+                            ForEach(item.ingredients.indices, id:\.self) { index in
+                                HStack(spacing: 12) {
+                                    let ingredient = item.ingredients[index]
 
-                                KFImage(URL(string: ingredient.getMealImageLink()))
-                                    .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 48, height: 48)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    KFImage(URL(string: ingredient.getMealImageLink()))
+                                        .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 48, height: 48)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(ingredient)
-                                        .font(.body.weight(.semibold))
-                                    let measure = index < item.measures.count ? item.measures[index] : ""
-                                        Text(measure)
-                                            .font(.footnote)
-                                            .foregroundStyle(.secondary)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(ingredient)
+                                            .font(.body.weight(.semibold))
+                                        let measure = index < item.measures.count ? item.measures[index] : ""
+                                            Text(measure)
+                                                .font(.footnote)
+                                                .foregroundStyle(.secondary)
 
+                                    }
+                                    Spacer()
                                 }
-                                Spacer()
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.white)
-                            )
-                            .padding(.vertical, 8)
-                            .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
 
+                                if index < item.ingredients.count - 1 {
+                                    Divider()
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.horizontal, 20)
+                                }
+                            }
                         }
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.white)
+                        )
+                        .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
                     }
                     .padding(.horizontal, 16)
                     // Watch Button
