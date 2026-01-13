@@ -101,7 +101,7 @@ struct DetailSheetView: View {
                                         .foregroundStyle(.primary)
                                 }
 
-                                if num < item.instructions.indices.last {
+                                if num < item.instructions.count - 1 {
                                     Divider()
                                 }
                             }
