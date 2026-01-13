@@ -131,17 +131,14 @@ struct DetailSheetView: View {
                         ForEach(item.ingredients.indices, id:\.self){ index in
                             HStack(spacing: 12) {
                                 let ingredient = item.ingredients[index]
-                                
+
                                 KFImage(URL(string: ingredient.getMealImageLink()))
                                     .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
                                     .resizable()
                                     .scaledToFill()
                                     .frame(width: 48, height: 48)
-                                    .padding(.top, 16)
-                                    .padding(.bottom, 16)
-                                    .padding(.leading, 16)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
-                                
+
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(ingredient)
                                         .font(.body.weight(.semibold))
@@ -149,19 +146,19 @@ struct DetailSheetView: View {
                                         Text(measure)
                                             .font(.footnote)
                                             .foregroundStyle(.secondary)
-                                    
+
                                 }
                                 Spacer()
                             }
+                            .padding(12)
                             .background(
-                                RoundedRectangle(cornerRadius: 16) // 👈 圓角
-                                    .fill(Color.white)            // 👈 白底
-                                    .shadow(radius: 1)            // 👈 輕微陰影（optional）
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white)
                             )
                             .padding(.vertical, 8)
                             .padding(.horizontal, 16)
                             .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
-                            
+
                         }
                     }
                     .padding(.leading, 8)
