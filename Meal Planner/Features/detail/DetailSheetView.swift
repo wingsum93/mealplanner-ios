@@ -111,9 +111,9 @@ struct DetailSheetView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    VStack(alignment: .leading){
+                    VStack(alignment: .leading) {
                         // Ingredients
-                        HStack(spacing: 8){
+                        HStack(spacing: 8) {
                             Image(systemName: "leaf.fill")              // 修正 "apple.fill" -> "applelogo"
                                     .imageScale(.medium)
                                     .font(.title2)                          // 跟文字同尺寸，動態字級會一起放大
@@ -126,46 +126,47 @@ struct DetailSheetView: View {
                                 .accessibilityAddTraits(.isHeader)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 8)
                         
-                        ForEach(item.ingredients.indices, id:\.self){ index in
-                            HStack(spacing: 12) {
-                                let ingredient = item.ingredients[index]
-                                
-                                KFImage(URL(string: ingredient.getMealImageLink()))
-                                    .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 48, height: 48)
-                                    .padding(.top, 16)
-                                    .padding(.bottom, 16)
-                                    .padding(.leading, 16)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(ingredient)
-                                        .font(.body.weight(.semibold))
-                                    let measure = index < item.measures.count ? item.measures[index] : ""
-                                        Text(measure)
-                                            .font(.footnote)
-                                            .foregroundStyle(.secondary)
-                                    
+                        VStack(spacing: 0) {
+                            ForEach(item.ingredients.indices, id:\.self) { index in
+                                HStack(spacing: 12) {
+                                    let ingredient = item.ingredients[index]
+
+                                    KFImage(URL(string: ingredient.getMealImageLink()))
+                                        .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 48, height: 48)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(ingredient)
+                                            .font(.body.weight(.semibold))
+                                        let measure = index < item.measures.count ? item.measures[index] : ""
+                                            Text(measure)
+                                                .font(.footnote)
+                                                .foregroundStyle(.secondary)
+
+                                    }
+                                    Spacer()
                                 }
-                                Spacer()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
+
+                                if index < item.ingredients.count - 1 {
+                                    Divider()
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.horizontal, 20)
+                                }
                             }
-                            .background(
-                                RoundedRectangle(cornerRadius: 16) // 👈 圓角
-                                    .fill(Color.white)            // 👈 白底
-                                    .shadow(radius: 1)            // 👈 輕微陰影（optional）
-                            )
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
-                            
                         }
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.white)
+                        )
+                        .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
                     }
-                    .padding(.leading, 8)
-                    .padding(.trailing, 8)
+                    .padding(.horizontal, 16)
                     // Watch Button
                     YoutubeRoundedButton(
                         title: "Watch Video", systemImage: "arrowtriangle.right.fill", link: item.youtubeLink
