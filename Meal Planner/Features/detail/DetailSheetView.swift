@@ -70,53 +70,41 @@ struct DetailSheetView: View {
                     }
                     .padding(.horizontal, 16)
 
-                    //Description
-                    Text("Description")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity,alignment: .leading)
-                        .padding(.leading, 8)
-                    Text(item.description)
-                        .font(.caption)
-                        .fontWeight(.regular)
-                        .frame(maxWidth: .infinity,alignment: .leading)
-                        .padding(.leading, 8)
-                    
-                    //Instruction
-                    HStack(spacing: 8){
-                        Image(systemName: "info.circle")              // 修正 "apple.fill" -> "applelogo"
-                                .imageScale(.medium)
-                                .font(.title2)                          // 跟文字同尺寸，動態字級會一起放大
-                                .symbolRenderingMode(.monochrome)
-                                .foregroundStyle(.secondary)            // 讓 icon 不搶戲
-                        Text("Instructions")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .lineLimit(1)
+                    SectionCard(
+                        header: CardSectionHeader(
+                            systemImage: "doc.text",
+                            title: "Description",
+                            subtitle: item.category
+                        )
+                    ) {
+                        Text(item.description)
+                            .font(.body)
                             .foregroundStyle(.primary)
-                            .accessibilityAddTraits(.isHeader)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 8)
-                    
-                    VStack(alignment: .leading){
-                        ForEach(item.instructions.indices,id:\.self){ num in
-                            let text = "\(num+1). "
-                            let text2 = item.instructions[num]
-                            HStack{
-                                Text(text)
-                                    .font(.footnote)
-                                    .fontWeight(.bold)
-                                Text(text2)
-                                    .font(.caption)
-                            }
-                            .padding(.horizontal, 8)
-                            if num != item.instructions.count-1 {
-                                Spacer(minLength: 10)
+                    .padding(.horizontal, 16)
+
+                    SectionCard(
+                        header: CardSectionHeader(
+                            systemImage: "info.circle",
+                            title: "Instructions"
+                        )
+                    ) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(item.instructions.indices, id: \.self) { num in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text("\(num + 1).")
+                                        .font(.footnote.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                    Text(item.instructions[num])
+                                        .font(.body)
+                                        .foregroundStyle(.primary)
+                                }
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .padding(.horizontal, 16)
                     
                     VStack(alignment: .leading){
                         // Ingredients
@@ -198,5 +186,55 @@ private struct MetaChip: View {
             .padding(.vertical, 6)
             .background(Capsule().fill(Color.white.opacity(0.9)))
             .foregroundStyle(.black.opacity(0.85))
+    }
+}
+
+private struct CardSectionHeader: View {
+    let systemImage: String
+    let title: String
+    var subtitle: String? = nil
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: systemImage)
+                .imageScale(.medium)
+                .font(.title2)
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.primary)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .accessibilityAddTraits(.isHeader)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct SectionCard<Content: View>: View {
+    let header: CardSectionHeader
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            header
+            content
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.black.opacity(0.06), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 6, y: 2)
     }
 }
