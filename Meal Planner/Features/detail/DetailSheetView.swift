@@ -100,23 +100,24 @@ struct DetailSheetView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 8)
                     
-                    VStack(alignment: .leading){
-                        ForEach(item.instructions.indices,id:\.self){ num in
-                            let text = "\(num+1). "
+                    LazyVStack(alignment: .leading, spacing: 8) {
+                        ForEach(item.instructions.indices, id: \.self) { num in
+                            let text = "\(num + 1). "
                             let text2 = item.instructions[num]
-                            HStack{
+                            HStack {
                                 Text(text)
                                     .font(.footnote)
                                     .fontWeight(.bold)
                                 Text(text2)
                                     .font(.caption)
                             }
-                            .padding(.horizontal, 8)
-                            if num != item.instructions.count-1 {
-                                Spacer(minLength: 10)
+                            if num != item.instructions.count - 1 {
+                                Divider()
+                                    .opacity(0.1)
                             }
                         }
                     }
+                    .padding(.horizontal, 16)
                     
                     VStack(alignment: .leading){
                         // Ingredients
