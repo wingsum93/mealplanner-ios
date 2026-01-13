@@ -111,9 +111,9 @@ struct DetailSheetView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    VStack(alignment: .leading){
+                    VStack(alignment: .leading) {
                         // Ingredients
-                        HStack(spacing: 8){
+                        HStack(spacing: 8) {
                             Image(systemName: "leaf.fill")              // 修正 "apple.fill" -> "applelogo"
                                     .imageScale(.medium)
                                     .font(.title2)                          // 跟文字同尺寸，動態字級會一起放大
@@ -126,9 +126,8 @@ struct DetailSheetView: View {
                                 .accessibilityAddTraits(.isHeader)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 8)
                         
-                        ForEach(item.ingredients.indices, id:\.self){ index in
+                        ForEach(item.ingredients.indices, id:\.self) { index in
                             HStack(spacing: 12) {
                                 let ingredient = item.ingredients[index]
 
@@ -150,19 +149,18 @@ struct DetailSheetView: View {
                                 }
                                 Spacer()
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(12)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(Color.white)
                             )
                             .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
                             .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
 
                         }
                     }
-                    .padding(.leading, 8)
-                    .padding(.trailing, 8)
+                    .padding(.horizontal, 16)
                     // Watch Button
                     YoutubeRoundedButton(
                         title: "Watch Video", systemImage: "arrowtriangle.right.fill", link: item.youtubeLink
