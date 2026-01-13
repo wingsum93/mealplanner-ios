@@ -71,7 +71,7 @@ struct DetailSheetView: View {
                     .padding(.horizontal, 16)
 
                     SectionCard(
-                        header: SectionHeader(
+                        header: CardSectionHeader(
                             systemImage: "doc.text",
                             title: "Description",
                             subtitle: item.category
@@ -85,7 +85,7 @@ struct DetailSheetView: View {
                     .padding(.horizontal, 16)
 
                     SectionCard(
-                        header: SectionHeader(
+                        header: CardSectionHeader(
                             systemImage: "info.circle",
                             title: "Instructions"
                         )
@@ -189,7 +189,7 @@ private struct MetaChip: View {
     }
 }
 
-private struct SectionHeader: View {
+private struct CardSectionHeader: View {
     let systemImage: String
     let title: String
     var subtitle: String? = nil
@@ -218,7 +218,7 @@ private struct SectionHeader: View {
 }
 
 private struct SectionCard<Content: View>: View {
-    let header: SectionHeader
+    let header: CardSectionHeader
     @ViewBuilder let content: Content
 
     var body: some View {
