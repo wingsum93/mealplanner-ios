@@ -90,7 +90,7 @@ struct DetailSheetView: View {
                             title: "Instructions"
                         )
                     ) {
-                        VStack(alignment: .leading, spacing: 12) {
+                        LazyVStack(alignment: .leading, spacing: 8) {
                             ForEach(item.instructions.indices, id: \.self) { num in
                                 HStack(alignment: .top, spacing: 8) {
                                     Text("\(num + 1).")
@@ -100,9 +100,14 @@ struct DetailSheetView: View {
                                         .font(.body)
                                         .foregroundStyle(.primary)
                                 }
+
+                                if num < item.instructions.count - 1 {
+                                    Divider()
+                                }
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
                     }
                     .padding(.horizontal, 16)
                     
