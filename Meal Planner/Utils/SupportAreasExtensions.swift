@@ -36,7 +36,10 @@ extension Array where Element == String {
 internal extension String {
     func toISO3166CountryCode() -> String {
         let map: [String: String] = [
+            "Algerian": "dz",
             "American": "us",
+            "Argentinian": "ar",
+            "Australian": "au",
             "British":  "gb",
             "Canadian": "ca",
             "Chinese":  "cn",
@@ -55,13 +58,20 @@ internal extension String {
             "Malaysian": "my",
             "Mexican":  "mx",
             "Moroccan": "ma",
+            "Norwegian": "no",
             "Polish":   "pl",
             "Portuguese": "pt",
             "Russian":  "ru",
+            "Saudi Arabian": "sa",
+            "Slovakian": "sk",
             "Spanish":  "es",
+            "Syrian": "sy",
             "Thai":     "th",
+            "Tunisian": "tn",
             "Turkish":  "tr",
             "Ukrainian": "ua",
+            "Uruguayan": "uy",
+            "Venezulan": "ve",
             "Vietnamese": "vn"
         ]
         if let mapped = map[self] {
