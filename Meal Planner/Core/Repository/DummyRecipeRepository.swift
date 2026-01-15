@@ -51,6 +51,10 @@ final class DummyRecipeRepository: RecipeRepository {
     func getRandomRecipe() async throws -> RecipeItem {
         return sampleRecipeItem(id: 100, title: "Random Pick")
     }
+
+    func saveRecipe(_ item: RecipeItem) throws {
+        // No-op in dummy
+    }
     
     func updateFavorite(id: Int64, isFavorite: Bool) throws {
         // No-op in dummy
