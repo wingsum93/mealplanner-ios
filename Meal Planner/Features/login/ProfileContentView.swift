@@ -62,13 +62,19 @@ struct ProfileContentView:View {
             }
         }
         .listStyle(.insetGrouped)
-        .alert("Confirm action", item: $pendingAction) { action in
+        .confirmationDialog(
+            "Confirm action",
+            isPresented: Binding(get: { pendingAction != nil }, set: { if !$0 { pendingAction = nil } })
+        ) {
             Button("Cancel", role: .cancel) { }
-            Button(action.confirmButtonTitle, role: .destructive) {
-                handleSettingsAction(action)
+            if let action = pendingAction {
+                Button(action.confirmButtonTitle, role: .destructive) {
+                    handleSettingsAction(action)
+                    pendingAction = nil
+                }
             }
-        } message: { action in
-            Text(action.confirmMessage)
+        } message: {
+            Text(pendingAction?.confirmMessage ?? "")
         }
         .alert(
             "Unable to update data",
