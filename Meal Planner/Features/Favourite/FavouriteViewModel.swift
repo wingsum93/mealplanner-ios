@@ -10,6 +10,8 @@ import Observation
 @MainActor
 final class FavouriteViewModel: ObservableObject {
     @Published private(set) var favoriteItems: [UIRecipeItem] = []
+    @Published var selectedArea: String? = nil
+    @Published var selectedCategory: String? = nil
     private let repo: RecipeRepository
     private var task: Task<Void, Never>? = nil
 
@@ -18,6 +20,24 @@ final class FavouriteViewModel: ObservableObject {
     }
 
     deinit { task?.cancel() }
+
+    var availableAreas: [String] {
+        let areas = favoriteItems.compactMap { $0.area }.filter { !$0.isEmpty }
+        return Array(Set(areas)).sorted()
+    }
+
+    var availableCategories: [String] {
+        let categories = favoriteItems.compactMap { $0.category }.filter { !$0.isEmpty }
+        return Array(Set(categories)).sorted()
+    }
+
+    var filteredFavoriteItems: [UIRecipeItem] {
+        favoriteItems.filter { item in
+            let matchesArea = selectedArea.map { $0 == item.area } ?? true
+            let matchesCategory = selectedCategory.map { $0 == item.category } ?? true
+            return matchesArea && matchesCategory
+        }
+    }
 
     /// Load all favorites (call onAppear of FavouriteScreen)
     func loadFavorites() {
