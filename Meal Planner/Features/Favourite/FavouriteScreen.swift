@@ -36,18 +36,41 @@ struct FavouriteScreen :View {
 
 
             } else {
-                List {
-                    ForEach(vm.favoriteItems, id: \.id) { item in
-                        SearchRecipeRow(item: item, showFavorite: true) { newFav in
-                            //                    vm.toggleFavorite(item)
+                VStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        Picker("Area", selection: $vm.selectedArea) {
+                            Text("All Areas").tag(String?.none)
+                            ForEach(vm.availableAreas, id: \.self) { area in
+                                Text(area).tag(Optional(area))
+                            }
                         }
-                        .onTapGesture {
-                            detailVM.onIntent(.setItem(item))
+                        .pickerStyle(.menu)
+
+                        Picker("Category", selection: $vm.selectedCategory) {
+                            Text("All Categories").tag(String?.none)
+                            ForEach(vm.availableCategories, id: \.self) { category in
+                                Text(category).tag(Optional(category))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+
+                    List {
+                        ForEach(vm.filteredFavoriteItems, id: \.id) { item in
+                            SearchRecipeRow(item: item, showFavorite: true) { newFav in
+                                //                    vm.toggleFavorite(item)
+                            }
+                            .onTapGesture {
+                                detailVM.onIntent(.setItem(item))
+                            }
                         }
                     }
+                    .listStyle(.plain)
+                    .refreshable { vm.loadFavorites() }
                 }
-                .listStyle(.plain)
-                .refreshable { vm.loadFavorites() }
             }
         }
         .background(Color(.systemGray6)) // base screen background
