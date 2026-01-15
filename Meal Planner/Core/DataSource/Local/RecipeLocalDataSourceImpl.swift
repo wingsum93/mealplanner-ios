@@ -88,4 +88,20 @@ public final class RecipeLocalDataSourceImpl: RecipeLocalDataSource {
         )
         return try context.fetch(descriptor)
     }
+
+    func clearCachedRecipes() throws {
+        let descriptor = FetchDescriptor<RecipeEntity>()
+        let recipes = try context.fetch(descriptor)
+        recipes.forEach { context.delete($0) }
+        try context.save()
+    }
+
+    func resetFavorites() throws {
+        let descriptor = FetchDescriptor<RecipeEntity>(
+            predicate: #Predicate { $0.isFavorite == true }
+        )
+        let recipes = try context.fetch(descriptor)
+        recipes.forEach { $0.isFavorite = false }
+        try context.save()
+    }
 }
