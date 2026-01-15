@@ -65,6 +65,16 @@ struct HomeScreen: View {
 
             // 4) Random 10 horizontal
             SectionHeader("Discover")
+            Button {
+                vm.onIntent(.goToRandomPick)
+            } label: {
+                Label("Random Pick", systemImage: "sparkles")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 4)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.randomTen, id: \.id) { item in
@@ -82,4 +92,3 @@ struct HomeScreen: View {
         .navigationTitle("Recipes")
     }
 }
-

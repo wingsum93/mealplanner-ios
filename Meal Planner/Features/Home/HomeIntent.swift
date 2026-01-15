@@ -10,6 +10,7 @@ enum HomeIntent {
     case goToArea(String)
     case goToCategory(String)
     case goToSearch
+    case goToRandomPick
     case pop
     
     // home

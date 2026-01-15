@@ -42,6 +42,9 @@ final class FeatureViewModel: ObservableObject {
         case .goToSearch:
             state.path.append(.search)
             
+        case .goToRandomPick:
+            state.path.append(.randomPick)
+            
         case .pop:
             if !state.path.isEmpty { _ = state.path.removeLast() }
             

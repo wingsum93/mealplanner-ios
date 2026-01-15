@@ -37,6 +37,7 @@ enum Route: Hashable {
   case area(String)
   case category(String)
   case search
+  case randomPick
 }
 
 struct FeatureState: Equatable {
@@ -47,4 +48,3 @@ struct FeatureState: Equatable {
   var path: [Route] = []             // NavigationStack path
   
 }
-
