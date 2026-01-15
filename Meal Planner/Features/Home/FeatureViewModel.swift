@@ -20,6 +20,7 @@ final class FeatureViewModel: ObservableObject {
     private var categoryTask: Task<Void, Never>?
     private var searchTask: Task<Void, Never>?
     private var detailTask: Task<Void, Never>?
+    private var randomPickTask: Task<Void, Never>?
     // search debounce
     private var searchDebounceTask: Task<Void, Never>?
     
@@ -51,6 +52,9 @@ final class FeatureViewModel: ObservableObject {
             // MARK: Home
         case .loadHome, .refreshHome:
             loadHome()
+
+        case .loadRandomPick:
+            loadRandomPick()
             
             // MARK: Lists
         case .loadArea(let area):         loadArea(area)
@@ -112,6 +116,33 @@ final class FeatureViewModel: ObservableObject {
             } catch {
                 print("❌ Home load error:", error.localizedDescription)
                 state.home.phase = .error("Couldn’t load home. Pull to retry.")
+            }
+        }
+    }
+
+    // RANDOM PICK
+    private func loadRandomPick() {
+        randomPickTask?.cancel()
+        state.randomPick.phase = .loading
+        randomPickTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let items = try await withThrowingTaskGroup(of: UIRecipeItem?.self) { group -> [UIRecipeItem] in
+                    for _ in 0..<10 {
+                        group.addTask { try? await self.repo.getRandomRecipe().toUI() }
+                    }
+                    var out: [UIRecipeItem] = []
+                    for try await item in group {
+                        if let x = item, !out.contains(where: { $0.id == x.id }) { out.append(x) }
+                    }
+                    return out
+                }
+                if Task.isCancelled { return }
+                state.randomPick.items = items
+                state.randomPick.phase = items.isEmpty ? .empty : .content
+            } catch {
+                if Task.isCancelled { return }
+                state.randomPick.phase = .error("Couldn’t load random picks. Pull to retry.")
             }
         }
     }

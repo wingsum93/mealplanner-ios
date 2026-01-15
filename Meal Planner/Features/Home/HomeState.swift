@@ -33,6 +33,11 @@ struct SearchState: Equatable {
   var results: [UIRecipeItem] = []
 }
 
+struct RandomPickState: Equatable {
+  var phase: Phase = .idle
+  var items: [UIRecipeItem] = []
+}
+
 enum Route: Hashable {
   case area(String)
   case category(String)
@@ -45,6 +50,7 @@ struct FeatureState: Equatable {
   var area = AreaListState()
   var category = CategoryListState()
   var search = SearchState()
+  var randomPick = RandomPickState()
   var path: [Route] = []             // NavigationStack path
   
 }
