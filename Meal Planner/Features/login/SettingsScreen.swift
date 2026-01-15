@@ -1,29 +1,35 @@
 //
-//  ProfileContentView.swift
+//  SettingsScreen.swift
 //  Meal Planner
 //
 //  Created by eric ho on 3/8/2025.
 //
 
 import SwiftUI
-struct ProfileContentView:View {
-    let onLoginout: () -> Void
+struct SettingsScreen: View {
+    let isLoggedIn: Bool
+    let onLogin: () -> Void
+    let onLogout: () -> Void
     @ObservedObject var settingsViewModel: SettingsViewModel
 
     @State private var pendingAction: SettingsAction?
     @State private var errorMessage: String?
 
     init(
+        isLoggedIn: Bool,
         settingsViewModel: SettingsViewModel,
-        onLoginout: @escaping () -> Void = {}
+        onLogin: @escaping () -> Void = {},
+        onLogout: @escaping () -> Void = {}
     ) {
+        self.isLoggedIn = isLoggedIn
         self.settingsViewModel = settingsViewModel
-        self.onLoginout = onLoginout
+        self.onLogin = onLogin
+        self.onLogout = onLogout
     }
     
     var body: some View {
         List {
-            Section {
+            Section("Account") {
                 VStack(spacing: 16) {
                     Image("person")
                         .resizable()
@@ -37,15 +43,28 @@ struct ProfileContentView:View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
 
-                    Button(action: onLoginout) {
-                        Text("Logout")
-                            .fontWeight(.bold)
-                            .font(.title3)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.accentColor)
-                            .foregroundColor(.white)
-                            .cornerRadius(40)
+                    if isLoggedIn {
+                        Button(action: onLogout) {
+                            Text("Logout")
+                                .fontWeight(.bold)
+                                .font(.title3)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.accentColor)
+                                .foregroundColor(.white)
+                                .cornerRadius(40)
+                        }
+                    } else {
+                        Button(action: onLogin) {
+                            Text("Log in")
+                                .fontWeight(.bold)
+                                .font(.title3)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.accentColor)
+                                .foregroundColor(.white)
+                                .cornerRadius(40)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -102,7 +121,10 @@ struct ProfileContentView:View {
 
 #Preview {
     let mockLocal = MockRecipeLocalDataSource()
-    ProfileContentView(settingsViewModel: SettingsViewModel(localDataSource: mockLocal))
+    SettingsScreen(
+        isLoggedIn: false,
+        settingsViewModel: SettingsViewModel(localDataSource: mockLocal)
+    )
 }
 
 private enum SettingsAction: String, Identifiable {

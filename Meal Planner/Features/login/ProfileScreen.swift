@@ -7,7 +7,6 @@
 import SwiftUI
 
 struct ProfileScreen:View{
-    @Environment(\.loginLocalDataSource) private var localDataSource
     @ObservedObject var authViewModel: AuthViewModel
     @ObservedObject var settingsViewModel: SettingsViewModel
     let onLoginBtnClicked:() -> Void
@@ -33,17 +32,12 @@ struct ProfileScreen:View{
     }
     
     var body: some View{
-        VStack {
-            if authViewModel.state.isLoggedIn {
-                ProfileContentView(settingsViewModel: settingsViewModel) {
-                    _authViewModel.wrappedValue.onIntent(.logout)
-                }
-            } else {
-                UnloggedInView {
-                    onLoginBtnClicked()
-                }
-            }
-        }
+        SettingsScreen(
+            isLoggedIn: authViewModel.state.isLoggedIn,
+            settingsViewModel: settingsViewModel,
+            onLogin: onLoginBtnClicked,
+            onLogout: { _authViewModel.wrappedValue.onIntent(.logout) }
+        )
         .onAppear {
             authViewModel.onIntent(.load)
         }
