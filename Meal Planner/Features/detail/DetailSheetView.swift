@@ -42,7 +42,7 @@ struct DetailSheetView: View {
                                 HStack(spacing: 8) {
                                     // Image for 2 icons
                                     if let area = item.area, !area.isEmpty {
-                                        MetaChip(text: area, systemImage: "globe.asia.australia.fill")
+                                        MetaChip(text: area, flagPath: area.toFlagPath())
                                     }
                                     if let cat = item.category, !cat.isEmpty {
                                         IconTextRow(text: cat, systemImage: ImageUtil.getCategorySystemImage(category: cat))
@@ -184,14 +184,44 @@ struct DetailSheetView: View {
 // Reuse from earlier
 private struct MetaChip: View {
     let text: String
-    let systemImage: String
+    let flagPath: String
+    @State private var didFail = false
+
+    private var flagURL: URL? {
+        let trimmed = flagPath.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return nil
+        }
+        return URL(string: trimmed)
+    }
+
     var body: some View {
-        Label { Text(text) } icon: { Image(systemName: systemImage) }
-            .font(.caption.weight(.semibold))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Capsule().fill(Color.white.opacity(0.9)))
-            .foregroundStyle(.black.opacity(0.85))
+        Label {
+            Text(text)
+        } icon: {
+            if didFail || flagURL == nil {
+                Image(systemName: "questionmark.circle.fill")
+                    .foregroundStyle(.red)
+            } else if let flagURL {
+                KFImage(flagURL)
+                    .placeholder {
+                        Image(systemName: "hourglass")
+                            .foregroundStyle(.secondary)
+                    }
+                    .onFailure { _ in
+                        didFail = true
+                    }
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 20, height: 14)
+                    .clipShape(RoundedRectangle(cornerRadius: 2))
+            }
+        }
+        .font(.caption.weight(.semibold))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Capsule().fill(Color.white.opacity(0.9)))
+        .foregroundStyle(.black.opacity(0.85))
     }
 }
 

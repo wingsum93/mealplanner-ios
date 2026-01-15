@@ -34,6 +34,53 @@ extension Array where Element == String {
     }
 }
 internal extension String {
+    func toISO3166CountryCode() -> String {
+        let map: [String: String] = [
+            "American": "us",
+            "British":  "gb",
+            "Canadian": "ca",
+            "Chinese":  "cn",
+            "Croatian": "hr",
+            "Dutch": "nl",
+            "Egyptian": "eg",
+            "Filipino": "ph",
+            "French":   "fr",
+            "Greek":    "gr",
+            "Indian":   "in",
+            "Irish":    "ie",
+            "Italian":  "it",
+            "Jamaican": "jm",
+            "Japanese": "jp",
+            "Kenyan":   "ke",
+            "Malaysian": "my",
+            "Mexican":  "mx",
+            "Moroccan": "ma",
+            "Polish":   "pl",
+            "Portuguese": "pt",
+            "Russian":  "ru",
+            "Spanish":  "es",
+            "Thai":     "th",
+            "Turkish":  "tr",
+            "Ukrainian": "ua",
+            "Vietnamese": "vn"
+        ]
+        if let mapped = map[self] {
+            return mapped
+        }
+        if count == 2 {
+            return lowercased()
+        }
+        return ""
+    }
+
+    func toFlagPath() -> String {
+        let code = toISO3166CountryCode()
+        guard !code.isEmpty else {
+            return ""
+        }
+        return "https://flagcdn.com/w20/\(code).jpg"
+    }
+
     func getAreaImageURL() -> String {
         let map: [String: String] = [
             "American": "https://flagcdn.com/w320/us.png",
