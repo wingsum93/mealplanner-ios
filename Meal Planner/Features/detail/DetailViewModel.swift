@@ -32,8 +32,15 @@ final class DetailViewModel: ObservableObject {
 
     private func setData(_ item:UIRecipeItem){
         state.item = item
+        guard let domainItem = item.toDomain() else {
+            #if DEBUG
+            print("❌ saveRecipe error: invalid id \(item.id)")
+            #endif
+            return
+        }
+        
         do {
-            try repo.saveRecipe(item.toDomain())
+            try repo.saveRecipe(domainItem)
         } catch {
             #if DEBUG
             print("❌ saveRecipe error:", error)
@@ -44,15 +51,19 @@ final class DetailViewModel: ObservableObject {
     private func toggleFavorite() {
         // 1) Optimistic update
         let old = state.item
-        guard old != nil else { return }
-        let new = old!.togglingFavorite()
+        guard let old else { return }
+        guard let id = Int64(old.id) else {
+            reduce(state: &state, event: .setError("Invalid recipe id. Please try again."))
+            return
+        }
+        let new = old.togglingFavorite()
         reduce(state: &state, event: .setItem(new))
         reduce(state: &state, event: .setSavingFavorite(true))
 
         // 2) Persist
         Task {
             do {
-                try await repo.updateFavorite(id: Int64(new.id) ?? Int64(0), isFavorite: new.isFavorite)
+                try await repo.updateFavorite(id: id, isFavorite: new.isFavorite)
                 reduce(state: &state, event: .setSavingFavorite(false))
             } catch {
                 // 3) Roll back on failure
