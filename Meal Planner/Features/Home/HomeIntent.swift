@@ -16,6 +16,7 @@ enum HomeIntent {
     // home
     case loadHome
     case refreshHome
+    case loadRandomPick
     
     // lists
     case loadArea(String)

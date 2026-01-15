@@ -24,10 +24,10 @@ struct RandomPickScreen: View {
                     RecipeHeroCard(item: picked)
                         .onTapGesture { detailVM.onIntent(.setItem(picked)) }
                         .padding(.horizontal, 16)
-                } else if vm.state.home.phase == .loading {
+                } else if vm.state.randomPick.phase == .loading {
                     RecipeHeroCard(item: .sample)
                         .padding(.horizontal, 16)
-                        .shimmer(vm.state.home.phase == .loading)
+                        .shimmer(vm.state.randomPick.phase == .loading)
                 } else {
                     Text("No random picks available yet.")
                         .font(.callout)
@@ -39,7 +39,7 @@ struct RandomPickScreen: View {
                     if let newPick = pickRandom() {
                         picked = newPick
                     } else {
-                        vm.onIntent(.loadHome)
+                        vm.onIntent(.loadRandomPick)
                     }
                 } label: {
                     Label("Shuffle pick", systemImage: "shuffle")
@@ -52,13 +52,13 @@ struct RandomPickScreen: View {
             .padding(.vertical, 12)
         }
         .navigationTitle("Random Pick")
-        .onAppear {
+        .task {
             ensureRandomData()
             if picked == nil {
                 picked = pickRandom()
             }
         }
-        .onChange(of: vm.state.home.randomTen) { _ in
+        .onChange(of: vm.state.randomPick.items) { _ in
             if picked == nil {
                 picked = pickRandom()
             }
@@ -66,12 +66,12 @@ struct RandomPickScreen: View {
     }
 
     private func ensureRandomData() {
-        if vm.state.home.randomTen.isEmpty && vm.state.home.phase != .loading {
-            vm.onIntent(.loadHome)
+        if vm.state.randomPick.items.isEmpty && vm.state.randomPick.phase != .loading {
+            vm.onIntent(.loadRandomPick)
         }
     }
 
     private func pickRandom() -> UIRecipeItem? {
-        vm.state.home.randomTen.randomElement()
+        vm.state.randomPick.items.randomElement()
     }
 }
