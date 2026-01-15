@@ -15,6 +15,7 @@ struct RecipeApp: App {
     @StateObject private var authVM: AuthViewModel
     @StateObject private var detailVM: DetailViewModel
     @StateObject private var favVM: FavouriteViewModel
+    @StateObject private var settingsVM: SettingsViewModel
     init() {
         let mc = try! ModelContainer(for: RecipeEntity.self, IngredientEntity.self)
         let container = AppDIContainer(modelContext: ModelContext(mc),
@@ -24,11 +25,16 @@ struct RecipeApp: App {
         _authVM = StateObject(wrappedValue: AuthViewModel(localDataSource: LoginLocalDataSourceImpl())) // your existing one
         _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
         _favVM = StateObject(wrappedValue: FavouriteViewModel(repository: container.recipeRepository))
+        _settingsVM = StateObject(wrappedValue: container.makeSettingsViewModel())
     }
     
     var body: some Scene {
         WindowGroup {
-            RootTabs(homeViewModel: homeVM, authViewModel: authVM)
+            RootTabs(
+                homeViewModel: homeVM,
+                authViewModel: authVM,
+                settingsViewModel: settingsVM
+            )
                 .environment(\.openURL, OpenURLAction { url in
                     // 自訂行為：統一加 UTM、做 analytics、block 黑名單等
                     print("Opening: \(url)")

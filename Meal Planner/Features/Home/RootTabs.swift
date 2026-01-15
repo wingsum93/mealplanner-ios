@@ -11,11 +11,17 @@ struct RootTabs: View {
     @State private var showLoginDialog = false
     @EnvironmentObject private var detailVM: DetailViewModel
     @StateObject private var authViewModel:AuthViewModel
+    @StateObject private var settingsViewModel: SettingsViewModel
     @StateObject private var vm:FeatureViewModel
     @Namespace private var heroNS  // shared namespace
     
-    init( homeViewModel:FeatureViewModel,authViewModel:AuthViewModel) {
+    init(
+        homeViewModel: FeatureViewModel,
+        authViewModel: AuthViewModel,
+        settingsViewModel: SettingsViewModel
+    ) {
         _authViewModel = StateObject(wrappedValue: authViewModel)
+        _settingsViewModel = StateObject(wrappedValue: settingsViewModel)
         _vm = StateObject(wrappedValue:homeViewModel)
     }
     
@@ -29,7 +35,10 @@ struct RootTabs: View {
                 .tabItem{
                     Label("Favourite", systemImage: "star.fill")
                 }
-            ProfileScreen(authViewModel: authViewModel){
+            ProfileScreen(
+                authViewModel: authViewModel,
+                settingsViewModel: settingsViewModel
+            ) {
                 showLoginDialog = true
             }
             .tabItem{
