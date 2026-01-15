@@ -39,14 +39,8 @@ struct DetailSheetView: View {
                                     .lineLimit(2)
                                     .shadow(radius: 4)
 
-                                HStack(spacing: 8) {
-                                    // Image for 2 icons
-                                    if let area = item.area, !area.isEmpty {
-                                        MetaChip(text: area, flagPath: area.toFlagPath())
-                                    }
-                                    if let cat = item.category, !cat.isEmpty {
-                                        IconTextRow(text: cat, systemImage: ImageUtil.getCategorySystemImage(category: cat))
-                                    }
+                                if let metaText = buildMetaText(area: item.area, category: item.category) {
+                                    MetaChip(text: metaText)
                                 }
                             }
                             .padding(.horizontal, 16)
@@ -73,8 +67,7 @@ struct DetailSheetView: View {
                     SectionCard(
                         header: CardSectionHeader(
                             systemImage: "doc.text",
-                            title: "Description",
-                            subtitle: item.category
+                            title: "Description"
                         )
                     ) {
                         Text(item.description)
@@ -184,44 +177,43 @@ struct DetailSheetView: View {
 // Reuse from earlier
 private struct MetaChip: View {
     let text: String
-    let flagPath: String
-    @State private var didFail = false
-
-    private var flagURL: URL? {
-        let trimmed = flagPath.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            return nil
-        }
-        return URL(string: trimmed)
-    }
-
     var body: some View {
-        Label {
-            Text(text)
-        } icon: {
-            if didFail || flagURL == nil {
-                Image(systemName: "questionmark.circle.fill")
-                    .foregroundStyle(.red)
-            } else if let flagURL {
-                KFImage(flagURL)
-                    .placeholder {
-                        Image(systemName: "hourglass")
-                            .foregroundStyle(.secondary)
-                    }
-                    .onFailure { _ in
-                        didFail = true
-                    }
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 20, height: 14)
-                    .clipShape(RoundedRectangle(cornerRadius: 2))
-            }
-        }
-        .font(.caption.weight(.semibold))
+        Text(text)
+            .font(.callout.weight(.semibold))
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(Capsule().fill(Color.white.opacity(0.9)))
         .foregroundStyle(.black.opacity(0.85))
+    }
+}
+
+private func buildMetaText(area: String?, category: String?) -> String? {
+    let areaText: String? = {
+        guard let area, !area.isEmpty else {
+            return nil
+        }
+        let flag = area.toFlagEmoji()
+        if flag.isEmpty {
+            return area
+        }
+        return "\(flag) \(area)"
+    }()
+    let categoryText: String? = {
+        guard let category, !category.isEmpty else {
+            return nil
+        }
+        return category
+    }()
+
+    switch (areaText, categoryText) {
+    case let (.some(areaText), .some(categoryText)):
+        return "\(areaText) • \(categoryText)"
+    case let (.some(areaText), .none):
+        return areaText
+    case let (.none, .some(categoryText)):
+        return categoryText
+    case (.none, .none):
+        return nil
     }
 }
 

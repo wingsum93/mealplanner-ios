@@ -91,6 +91,17 @@ internal extension String {
         return "https://flagcdn.com/w20/\(code).jpg"
     }
 
+    func toFlagEmoji() -> String {
+        let code = toISO3166CountryCode().uppercased()
+        guard code.count == 2 else {
+            return ""
+        }
+        let scalars = code.unicodeScalars.compactMap { scalar -> UnicodeScalar? in
+            UnicodeScalar(127397 + scalar.value)
+        }
+        return String(String.UnicodeScalarView(scalars))
+    }
+
     func getAreaImageURL() -> String {
         let map: [String: String] = [
             "American": "https://flagcdn.com/w320/us.png",
