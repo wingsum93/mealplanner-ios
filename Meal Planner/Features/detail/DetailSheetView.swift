@@ -179,11 +179,11 @@ private struct MetaChip: View {
     let text: String
     var body: some View {
         Text(text)
-            .font(.callout.weight(.semibold))
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Capsule().fill(Color.white.opacity(0.9)))
-        .foregroundStyle(.black.opacity(0.85))
+            .font(.headline.weight(.semibold))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .foregroundStyle(.primary)
     }
 }
 
