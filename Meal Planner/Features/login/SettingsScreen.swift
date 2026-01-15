@@ -101,6 +101,14 @@ struct SettingsScreen: View {
                 }
                 .padding(.vertical, 4)
             }
+
+            Section("Open Source") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Link("Lottie", destination: lottieURL)
+                    Link("Kingfisher", destination: kingfisherURL)
+                }
+                .padding(.vertical, 4)
+            }
         }
         .listStyle(.insetGrouped)
         .confirmationDialog(
@@ -157,6 +165,14 @@ struct SettingsScreen: View {
 
     private var privacyPolicyURL: URL? {
         URL(string: "https://www.mealplanner.app/privacy")
+    }
+
+    private var lottieURL: URL {
+        URL(string: "https://github.com/airbnb/lottie-ios") ?? URL(fileURLWithPath: "/")
+    }
+
+    private var kingfisherURL: URL {
+        URL(string: "https://github.com/onevcat/Kingfisher") ?? URL(fileURLWithPath: "/")
     }
 }
 
