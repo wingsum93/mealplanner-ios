@@ -34,6 +34,74 @@ extension Array where Element == String {
     }
 }
 internal extension String {
+    func toISO3166CountryCode() -> String {
+        let map: [String: String] = [
+            "Algerian": "dz",
+            "American": "us",
+            "Argentinian": "ar",
+            "Australian": "au",
+            "British":  "gb",
+            "Canadian": "ca",
+            "Chinese":  "cn",
+            "Croatian": "hr",
+            "Dutch": "nl",
+            "Egyptian": "eg",
+            "Filipino": "ph",
+            "French":   "fr",
+            "Greek":    "gr",
+            "Indian":   "in",
+            "Irish":    "ie",
+            "Italian":  "it",
+            "Jamaican": "jm",
+            "Japanese": "jp",
+            "Kenyan":   "ke",
+            "Malaysian": "my",
+            "Mexican":  "mx",
+            "Moroccan": "ma",
+            "Norwegian": "no",
+            "Polish":   "pl",
+            "Portuguese": "pt",
+            "Russian":  "ru",
+            "Saudi Arabian": "sa",
+            "Slovakian": "sk",
+            "Spanish":  "es",
+            "Syrian": "sy",
+            "Thai":     "th",
+            "Tunisian": "tn",
+            "Turkish":  "tr",
+            "Ukrainian": "ua",
+            "Uruguayan": "uy",
+            "Venezulan": "ve",
+            "Vietnamese": "vn"
+        ]
+        if let mapped = map[self] {
+            return mapped
+        }
+        if count == 2 {
+            return lowercased()
+        }
+        return ""
+    }
+
+    func toFlagPath() -> String {
+        let code = toISO3166CountryCode()
+        guard !code.isEmpty else {
+            return ""
+        }
+        return "https://flagcdn.com/w20/\(code).jpg"
+    }
+
+    func toFlagEmoji() -> String {
+        let code = toISO3166CountryCode().uppercased()
+        guard code.count == 2 else {
+            return ""
+        }
+        let scalars = code.unicodeScalars.compactMap { scalar -> UnicodeScalar? in
+            UnicodeScalar(127397 + scalar.value)
+        }
+        return String(String.UnicodeScalarView(scalars))
+    }
+
     func getAreaImageURL() -> String {
         let map: [String: String] = [
             "American": "https://flagcdn.com/w320/us.png",
