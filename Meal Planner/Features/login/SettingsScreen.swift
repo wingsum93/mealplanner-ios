@@ -103,11 +103,8 @@ struct SettingsScreen: View {
             }
 
             Section("Open Source") {
-                VStack(alignment: .leading, spacing: 8) {
-                    Link("Lottie", destination: lottieURL)
-                    Link("Kingfisher", destination: kingfisherURL)
-                }
-                .padding(.vertical, 4)
+                Link("Lottie", destination: lottieURL)
+                Link("Kingfisher", destination: kingfisherURL)
             }
         }
         .listStyle(.insetGrouped)
