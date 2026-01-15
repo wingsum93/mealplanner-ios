@@ -79,6 +79,28 @@ struct SettingsScreen: View {
                     pendingAction = .resetFavorites
                 }
             }
+
+            Section("About") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(appVersionText)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    HStack(spacing: 4) {
+                        Text("Data courtesy of")
+                        Link("TheMealDB", destination: theMealDBURL)
+                    }
+                    .font(.subheadline)
+
+                    if let feedbackURL {
+                        Link("Feedback & Support", destination: feedbackURL)
+                    }
+                    if let privacyPolicyURL {
+                        Link("Privacy Policy", destination: privacyPolicyURL)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
         }
         .listStyle(.insetGrouped)
         .confirmationDialog(
@@ -116,6 +138,25 @@ struct SettingsScreen: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private var appVersionText: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = info?["CFBundleVersion"] as? String ?? "1"
+        return "Version \(version) (\(build))"
+    }
+
+    private var theMealDBURL: URL {
+        URL(string: "https://www.themealdb.com") ?? URL(fileURLWithPath: "/")
+    }
+
+    private var feedbackURL: URL? {
+        URL(string: "mailto:support@mealplanner.app")
+    }
+
+    private var privacyPolicyURL: URL? {
+        URL(string: "https://www.mealplanner.app/privacy")
     }
 }
 
