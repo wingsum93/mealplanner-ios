@@ -57,6 +57,8 @@ struct RecipeMainPage: View {
                                 detailVM.onIntent(.setItem(item))
                             }
                         )
+                    case .randomPick:
+                        RandomPickScreen(vm: viewModel)
                     
                     }
                 }
