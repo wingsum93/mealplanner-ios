@@ -16,7 +16,8 @@ protocol RecipeRepository {
     func getRecipeDetail(id: String) async throws -> RecipeItem
     func getRandomRecipe() async throws -> RecipeItem
     func getRandom10Recipe() async throws -> [RecipeItem]
-    
+
+    func saveRecipe(_ item: RecipeItem) throws
     func updateFavorite(id: Int64, isFavorite: Bool) throws
     func isFavourite(id:Int64)-> Bool
     func getAllFavoriteRecipes() throws -> [RecipeItem]

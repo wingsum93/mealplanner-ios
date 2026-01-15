@@ -61,6 +61,25 @@ extension RecipeItem {
     }
 }
 
+extension UIRecipeItem {
+    func toDomain() -> RecipeItem {
+        RecipeItem(
+            id: Int64(id) ?? 0,
+            title: name,
+            description: description,
+            category: category ?? "",
+            area: area ?? "",
+            imageUrl: thumbURL?.absoluteString ?? "",
+            youtubeLink: youtubeLink,
+            ingredients: ingredients,
+            measures: measures,
+            instructions: instructions,
+            tags: tags,
+            isFavorite: isFavorite
+        )
+    }
+}
+
 extension RecipeItemDto {
     func toDomain() -> RecipeItem {
         guard let idInt = Int64(idMeal ?? "") else {
@@ -216,5 +235,4 @@ extension IngredientEntity {
         )
     }
 }
-
 

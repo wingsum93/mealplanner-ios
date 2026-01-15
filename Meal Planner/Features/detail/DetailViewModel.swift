@@ -32,7 +32,13 @@ final class DetailViewModel: ObservableObject {
 
     private func setData(_ item:UIRecipeItem){
         state.item = item
-        print(item)
+        do {
+            try repo.saveRecipe(item.toDomain())
+        } catch {
+            #if DEBUG
+            print("❌ saveRecipe error:", error)
+            #endif
+        }
         
     }
     private func toggleFavorite() {

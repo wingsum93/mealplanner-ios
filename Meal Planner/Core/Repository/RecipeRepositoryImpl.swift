@@ -79,6 +79,12 @@ class RecipeRepositoryImpl: RecipeRepository{
     func getRandom10Recipe() async throws -> [RecipeItem]{
         return try await remote.getRandom10Recipe().map{res in res.toDomain()}
     }
+
+    func saveRecipe(_ item: RecipeItem) throws {
+        if try local.getRecipeById(item.id) == nil {
+            try local.saveRecipe(item.toEntity())
+        }
+    }
     
     func updateFavorite(id: Int64, isFavorite: Bool) throws {
         try local.updateFavorite(id: id, isFavorite: isFavorite)
@@ -89,16 +95,8 @@ class RecipeRepositoryImpl: RecipeRepository{
     }
     
     func getAllFavoriteRecipes() throws -> [RecipeItem] {
-        
-//        let entities = try local.getAllFavoriteRecipes()
-//        return entities.map { $0.toDomain() }
-        if let one = try local.getRecipeById(Int64(52946)) {
-            one.isFavorite = true
-            return [one.toDomain()]
-        } else {
-            return []
-        }
-
+        let entities = try local.getAllFavoriteRecipes()
+        return entities.map { $0.toDomain() }
     }
     
 }
