@@ -9,69 +9,87 @@ import SwiftUI
 
 struct RandomPickScreen: View {
     @ObservedObject var vm: FeatureViewModel
-    @EnvironmentObject var detailVM: DetailViewModel
-    @State private var picked: UIRecipeItem?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Let us surprise you with a random recipe.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 16)
+        let itemsBinding = Binding<[UIRecipeItem]>(
+            get: { vm.state.randomPick.items },
+            set: { vm.state.randomPick.items = $0 }
+        )
 
-                if let picked {
-                    RecipeHeroCard(item: picked)
-                        .onTapGesture { detailVM.onIntent(.setItem(picked)) }
-                        .padding(.horizontal, 16)
-                } else if vm.state.randomPick.phase == .loading {
-                    RecipeHeroCard(item: .sample)
-                        .padding(.horizontal, 16)
-                        .shimmer(vm.state.randomPick.phase == .loading)
-                } else {
-                    Text("No random picks available yet.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 16)
+        VStack(spacing: 24) {
+            Text("Swipe through 10 fresh picks and keep what you love.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
+
+            Group {
+                switch vm.state.randomPick.phase {
+                case .loading:
+                    RandomPickLoadingView(message: "Finding 10 tasty ideas for you.")
+                case .error(let message):
+                    RandomPickErrorView(
+                        message: message,
+                        retryAction: { vm.onIntent(.loadRandomPick) }
+                    )
+                case .content:
+                    CardStackView(items: itemsBinding)
+                        .padding(.horizontal, 20)
+                case .empty:
+                    EmptyStateView(
+                        title: "Nothing to pick yet",
+                        description: "Tap below and we’ll pull another batch of random recipes."
+                    )
+                case .idle:
+                    RandomPickLoadingView(message: "Warming up the shuffle.")
                 }
+            }
 
+            if vm.state.randomPick.phase == .empty {
                 Button {
-                    if let newPick = pickRandom() {
-                        picked = newPick
-                    } else {
-                        vm.onIntent(.loadRandomPick)
-                    }
+                    vm.onIntent(.loadRandomPick)
                 } label: {
-                    Label("Shuffle pick", systemImage: "shuffle")
+                    Label("Reload picks", systemImage: "arrow.clockwise")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 24)
             }
-            .padding(.vertical, 12)
         }
         .navigationTitle("Random Pick")
-        .task {
-            ensureRandomData()
-            if picked == nil {
-                picked = pickRandom()
-            }
-        }
-        .onChange(of: vm.state.randomPick.items) { _ in
-            if picked == nil {
-                picked = pickRandom()
-            }
-        }
-    }
-
-    private func ensureRandomData() {
-        if vm.state.randomPick.items.isEmpty && vm.state.randomPick.phase != .loading {
+        .onAppear {
             vm.onIntent(.loadRandomPick)
         }
     }
+}
 
-    private func pickRandom() -> UIRecipeItem? {
-        vm.state.randomPick.items.randomElement()
+private struct RandomPickErrorView: View {
+    let message: String
+    let retryAction: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            LottieView(animationName: "error-icon")
+                .frame(width: 220, height: 220)
+
+            Text("That didn’t go as planned")
+                .font(.title3.weight(.semibold))
+
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Button(action: retryAction) {
+                Label("Try again", systemImage: "arrow.clockwise")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal, 32)
+        }
+        .padding(.horizontal, 24)
     }
 }
