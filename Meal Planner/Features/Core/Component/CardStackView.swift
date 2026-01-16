@@ -32,8 +32,10 @@ struct CardStackView: View {
             ZStack {
                 ForEach(Array(items.prefix(10).enumerated()), id: \.element.id) { index, item in
                     SwipeCardView(item: item)
-                        .aspectRatio(9.0 / 16.0, contentMode: .fit)
-                        .frame(maxWidth: size.width * 0.85)
+                        .frame(
+                            width: size.width * 0.85,
+                            height: (size.width * 0.85) * (16.0 / 9.0)
+                        )
                         .offset(stackOffset(for: index))
                         .offset(index == 0 ? dragOffset : .zero)
                         .rotationEffect(index == 0 ? Angle(degrees: rotation(for: arc)) : .zero)
