@@ -11,11 +11,6 @@ struct RandomPickScreen: View {
     @ObservedObject var vm: FeatureViewModel
 
     var body: some View {
-        let itemsBinding = Binding<[UIRecipeItem]>(
-            get: { vm.state.randomPick.items },
-            set: { vm.state.randomPick.items = $0 }
-        )
-
         VStack(spacing: 24) {
             Text("Swipe through 10 fresh picks and keep what you love.")
                 .font(.subheadline)
@@ -34,6 +29,13 @@ struct RandomPickScreen: View {
                         retryAction: { vm.onIntent(.loadRandomPick) }
                     )
                 case .content:
+                    let itemsBinding: Binding<[UIRecipeItem]> = Binding(
+                        get: { vm.state.randomPick.items },
+                        set: { newItems in
+                            vm.onIntent(.updateRandomPickItems(newItems))
+                        }
+                    )
+
                     CardStackView(items: itemsBinding)
                         .padding(.horizontal, 20)
                 case .empty:
