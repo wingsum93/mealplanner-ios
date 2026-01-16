@@ -12,57 +12,67 @@ struct RandomPickScreen: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("Swipe through 10 fresh picks and keep what you love.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-                .padding(.top, 12)
-
-            Group {
-                switch vm.state.randomPick.phase {
-                case .loading:
-                    RandomPickLoadingView(message: "Finding 10 tasty ideas for you.")
-                case .error(let message):
-                    RandomPickErrorView(
-                        message: message,
-                        retryAction: { vm.onIntent(.loadRandomPick) }
-                    )
-                case .content:
-                    let itemsBinding: Binding<[UIRecipeItem]> = Binding(
-                        get: { vm.state.randomPick.items },
-                        set: { newItems in
-                            vm.onIntent(.updateRandomPickItems(newItems))
-                        }
-                    )
-
-                    CardStackView(items: itemsBinding)
-                        .padding(.horizontal, 20)
-                case .empty:
-                    EmptyStateView(
-                        title: "Nothing to pick yet",
-                        description: "Tap below and we’ll pull another batch of random recipes."
-                    )
-                case .idle:
-                    RandomPickLoadingView(message: "Warming up the shuffle.")
-                }
-            }
-
-            if vm.state.randomPick.phase == .empty {
-                Button {
-                    vm.onIntent(.loadRandomPick)
-                } label: {
-                    Label("Reload picks", systemImage: "arrow.clockwise")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .padding(.horizontal, 24)
-            }
+            headerView
+            contentView
+            reloadButton
         }
         .navigationTitle("Random Pick")
         .onAppear {
             vm.onIntent(.loadRandomPick)
+        }
+    }
+
+    private var headerView: some View {
+        Text("Swipe through 10 fresh picks and keep what you love.")
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 24)
+            .padding(.top, 12)
+    }
+
+    @ViewBuilder
+    private var contentView: some View {
+        switch vm.state.randomPick.phase {
+        case .loading:
+            RandomPickLoadingView(message: "Finding 10 tasty ideas for you.")
+        case .error(let message):
+            RandomPickErrorView(
+                message: message,
+                retryAction: { vm.onIntent(.loadRandomPick) }
+            )
+        case .content:
+            let itemsBinding: Binding<[UIRecipeItem]> = Binding(
+                get: { vm.state.randomPick.items },
+                set: { newItems in
+                    vm.onIntent(.updateRandomPickItems(newItems))
+                }
+            )
+
+            CardStackView(items: itemsBinding)
+                .padding(.horizontal, 20)
+        case .empty:
+            EmptyStateView(
+                title: "Nothing to pick yet",
+                description: "Tap below and we’ll pull another batch of random recipes."
+            )
+        case .idle:
+            RandomPickLoadingView(message: "Warming up the shuffle.")
+        }
+    }
+
+    @ViewBuilder
+    private var reloadButton: some View {
+        if vm.state.randomPick.phase == .empty {
+            Button {
+                vm.onIntent(.loadRandomPick)
+            } label: {
+                Label("Reload picks", systemImage: "arrow.clockwise")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal, 24)
         }
     }
 }
