@@ -17,6 +17,7 @@ enum HomeIntent {
     case loadHome
     case refreshHome
     case loadRandomPick
+    case updateRandomPickItems([UIRecipeItem])
     
     // lists
     case loadArea(String)

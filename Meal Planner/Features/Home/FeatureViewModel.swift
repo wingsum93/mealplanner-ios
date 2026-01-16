@@ -55,6 +55,9 @@ final class FeatureViewModel: ObservableObject {
 
         case .loadRandomPick:
             loadRandomPick()
+        case .updateRandomPickItems(let items):
+            state.randomPick.items = items
+            state.randomPick.phase = items.isEmpty ? .empty : .content
             
             // MARK: Lists
         case .loadArea(let area):         loadArea(area)

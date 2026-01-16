@@ -7,10 +7,38 @@
 import SwiftUI
 
 struct EmptyStateView: View {
-    var message: String
+    private let title: String?
+    private let description: String
     var systemImage: String = "magnifyingglass"
     var actionTitle: String? = nil
     var onAction: (() -> Void)? = nil
+
+    init(
+        message: String,
+        systemImage: String = "magnifyingglass",
+        actionTitle: String? = nil,
+        onAction: (() -> Void)? = nil
+    ) {
+        self.title = nil
+        self.description = message
+        self.systemImage = systemImage
+        self.actionTitle = actionTitle
+        self.onAction = onAction
+    }
+
+    init(
+        title: String,
+        description: String,
+        systemImage: String = "magnifyingglass",
+        actionTitle: String? = nil,
+        onAction: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.description = description
+        self.systemImage = systemImage
+        self.actionTitle = actionTitle
+        self.onAction = onAction
+    }
 
     var body: some View {
         VStack(spacing: 12) {
@@ -21,7 +49,15 @@ struct EmptyStateView: View {
                 .foregroundColor(.secondary)
                 .padding(.bottom, 4)
 
-            Text(message)
+            if let title {
+                Text(title)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
+
+            Text(description)
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
