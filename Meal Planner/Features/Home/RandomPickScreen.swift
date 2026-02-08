@@ -51,7 +51,6 @@ struct RandomPickScreen: View {
             )
 
             CardStackView(items: itemsBinding)
-                .frame(maxWidth: .infinity, alignment: .top)
                 .padding(.horizontal, 20)
         case .empty:
             EmptyStateView(

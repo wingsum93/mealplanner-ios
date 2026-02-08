@@ -47,14 +47,16 @@ struct CardStackLayoutTests {
     }
 
     @Test
-    func cardHeightIsCappedByVisibleHeightFactor() {
+    func sizingUsesWidthFirstWhenHeightAllows() {
         let layout = CardStackLayout()
-        let size = CGSize(width: 400, height: 500)
+        let size = CGSize(width: 420, height: 900)
 
         let sizing = layout.sizing(in: size)
-        let expectedCap = (size.height * CardStackLayout.maxVisibleHeightFactor) - layout.totalPeekHeight
+        let expectedWidth = size.width * CardStackLayout.cardWidthFactor
+        let expectedHeight = expectedWidth / CardStackLayout.portraitWidthToHeight
 
-        #expect(near(sizing.cardHeight, expectedCap))
+        #expect(near(sizing.cardWidth, expectedWidth))
+        #expect(near(sizing.cardHeight, expectedHeight))
     }
 
     @Test
@@ -68,27 +70,39 @@ struct CardStackLayoutTests {
     }
 
     @Test
-    func cappedHeightStillKeepsPortraitRatio() {
+    func heightIsCappedByAvailableStackHeight() {
         let layout = CardStackLayout()
-        let size = CGSize(width: 420, height: 480)
+        let size = CGSize(width: 400, height: 500)
 
         let sizing = layout.sizing(in: size)
-        let expectedCap = (size.height * CardStackLayout.maxVisibleHeightFactor) - layout.totalPeekHeight
+        let expectedHeight = size.height - layout.totalPeekHeight
 
-        #expect(near(sizing.cardHeight, expectedCap))
+        #expect(near(sizing.cardHeight, expectedHeight))
         #expect(near(sizing.cardWidth, sizing.cardHeight * CardStackLayout.portraitWidthToHeight))
     }
 
     @Test
-    func cardHeightStaysWithinCapAndMinimum() {
+    func sizingFallsBackToPreferredSizeWhenAvailableHeightIsNonPositive() {
         let layout = CardStackLayout()
-        let size = CGSize(width: 300, height: 480)
+        let size = CGSize(width: 420, height: layout.totalPeekHeight - 4)
 
         let sizing = layout.sizing(in: size)
-        let expectedCap = (size.height * CardStackLayout.maxVisibleHeightFactor) - layout.totalPeekHeight
+        let preferredWidth = size.width * CardStackLayout.cardWidthFactor
+        let preferredHeight = preferredWidth / CardStackLayout.portraitWidthToHeight
 
-        #expect(sizing.cardHeight <= expectedCap + 0.0001)
-        #expect(sizing.cardHeight >= CardStackLayout.minimumCardHeight)
+        #expect(near(sizing.cardWidth, preferredWidth))
+        #expect(near(sizing.cardHeight, preferredHeight))
+        #expect(sizing.cardWidth > 0)
+        #expect(sizing.cardHeight > 0)
+    }
+
+    @Test
+    func stackHeightMatchesCardHeightPlusPeek() {
+        let layout = CardStackLayout()
+        let size = CGSize(width: 390, height: 780)
+
+        let sizing = layout.sizing(in: size)
+        #expect(near(sizing.stackHeight, sizing.cardHeight + layout.totalPeekHeight))
     }
 
     @Test
@@ -97,16 +111,32 @@ struct CardStackLayoutTests {
         let size = CGSize(width: 400, height: 500)
 
         let sizing = layout.sizing(in: size)
-        let maxAllowedWidth = size.width * CardStackLayout.cardWidthFactor
+        let preferredWidth = size.width * CardStackLayout.cardWidthFactor
 
-        #expect(sizing.cardWidth <= maxAllowedWidth + 0.0001)
-        #expect(sizing.cardWidth < maxAllowedWidth)
+        #expect(sizing.cardWidth <= preferredWidth + 0.0001)
+        #expect(sizing.cardWidth < preferredWidth)
     }
 
     @Test
-    func rotationUsesThreePointFiveDegreesLimit() {
-        #expect(near(CardStackLayout.rotationDegrees(dragX: 100, maxX: 100), 3.5))
-        #expect(near(CardStackLayout.rotationDegrees(dragX: -100, maxX: 100), -3.5))
+    func cardWidthNeverExceedsConfiguredWidthFactor() {
+        let layout = CardStackLayout()
+        let sizes = [
+            CGSize(width: 400, height: 500),
+            CGSize(width: 420, height: 900),
+            CGSize(width: 420, height: layout.totalPeekHeight - 4)
+        ]
+
+        for size in sizes {
+            let sizing = layout.sizing(in: size)
+            let preferredWidth = size.width * CardStackLayout.cardWidthFactor
+            #expect(sizing.cardWidth <= preferredWidth + 0.0001)
+        }
+    }
+
+    @Test
+    func rotationUsesThirtyDegreesLimit() {
+        #expect(near(CardStackLayout.rotationDegrees(dragX: 100, maxX: 100), 30))
+        #expect(near(CardStackLayout.rotationDegrees(dragX: -100, maxX: 100), -30))
         #expect(near(CardStackLayout.rotationDegrees(dragX: 0, maxX: 100), 0))
     }
 

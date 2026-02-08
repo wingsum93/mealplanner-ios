@@ -16,9 +16,7 @@ struct CardStackLayout {
     static let peekStep: CGFloat = 14
     static let cardWidthFactor: CGFloat = 0.85
     static let portraitWidthToHeight: CGFloat = 9.0 / 16.0
-    static let maxVisibleHeightFactor: CGFloat = 0.58
-    static let minimumCardHeight: CGFloat = 240
-    static let maxRotationDegrees: Double = 3.5
+    static let maxRotationDegrees: Double = 30
 
     private let scales: [CGFloat] = [1.00, 0.96, 0.92]
     private let opacities: [Double] = [1.00, 0.90, 0.80]
@@ -50,12 +48,18 @@ struct CardStackLayout {
     }
 
     func sizing(in size: CGSize) -> Sizing {
-        let maxCardWidth = size.width * Self.cardWidthFactor
-        let rawCardHeight = maxCardWidth / Self.portraitWidthToHeight
-        let maxVisibleCardHeight = (size.height * Self.maxVisibleHeightFactor) - totalPeekHeight
-        let cappedCardHeight = min(rawCardHeight, maxVisibleCardHeight)
-        let cardHeight = max(cappedCardHeight, Self.minimumCardHeight)
-        let cardWidth = min(maxCardWidth, cardHeight * Self.portraitWidthToHeight)
+        let preferredCardWidth = max(size.width * Self.cardWidthFactor, 1)
+        let preferredCardHeight = preferredCardWidth / Self.portraitWidthToHeight
+        let availableCardHeight = size.height - totalPeekHeight
+        if availableCardHeight <= 0 {
+            return Sizing(
+                cardWidth: preferredCardWidth,
+                cardHeight: preferredCardHeight,
+                stackHeight: preferredCardHeight + totalPeekHeight
+            )
+        }
+        let cardHeight = min(preferredCardHeight, availableCardHeight)
+        let cardWidth = cardHeight * Self.portraitWidthToHeight
         return Sizing(
             cardWidth: cardWidth,
             cardHeight: cardHeight,
@@ -100,7 +104,7 @@ struct CardStackView: View {
             ZStack(alignment: .top) {
                 ZStack(alignment: .top) {
                     ForEach(visibleItems, id: \.offset) { index, item in
-                        SwipeCardView(item: item)
+                        SwipeCardView(item: item, isTopCard: index == 0)
                             .frame(width: cardWidth, height: cardHeight)
                             .scaleEffect(layout.scale(for: index), anchor: .top)
                             .opacity(layout.opacity(for: index))
@@ -119,8 +123,8 @@ struct CardStackView: View {
                             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: items)
                     }
                 }
-                .frame(height: stackHeight, alignment: .top)
-                .frame(maxWidth: .infinity, alignment: .top)
+                .frame(width: cardWidth, height: stackHeight, alignment: .top)
+                .frame(maxWidth: .infinity, alignment: .center)
 
                 if let lastSwiped {
                     VStack {
@@ -240,6 +244,11 @@ struct CardStackView: View {
     }
 }
 
+private enum RandomPickAccessibilityID {
+    static let topCard = "randomPick.topCard"
+    static let topCardImage = "randomPick.topCard.image"
+}
+
 private struct ArcDragGeometry {
     let maxX: CGFloat
     let maxYOffset: CGFloat
@@ -271,32 +280,24 @@ private struct ArcDragGeometry {
 
 private struct SwipeCardView: View {
     let item: UIRecipeItem
+    let isTopCard: Bool
+    private let cardShape = RoundedRectangle(cornerRadius: 28, style: .continuous)
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            AsyncImage(url: item.thumbURL) { phase in
-                if let image = phase.image {
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } else {
-                    Rectangle()
-                        .fill(Color(.systemGray5))
-                        .overlay(
-                            ProgressView()
-                        )
-                }
+        cardShape
+            .fill(Color(.systemGray5))
+            .overlay {
+                imageLayer
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-
-            LinearGradient(
+            .overlay {
+                LinearGradient(
                 colors: [.clear, .black.opacity(0.65)],
                 startPoint: .top,
                 endPoint: .bottom
             )
-
-            VStack(alignment: .leading, spacing: 6) {
+            }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 6) {
                 Text(item.name)
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.white)
@@ -308,10 +309,32 @@ private struct SwipeCardView: View {
                 }
             }
             .padding(20)
-        }
-        .compositingGroup()
-        .mask(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            }
+        .clipShape(cardShape)
+        .contentShape(cardShape)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCard : "randomPick.card")
         .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 8)
+    }
+
+    private var imageLayer: some View {
+        AsyncImage(url: item.thumbURL) { phase in
+            if let image = phase.image {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                Rectangle()
+                    .fill(Color(.systemGray5))
+                    .overlay(
+                        ProgressView()
+                    )
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+        .accessibilityElement(children: .ignore)
+        .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCardImage : "randomPick.card.image")
     }
 }
 
