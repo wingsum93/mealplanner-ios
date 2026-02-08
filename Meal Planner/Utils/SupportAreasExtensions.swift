@@ -73,6 +73,7 @@ internal extension String {
             "Uruguayan": "uy",
             "Venezulan": "ve",
             "Vietnamese": "vn"
+
         ]
         if let mapped = map[self] {
             return mapped

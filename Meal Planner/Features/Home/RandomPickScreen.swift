@@ -14,6 +14,7 @@ struct RandomPickScreen: View {
         VStack(spacing: 24) {
             headerView
             contentView
+                .frame(maxHeight: .infinity, alignment: .top)
             reloadButton
         }
         .navigationTitle("Random Pick")
@@ -50,6 +51,7 @@ struct RandomPickScreen: View {
             )
 
             CardStackView(items: itemsBinding)
+                .frame(maxWidth: .infinity, alignment: .top)
                 .padding(.horizontal, 20)
         case .empty:
             EmptyStateView(

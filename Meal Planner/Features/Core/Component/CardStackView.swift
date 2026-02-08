@@ -11,6 +11,68 @@ enum SwipeDirection {
     case right
 }
 
+struct CardStackLayout {
+    static let maxVisibleCards = 3
+    static let peekStep: CGFloat = 14
+    static let cardWidthFactor: CGFloat = 0.85
+    static let portraitWidthToHeight: CGFloat = 9.0 / 16.0
+    static let maxVisibleHeightFactor: CGFloat = 0.58
+    static let minimumCardHeight: CGFloat = 240
+    static let maxRotationDegrees: Double = 3.5
+
+    private let scales: [CGFloat] = [1.00, 0.96, 0.92]
+    private let opacities: [Double] = [1.00, 0.90, 0.80]
+
+    struct Sizing {
+        let cardWidth: CGFloat
+        let cardHeight: CGFloat
+        let stackHeight: CGFloat
+    }
+
+    var totalPeekHeight: CGFloat {
+        Self.peekStep * CGFloat(Self.maxVisibleCards - 1)
+    }
+
+    func visibleItems(from items: [UIRecipeItem]) -> [(offset: Int, element: UIRecipeItem)] {
+        Array(items.prefix(Self.maxVisibleCards).enumerated())
+    }
+
+    func offset(for index: Int) -> CGSize {
+        CGSize(width: 0, height: CGFloat(index) * Self.peekStep)
+    }
+
+    func scale(for index: Int) -> CGFloat {
+        scales[clamped(index, upperBound: scales.count - 1)]
+    }
+
+    func opacity(for index: Int) -> Double {
+        opacities[clamped(index, upperBound: opacities.count - 1)]
+    }
+
+    func sizing(in size: CGSize) -> Sizing {
+        let maxCardWidth = size.width * Self.cardWidthFactor
+        let rawCardHeight = maxCardWidth / Self.portraitWidthToHeight
+        let maxVisibleCardHeight = (size.height * Self.maxVisibleHeightFactor) - totalPeekHeight
+        let cappedCardHeight = min(rawCardHeight, maxVisibleCardHeight)
+        let cardHeight = max(cappedCardHeight, Self.minimumCardHeight)
+        let cardWidth = min(maxCardWidth, cardHeight * Self.portraitWidthToHeight)
+        return Sizing(
+            cardWidth: cardWidth,
+            cardHeight: cardHeight,
+            stackHeight: cardHeight + totalPeekHeight
+        )
+    }
+
+    static func rotationDegrees(dragX: CGFloat, maxX: CGFloat) -> Double {
+        guard maxX != 0 else { return 0 }
+        return Double(dragX / maxX) * Self.maxRotationDegrees
+    }
+
+    private func clamped(_ value: Int, upperBound: Int) -> Int {
+        min(max(value, 0), upperBound)
+    }
+}
+
 struct CardStackView: View {
     @Binding var items: [UIRecipeItem]
     var onSwipe: ((UIRecipeItem, SwipeDirection) -> Void)?
@@ -24,31 +86,41 @@ struct CardStackView: View {
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
+            let layout = CardStackLayout()
+            let sizing = layout.sizing(in: size)
+            let cardWidth = sizing.cardWidth
+            let cardHeight = sizing.cardHeight
+            let stackHeight = sizing.stackHeight
+            let visibleItems = layout.visibleItems(from: items)
             let arc = ArcDragGeometry(
-                maxX: size.width * 0.55,
-                maxYOffset: -size.height * 0.2
+                maxX: cardWidth * 0.55,
+                maxYOffset: -cardHeight * 0.2
             )
 
-            ZStack {
-                ForEach(Array(items.prefix(10).enumerated()), id: \.element.id) { index, item in
-                    SwipeCardView(item: item)
-                        .frame(
-                            width: size.width * 0.85,
-                            height: (size.width * 0.85) * (16.0 / 9.0)
-                        )
-                        .offset(stackOffset(for: index))
-                        .offset(index == 0 ? dragOffset : .zero)
-                        .rotationEffect(index == 0 ? Angle(degrees: rotation(for: arc)) : .zero)
-                        .overlay(alignment: .center) {
-                            if index == 0 {
-                                swipeOverlay(arc: arc)
+            ZStack(alignment: .top) {
+                ZStack(alignment: .top) {
+                    ForEach(visibleItems, id: \.offset) { index, item in
+                        SwipeCardView(item: item)
+                            .frame(width: cardWidth, height: cardHeight)
+                            .scaleEffect(layout.scale(for: index), anchor: .top)
+                            .opacity(layout.opacity(for: index))
+                            .offset(layout.offset(for: index))
+                            .offset(index == 0 ? dragOffset : .zero)
+                            .rotationEffect(index == 0 ? Angle(degrees: rotation(for: arc)) : .zero)
+                            .overlay(alignment: .center) {
+                                if index == 0 {
+                                    swipeOverlay(arc: arc)
+                                }
                             }
-                        }
-                        .zIndex(Double(items.count - index))
-                        .gesture(index == 0 ? dragGesture(arc: arc) : nil)
-                        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: dragOffset)
-                        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: items)
+                            .zIndex(Double(visibleItems.count - index))
+                            .allowsHitTesting(index == 0)
+                            .gesture(index == 0 ? dragGesture(arc: arc) : nil)
+                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: dragOffset)
+                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: items)
+                    }
                 }
+                .frame(height: stackHeight, alignment: .top)
+                .frame(maxWidth: .infinity, alignment: .top)
 
                 if let lastSwiped {
                     VStack {
@@ -58,9 +130,8 @@ struct CardStackView: View {
                     .transition(.opacity)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(minHeight: 420)
     }
 
     private func dragGesture(arc: ArcDragGeometry) -> some Gesture {
@@ -98,7 +169,7 @@ struct CardStackView: View {
             dragOffset = finalOffset
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            _ = withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 items.removeFirst()
             }
             lastSwiped = (item: item, direction: direction)
@@ -146,12 +217,7 @@ struct CardStackView: View {
     }
 
     private func rotation(for arc: ArcDragGeometry) -> Double {
-        guard arc.maxX != 0 else { return 0 }
-        return Double(dragOffset.width / arc.maxX) * 6
-    }
-
-    private func stackOffset(for index: Int) -> CGSize {
-        CGSize(width: CGFloat(index) * 6, height: CGFloat(index) * 12)
+        CardStackLayout.rotationDegrees(dragX: dragOffset.width, maxX: arc.maxX)
     }
 
     private func swipeOverlay(arc: ArcDragGeometry) -> some View {
