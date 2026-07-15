@@ -8,6 +8,7 @@
 import SwiftUI
 struct HomeScreen: View {
     @ObservedObject var vm: FeatureViewModel
+    let heroNamespace: Namespace.ID
     @EnvironmentObject var detailVM: DetailViewModel
 
     var body: some View {
@@ -15,6 +16,16 @@ struct HomeScreen: View {
             // 5) Search bar (navigates to Search page)
             SearchBar(placeholder: "Search recipes…") {
                 vm.onIntent(.goToSearch)
+            }
+            .matchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
+            .accessibilityIdentifier("home.searchEntry")
+            .background {
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: SearchEntryCenterPreferenceKey.self,
+                        value: proxy.frame(in: .named(HeroSearchTransition.coordinateSpace)).center
+                    )
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -90,5 +101,11 @@ struct HomeScreen: View {
             }
         }
         .navigationTitle("Recipes")
+    }
+}
+
+private extension CGRect {
+    var center: CGPoint {
+        CGPoint(x: midX, y: midY)
     }
 }

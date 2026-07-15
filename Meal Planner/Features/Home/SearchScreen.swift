@@ -45,6 +45,7 @@ struct SearchScreen: View {
 
             content
         }
+        .accessibilityIdentifier("search.container")
         .navigationTitle("Search")
     }
 
@@ -142,5 +143,3 @@ struct SearchScreen: View {
         searchResults: $results
     )
 }
-
-

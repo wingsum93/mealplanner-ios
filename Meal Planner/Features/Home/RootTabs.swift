@@ -28,7 +28,7 @@ struct RootTabs: View {
     var body: some View{
         
         TabView{
-            RecipeMainPage(viewModel: vm)
+            RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
                 .tabItem{Label("Home", systemImage: "house")}
             
             FavouriteScreen()

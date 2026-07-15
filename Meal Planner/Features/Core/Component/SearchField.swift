@@ -21,6 +21,7 @@ struct SearchField: View {
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
                 .submitLabel(.search)
+                .accessibilityIdentifier("search.field")
                 .onSubmit { onCommit() }
 
             if !text.isEmpty {

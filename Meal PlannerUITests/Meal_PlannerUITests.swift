@@ -40,6 +40,24 @@ final class Meal_PlannerUITests: XCTestCase {
     }
 
     @MainActor
+    func testNavigateToSearchFromHomeSearchEntry() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let searchEntry = app.buttons["home.searchEntry"]
+        XCTAssertTrue(waitAndReveal(element: searchEntry, in: app), "Home search entry was not found.")
+        searchEntry.tap()
+
+        let searchTitle = app.navigationBars.staticTexts["Search"]
+        XCTAssertTrue(searchTitle.waitForExistence(timeout: 5), "Failed to open Search screen.")
+
+        let identifiedSearchField = app.textFields["search.field"]
+        let placeholderSearchField = app.textFields["Search recipes…"]
+        let didFindSearchField = identifiedSearchField.waitForExistence(timeout: 3) || placeholderSearchField.waitForExistence(timeout: 3)
+        XCTAssertTrue(didFindSearchField, "Search field did not appear.")
+    }
+
+    @MainActor
     func testNavigateToRandomPickAndCapture() throws {
         let app = XCUIApplication()
         app.launch()
