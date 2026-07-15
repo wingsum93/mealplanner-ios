@@ -48,7 +48,6 @@ enum FeatureRoute: Hashable {
   case area(String)
   case category(String)
   case search
-  case randomPick
 }
 
 struct FeatureState: Equatable {
@@ -58,5 +57,6 @@ struct FeatureState: Equatable {
   var search = SearchState()
   var randomPick = RandomPickState()
   var path: [FeatureRoute] = []             // NavigationStack path
+  var isRandomPickPresented = false
   
 }

@@ -71,9 +71,6 @@ struct RecipeMainPage: View {
                         )
                         .navigationTransition(.zoom(sourceID: HeroSearchTransition.searchEntryID, in: heroNamespace))
                         .circularReveal(from: searchRevealOrigin)
-                    case .randomPick:
-                        RandomPickScreen(vm: viewModel)
-                    
                     }
                 }
                 .task { // first load only once
@@ -81,6 +78,31 @@ struct RecipeMainPage: View {
                         viewModel.onIntent(.loadHome)
                     }
                 }
+        }
+        .fullScreenCover(
+            isPresented: Binding(
+                get: { viewModel.state.isRandomPickPresented },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.onIntent(.dismissRandomPick)
+                    }
+                }
+            )
+        ) {
+            NavigationStack {
+                RandomPickScreen(vm: viewModel)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                viewModel.onIntent(.dismissRandomPick)
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.headline)
+                            }
+                            .accessibilityLabel("Close")
+                        }
+                    }
+            }
         }
         .coordinateSpace(name: HeroSearchTransition.coordinateSpace)
     }

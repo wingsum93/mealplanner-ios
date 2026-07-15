@@ -12,6 +12,7 @@ private enum FeatureEvent: Equatable {
     case setPath([FeatureRoute])
     case pushRoute(FeatureRoute)
     case popRoute
+    case setRandomPickPresented(Bool)
     case setHomePhase(LoadPhase)
     case setHomeContent(featured: UIRecipeItem?, areas: [String], categories: [String], randomTen: [UIRecipeItem])
     case setArea(AreaListState)
@@ -67,7 +68,10 @@ final class FeatureViewModel: ObservableObject {
             reduce(.pushRoute(.search))
             
         case .goToRandomPick:
-            reduce(.pushRoute(.randomPick))
+            reduce(.setRandomPickPresented(true))
+
+        case .dismissRandomPick:
+            reduce(.setRandomPickPresented(false))
             
         case .pop:
             reduce(.popRoute)
@@ -288,6 +292,8 @@ final class FeatureViewModel: ObservableObject {
             state.path.append(route)
         case .popRoute:
             if !state.path.isEmpty { _ = state.path.removeLast() }
+        case .setRandomPickPresented(let isPresented):
+            state.isRandomPickPresented = isPresented
         case .setHomePhase(let phase):
             state.home.phase = phase
         case .setHomeContent(let featured, let areas, let categories, let randomTen):

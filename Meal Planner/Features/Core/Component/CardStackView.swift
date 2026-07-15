@@ -115,18 +115,19 @@ struct CardStackView: View {
                     ForEach(visibleItems) { visibleItem in
                         let index = visibleItem.offset
                         let item = visibleItem.element
-                        SwipeCardView(item: item, isTopCard: index == 0)
+                        let isTopCard = index == 0
+                        SwipeCardView(
+                            item: item,
+                            isTopCard: isTopCard,
+                            swipeDirection: isTopCard ? swipeDirection : nil,
+                            swipeProgress: isTopCard ? swipeProgress(for: arc) : 0
+                        )
                             .frame(width: cardWidth, height: cardHeight)
                             .scaleEffect(layout.scale(for: index), anchor: .top)
                             .opacity(layout.opacity(for: index))
                             .offset(layout.offset(for: index))
                             .offset(index == 0 ? dragOffset : .zero)
                             .rotationEffect(index == 0 ? Angle(degrees: rotation(for: arc)) : .zero)
-                            .overlay(alignment: .center) {
-                                if index == 0 {
-                                    swipeOverlay(arc: arc)
-                                }
-                            }
                             .zIndex(Double(visibleItems.count - index))
                             .allowsHitTesting(index == 0)
                             .gesture(index == 0 ? dragGesture(arc: arc) : nil)
@@ -235,23 +236,9 @@ struct CardStackView: View {
         CardStackLayout.rotationDegrees(dragX: dragOffset.width, maxX: arc.maxX)
     }
 
-    private func swipeOverlay(arc: ArcDragGeometry) -> some View {
-        let progress = arc.thetaMax == 0 ? 0 : min(dragTheta / arc.thetaMax, 1)
-        let opacity = min(progress * 0.45, 0.35)
-
-        return ZStack {
-            if let swipeDirection {
-                Color(swipeDirection == .right ? .systemRed : .systemGray)
-                    .opacity(opacity)
-
-                Image(systemName: swipeDirection == .right ? "heart.fill" : "forward.fill")
-                    .font(.system(size: 52, weight: .bold))
-                    .foregroundStyle(.white)
-                    .shadow(radius: 8)
-                    .opacity(min(progress * 1.2, 1))
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    private func swipeProgress(for arc: ArcDragGeometry) -> CGFloat {
+        guard arc.thetaMax != 0 else { return 0 }
+        return min(dragTheta / arc.thetaMax, 1)
     }
 }
 
@@ -292,6 +279,8 @@ private struct ArcDragGeometry {
 private struct SwipeCardView: View {
     let item: UIRecipeItem
     let isTopCard: Bool
+    let swipeDirection: SwipeDirection?
+    let swipeProgress: CGFloat
     private let cardShape = RoundedRectangle(cornerRadius: 28, style: .continuous)
 
     var body: some View {
@@ -309,17 +298,23 @@ private struct SwipeCardView: View {
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 6) {
-                Text(item.name)
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
-                if let area = item.area, let category = item.category {
-                    Text("\(area) • \(category)")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.85))
+                    Text(item.name)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                    if let area = item.area, let category = item.category {
+                        Text("\(area) • \(category)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
                 }
+                .padding(20)
             }
-            .padding(20)
+            .overlay {
+                SwipeCardFeedbackOverlay(
+                    direction: swipeDirection,
+                    progress: swipeProgress
+                )
             }
         .clipShape(cardShape)
         .contentShape(cardShape)
@@ -346,6 +341,27 @@ private struct SwipeCardView: View {
         .clipped()
         .accessibilityElement(children: .ignore)
         .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCardImage : "randomPick.card.image")
+    }
+}
+
+private struct SwipeCardFeedbackOverlay: View {
+    let direction: SwipeDirection?
+    let progress: CGFloat
+
+    var body: some View {
+        ZStack {
+            if let direction {
+                Color(direction == .right ? .systemRed : .systemGray)
+                    .opacity(min(progress * 0.45, 0.35))
+
+                Image(systemName: direction == .right ? "heart.fill" : "xmark")
+                    .font(.system(size: 52, weight: .bold))
+                    .foregroundStyle(.white)
+                    .shadow(radius: 8)
+                    .opacity(min(progress * 1.2, 1))
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
