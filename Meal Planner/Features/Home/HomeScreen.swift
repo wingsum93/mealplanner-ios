@@ -13,32 +13,42 @@ struct HomeScreen: View {
 
     var body: some View {
         ScrollView {
-            // 5) Search bar (navigates to Search page)
-            SearchBar(placeholder: "Search recipes…") {
-                vm.onIntent(.goToSearch)
+            searchEntry
+
+            if isInitialHomeLoading {
+                SkeletonHomePageView()
+            } else {
+                homeContent
             }
-            .matchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
-            .accessibilityIdentifier("home.searchEntry")
-            .background {
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: SearchEntryCenterPreferenceKey.self,
-                        value: proxy.frame(in: .named(HeroSearchTransition.coordinateSpace)).center
-                    )
-                }
+        }
+        .navigationTitle("Recipes")
+    }
+
+    private var searchEntry: some View {
+        SearchBar(placeholder: "Search recipes…") {
+            vm.onIntent(.goToSearch)
+        }
+        .matchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
+        .accessibilityIdentifier("home.searchEntry")
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: SearchEntryCenterPreferenceKey.self,
+                    value: proxy.frame(in: .named(HeroSearchTransition.coordinateSpace)).center
+                )
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+
+    private var homeContent: some View {
+        Group {
             // 1) Featured random recipe
             if let featured = vm.state.home.featured {
                 RecipeHeroCard(item: featured)
                     .onTapGesture { detailVM.onIntent(.setItem(featured)) }
                     .padding(.horizontal, 16)
-                    
-            } else if vm.state.home.phase == .loading {
-                RecipeHeroCard(item: .sample)
-                    .padding(.horizontal, 16)
-                    .shimmer(vm.state.home.phase == .loading)
             }
 
             // 2) Areas horizontal
@@ -54,7 +64,6 @@ struct HomeScreen: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    
                 }.padding(.horizontal, 16)
             }
 
@@ -95,12 +104,14 @@ struct HomeScreen: View {
                 }.padding(.horizontal, 16)
             }
         }
-        .overlay {
-            if case .loading = vm.state.home.phase {
-                SkeletonHomePageView() // your loader
-            }
-        }
-        .navigationTitle("Recipes")
+    }
+
+    private var isInitialHomeLoading: Bool {
+        vm.state.home.phase == .loading
+        && vm.state.home.featured == nil
+        && vm.state.home.areas.isEmpty
+        && vm.state.home.categories.isEmpty
+        && vm.state.home.randomTen.isEmpty
     }
 }
 
