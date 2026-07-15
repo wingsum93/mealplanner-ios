@@ -9,10 +9,10 @@ import Kingfisher
 import UIKit
 
 struct DetailSheetView: View {
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject var vm: DetailViewModel
     @State private var selectedContentTab: MealDetailContentTab = .instructions
     @State private var favoriteButtonScale = 1.0
-    @State private var contentTabHeights: [MealDetailContentTab: CGFloat] = [:]
 
     var body: some View {
         // If nil, show nothing (sheet can still be presented/animated by parent)
@@ -60,6 +60,11 @@ struct DetailSheetView: View {
                             .padding(.trailing, 16)
                             .padding(.bottom, 16)
                         }
+                        .overlay(alignment: .topTrailing) {
+                            CloseSheetButton(action: closeSheet)
+                                .padding(.top, 14)
+                                .padding(.trailing, 16)
+                        }
                         .onLongPressGesture {
                             print("my id is = " + item.id)
                         }
@@ -85,8 +90,7 @@ struct DetailSheetView: View {
                     ) {
                         MealDetailTabbedContent(
                             item: item,
-                            selectedTab: $selectedContentTab,
-                            measuredHeights: $contentTabHeights
+                            selectedTab: $selectedContentTab
                         )
                     }
                     .padding(.horizontal, 16)
@@ -118,6 +122,11 @@ struct DetailSheetView: View {
         }
 
         vm.onIntent(.toggleFavorite)
+    }
+
+    private func closeSheet() {
+        vm.onIntent(.dismiss)
+        dismiss()
     }
 }
 
@@ -167,14 +176,31 @@ private struct FavoriteHeaderButton: View {
     }
 }
 
+private struct CloseSheetButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.primary)
+                .frame(width: 36, height: 36)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(
+                    Circle()
+                        .stroke(.white.opacity(0.35), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.18), radius: 8, y: 3)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("detail.closeButton")
+        .accessibilityLabel("Close recipe details")
+    }
+}
+
 private struct MealDetailTabbedContent: View {
     let item: UIRecipeItem
     @Binding var selectedTab: MealDetailContentTab
-    @Binding var measuredHeights: [MealDetailContentTab: CGFloat]
-
-    private var selectedContentHeight: CGFloat {
-        max(measuredHeights[selectedTab] ?? 220, 220)
-    }
 
     var body: some View {
         VStack(spacing: 14) {
@@ -186,22 +212,16 @@ private struct MealDetailTabbedContent: View {
             }
             .pickerStyle(.segmented)
 
-            TabView(selection: $selectedTab) {
-                InstructionsTab(instructions: item.instructions)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .readHeight(for: .instructions)
-                    .tag(MealDetailContentTab.instructions)
-
-                IngredientsTab(ingredients: item.ingredients, measures: item.measures)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .readHeight(for: .ingredients)
-                    .tag(MealDetailContentTab.ingredients)
+            Group {
+                switch selectedTab {
+                case .instructions:
+                    InstructionsTab(instructions: item.instructions)
+                case .ingredients:
+                    IngredientsTab(ingredients: item.ingredients, measures: item.measures)
+                }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: selectedContentHeight)
-            .animation(.spring(response: 0.28, dampingFraction: 0.86), value: selectedContentHeight)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .onPreferenceChange(MealDetailTabHeightPreferenceKey.self) { measuredHeights = $0 }
     }
 }
 
@@ -209,7 +229,7 @@ private struct InstructionsTab: View {
     let instructions: [String]
 
     var body: some View {
-        LazyVStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             ForEach(instructions.indices, id: \.self) { num in
                 HStack(alignment: .top, spacing: 8) {
                     Text("\(num + 1).")
@@ -272,30 +292,6 @@ private struct IngredientsTab: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemGroupedBackground))
-        )
-    }
-}
-
-private struct MealDetailTabHeightPreferenceKey: PreferenceKey {
-    static var defaultValue: [MealDetailContentTab: CGFloat] = [:]
-
-    static func reduce(
-        value: inout [MealDetailContentTab: CGFloat],
-        nextValue: () -> [MealDetailContentTab: CGFloat]
-    ) {
-        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
-    }
-}
-
-private extension View {
-    func readHeight(for tab: MealDetailContentTab) -> some View {
-        background(
-            GeometryReader { proxy in
-                Color.clear.preference(
-                    key: MealDetailTabHeightPreferenceKey.self,
-                    value: [tab: proxy.size.height]
-                )
-            }
         )
     }
 }
