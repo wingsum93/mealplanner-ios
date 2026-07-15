@@ -6,9 +6,13 @@
 //
 import SwiftUI
 import Kingfisher
+import UIKit
 
 struct DetailSheetView: View {
     @ObservedObject var vm: DetailViewModel
+    @State private var selectedContentTab: MealDetailContentTab = .instructions
+    @State private var favoriteButtonScale = 1.0
+    @State private var contentTabHeights: [MealDetailContentTab: CGFloat] = [:]
 
     var body: some View {
         // If nil, show nothing (sheet can still be presented/animated by parent)
@@ -46,23 +50,19 @@ struct DetailSheetView: View {
                             .padding(.horizontal, 16)
                             .padding(.bottom, 12)
                         }
+                        .overlay(alignment: .bottomTrailing) {
+                            FavoriteHeaderButton(
+                                isFavorite: item.isFavorite,
+                                isSaving: vm.state.isSavingFavorite,
+                                scale: favoriteButtonScale,
+                                action: toggleFavorite
+                            )
+                            .padding(.trailing, 16)
+                            .padding(.bottom, 16)
+                        }
                         .onLongPressGesture {
                             print("my id is = " + item.id)
                         }
-
-                    // Actions row
-                    HStack(spacing: 12) {
-                        Button {
-                            vm.onIntent(.toggleFavorite)
-                        } label: {
-                            Label(item.isFavorite ? "Favourited" : "Add to Favourites",
-                                  systemImage: item.isFavorite ? "heart.fill" : "heart")
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 10)
-                                .background(Capsule().fill(Color.accentColor.opacity(0.12)))
-                        }
-                    }
-                    .padding(.horizontal, 16)
 
                     SectionCard(
                         header: CardSectionHeader(
@@ -79,87 +79,18 @@ struct DetailSheetView: View {
 
                     SectionCard(
                         header: CardSectionHeader(
-                            systemImage: "info.circle",
-                            title: "Instructions"
+                            systemImage: selectedContentTab.systemImage,
+                            title: "Recipe Details"
                         )
                     ) {
-                        LazyVStack(alignment: .leading, spacing: 8) {
-                            ForEach(item.instructions.indices, id: \.self) { num in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Text("\(num + 1).")
-                                        .font(.footnote.weight(.semibold))
-                                        .foregroundStyle(.secondary)
-                                    Text(item.instructions[num])
-                                        .font(.body)
-                                        .foregroundStyle(.primary)
-                                }
-
-                                if num < item.instructions.count - 1 {
-                                    Divider()
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    VStack(alignment: .leading) {
-                        // Ingredients
-                        HStack(spacing: 8) {
-                            Image(systemName: "leaf.fill")              // 修正 "apple.fill" -> "applelogo"
-                                    .imageScale(.medium)
-                                    .font(.title2)                          // 跟文字同尺寸，動態字級會一起放大
-                                    .symbolRenderingMode(.monochrome)
-                                    .foregroundStyle(.secondary)            // 讓 icon 不搶戲
-                            Text("Ingredients")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .lineLimit(1)
-                                .accessibilityAddTraits(.isHeader)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        VStack(spacing: 0) {
-                            ForEach(item.ingredients.indices, id:\.self) { index in
-                                HStack(spacing: 12) {
-                                    let ingredient = item.ingredients[index]
-
-                                    KFImage(URL(string: ingredient.getMealImageLink()))
-                                        .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 48, height: 48)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(ingredient)
-                                            .font(.body.weight(.semibold))
-                                        let measure = index < item.measures.count ? item.measures[index] : ""
-                                            Text(measure)
-                                                .font(.footnote)
-                                                .foregroundStyle(.secondary)
-
-                                    }
-                                    Spacer()
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(12)
-
-                                if index < item.ingredients.count - 1 {
-                                    Divider()
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.horizontal, 20)
-                                }
-                            }
-                        }
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.secondarySystemGroupedBackground))
+                        MealDetailTabbedContent(
+                            item: item,
+                            selectedTab: $selectedContentTab,
+                            measuredHeights: $contentTabHeights
                         )
-                        .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
                     }
                     .padding(.horizontal, 16)
+
                     // Watch Button
                     YoutubeRoundedButton(
                         title: "Watch Video", systemImage: "arrowtriangle.right.fill", link: item.youtubeLink
@@ -171,6 +102,201 @@ struct DetailSheetView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
+    }
+
+    private func toggleFavorite() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) {
+            favoriteButtonScale = 1.18
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            withAnimation(.spring(response: 0.26, dampingFraction: 0.62)) {
+                favoriteButtonScale = 1.0
+            }
+        }
+
+        vm.onIntent(.toggleFavorite)
+    }
+}
+
+private enum MealDetailContentTab: String, CaseIterable, Identifiable {
+    case instructions = "Instructions"
+    case ingredients = "Ingredients"
+
+    var id: Self { self }
+
+    var systemImage: String {
+        switch self {
+        case .instructions:
+            return "info.circle"
+        case .ingredients:
+            return "leaf.fill"
+        }
+    }
+}
+
+private struct FavoriteHeaderButton: View {
+    let isFavorite: Bool
+    let isSaving: Bool
+    let scale: Double
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isFavorite ? "heart.fill" : "heart")
+                .font(.title3.weight(.bold))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(isFavorite ? .red : .primary)
+                .frame(width: 48, height: 48)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(
+                    Circle()
+                        .stroke(.white.opacity(0.35), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.22), radius: 10, y: 4)
+                .scaleEffect(scale)
+                .opacity(isSaving ? 0.65 : 1.0)
+        }
+        .buttonStyle(.plain)
+        .disabled(isSaving)
+        .accessibilityIdentifier("detail.favoriteButton")
+        .accessibilityLabel(isFavorite ? "Remove from favourites" : "Add to favourites")
+        .accessibilityHint("Updates the recipe bookmark")
+    }
+}
+
+private struct MealDetailTabbedContent: View {
+    let item: UIRecipeItem
+    @Binding var selectedTab: MealDetailContentTab
+    @Binding var measuredHeights: [MealDetailContentTab: CGFloat]
+
+    private var selectedContentHeight: CGFloat {
+        max(measuredHeights[selectedTab] ?? 220, 220)
+    }
+
+    var body: some View {
+        VStack(spacing: 14) {
+            Picker("Recipe detail section", selection: $selectedTab) {
+                ForEach(MealDetailContentTab.allCases) { tab in
+                    Label(tab.rawValue, systemImage: tab.systemImage)
+                        .tag(tab)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            TabView(selection: $selectedTab) {
+                InstructionsTab(instructions: item.instructions)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .readHeight(for: .instructions)
+                    .tag(MealDetailContentTab.instructions)
+
+                IngredientsTab(ingredients: item.ingredients, measures: item.measures)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .readHeight(for: .ingredients)
+                    .tag(MealDetailContentTab.ingredients)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: selectedContentHeight)
+            .animation(.spring(response: 0.28, dampingFraction: 0.86), value: selectedContentHeight)
+        }
+        .onPreferenceChange(MealDetailTabHeightPreferenceKey.self) { measuredHeights = $0 }
+    }
+}
+
+private struct InstructionsTab: View {
+    let instructions: [String]
+
+    var body: some View {
+        LazyVStack(alignment: .leading, spacing: 8) {
+            ForEach(instructions.indices, id: \.self) { num in
+                HStack(alignment: .top, spacing: 8) {
+                    Text("\(num + 1).")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(instructions[num])
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if num < instructions.count - 1 {
+                    Divider()
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 2)
+    }
+}
+
+private struct IngredientsTab: View {
+    let ingredients: [String]
+    let measures: [String]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(ingredients.indices, id: \.self) { index in
+                HStack(spacing: 12) {
+                    let ingredient = ingredients[index]
+
+                    KFImage(URL(string: ingredient.getMealImageLink()))
+                        .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(ingredient)
+                            .font(.body.weight(.semibold))
+                        let measure = index < measures.count ? measures[index] : ""
+                        Text(measure)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+
+                if index < ingredients.count - 1 {
+                    Divider()
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
+                }
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemGroupedBackground))
+        )
+    }
+}
+
+private struct MealDetailTabHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: [MealDetailContentTab: CGFloat] = [:]
+
+    static func reduce(
+        value: inout [MealDetailContentTab: CGFloat],
+        nextValue: () -> [MealDetailContentTab: CGFloat]
+    ) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+private extension View {
+    func readHeight(for tab: MealDetailContentTab) -> some View {
+        background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: MealDetailTabHeightPreferenceKey.self,
+                    value: [tab: proxy.size.height]
+                )
+            }
+        )
     }
 }
 
