@@ -23,12 +23,12 @@ struct Meal_PlannerTests {
         viewModel.onIntent(.updateQuery("slow"))
         viewModel.onIntent(.performSearch)
 
-        try await Task.sleep(nanoseconds: 50_000_000)
+        try await Task.sleep(nanoseconds: 550_000_000)
 
         viewModel.onIntent(.updateQuery("fast"))
         viewModel.onIntent(.performSearch)
 
-        try await Task.sleep(nanoseconds: 800_000_000)
+        try await Task.sleep(nanoseconds: 700_000_000)
 
         #expect(viewModel.state.search.query == "fast")
         #expect(viewModel.state.search.results.map(\.name) == ["fast result"])
@@ -40,7 +40,7 @@ struct Meal_PlannerTests {
 
         viewModel.onIntent(.updateQuery("chicken"))
         viewModel.onIntent(.performSearch)
-        try await Task.sleep(nanoseconds: 50_000_000)
+        try await Task.sleep(nanoseconds: 600_000_000)
 
         viewModel.onIntent(.updateQuery(""))
         viewModel.onIntent(.performSearch)
@@ -48,6 +48,52 @@ struct Meal_PlannerTests {
         #expect(viewModel.state.search.query == "")
         #expect(viewModel.state.search.phase == .idle)
         #expect(viewModel.state.search.results.isEmpty)
+    }
+
+    @MainActor
+    @Test func oneCharacterSearchQueryDoesNotCallRepository() async throws {
+        let repository = DebouncedSearchRecipeRepository()
+        let viewModel = FeatureViewModel(repository: repository)
+
+        viewModel.onIntent(.updateQuery("c"))
+
+        try await Task.sleep(nanoseconds: 600_000_000)
+
+        #expect(repository.searchedKeywords.isEmpty)
+        #expect(viewModel.state.search.query == "c")
+        #expect(viewModel.state.search.phase == .idle)
+        #expect(viewModel.state.search.results.isEmpty)
+    }
+
+    @MainActor
+    @Test func twoCharacterSearchQueryWaitsForDebounceBeforeCallingRepository() async throws {
+        let repository = DebouncedSearchRecipeRepository()
+        let viewModel = FeatureViewModel(repository: repository)
+
+        viewModel.onIntent(.updateQuery("ch"))
+        try await Task.sleep(nanoseconds: 300_000_000)
+
+        #expect(repository.searchedKeywords.isEmpty)
+
+        try await Task.sleep(nanoseconds: 300_000_000)
+
+        #expect(repository.searchedKeywords == ["ch"])
+        #expect(viewModel.state.search.results.map(\.name) == ["ch result"])
+    }
+
+    @MainActor
+    @Test func newSearchInputCancelsPendingDebouncedQuery() async throws {
+        let repository = DebouncedSearchRecipeRepository()
+        let viewModel = FeatureViewModel(repository: repository)
+
+        viewModel.onIntent(.updateQuery("ch"))
+        try await Task.sleep(nanoseconds: 250_000_000)
+        viewModel.onIntent(.updateQuery("chi"))
+
+        try await Task.sleep(nanoseconds: 650_000_000)
+
+        #expect(repository.searchedKeywords == ["chi"])
+        #expect(viewModel.state.search.results.map(\.name) == ["chi result"])
     }
 
     @MainActor
@@ -250,6 +296,38 @@ private final class SearchRaceRecipeRepository: RecipeRepository {
     private func recipe(id: Int64, title: String) -> RecipeItem {
         makeRecipe(id: id, title: title)
     }
+}
+
+private final class DebouncedSearchRecipeRepository: RecipeRepository {
+    private let queue = DispatchQueue(label: "DebouncedSearchRecipeRepository.queue")
+    private var _searchedKeywords: [String] = []
+
+    var searchedKeywords: [String] {
+        queue.sync { _searchedKeywords }
+    }
+
+    func searchByName(_ keyword: String) async throws -> [RecipeItem] {
+        let callCount = queue.sync {
+            _searchedKeywords.append(keyword)
+            return _searchedKeywords.count
+        }
+
+        return [makeRecipe(id: Int64(callCount), title: "\(keyword) result")]
+    }
+
+    func getAllIngredients() async throws -> [Ingredient] { [] }
+    func getAllCategory() async throws -> [String] { [] }
+    func getAllArea() async throws -> [String] { [] }
+    func getBySingleIngredient(_ name: String) async throws -> [RecipeItem] { [] }
+    func getByCategory(_ category: String) async throws -> [RecipeItem] { [] }
+    func getByArea(_ area: String) async throws -> [RecipeItem] { [] }
+    func getRecipeDetail(id: String) async throws -> RecipeItem { makeRecipe(id: Int64(id) ?? 0, title: "detail") }
+    func getRandomRecipe() async throws -> RecipeItem { makeRecipe(id: 99, title: "random") }
+    func getRandom10Recipe() async throws -> [RecipeItem] { [] }
+    func saveRecipe(_ item: RecipeItem) throws {}
+    func updateFavorite(id: Int64, isFavorite: Bool) throws {}
+    func isFavourite(id: Int64) -> Bool { false }
+    func getAllFavoriteRecipes() throws -> [RecipeItem] { [] }
 }
 
 private final class AuthLocalDataSourceSpy: LoginLocalDataSource {

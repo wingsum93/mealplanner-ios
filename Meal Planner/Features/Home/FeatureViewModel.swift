@@ -32,6 +32,8 @@ private enum FeatureEvent: Equatable {
 @MainActor
 final class FeatureViewModel: ObservableObject {
     @Published private(set) var state = FeatureState()
+    private static let searchDebounceDelay: UInt64 = 500_000_000
+    private static let minimumSearchQueryLength = 2
     
     private let repo: RecipeRepository
     
@@ -92,7 +94,7 @@ final class FeatureViewModel: ObservableObject {
             debounceSearch()
             
         case .performSearch:
-            search(query: state.search.query)
+            debounceSearch()
 
         case .updateSearchFavorite(let id, let isFavorite):
             reduce(.setSearchFavorite(id: id, isFavorite: isFavorite))
@@ -235,10 +237,16 @@ final class FeatureViewModel: ObservableObject {
     // SEARCH
     private func debounceSearch() {
         searchDebounceTask?.cancel()
-        let q = state.search.query
+        let q = searchQuery(from: state.search.query)
+        guard q.count >= Self.minimumSearchQueryLength else {
+            searchTask?.cancel()
+            reduce(.resetSearch)
+            return
+        }
+
         searchDebounceTask = Task { [weak self] in
             do {
-                try await Task.sleep(nanoseconds: 350_000_000) // 350ms
+                try await Task.sleep(nanoseconds: Self.searchDebounceDelay)
             } catch {
                 return
             }
@@ -249,23 +257,27 @@ final class FeatureViewModel: ObservableObject {
     
     private func search(query: String) {
         searchTask?.cancel()
-        if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        let q = searchQuery(from: query)
+        if q.count < Self.minimumSearchQueryLength {
             reduce(.resetSearch)
             return
         }
         reduce(.setSearchPhase(.loading))
-        let q = query
         searchTask = Task { [weak self] in
             guard let self else { return }
             do {
                 let items = try await repo.searchByName(q).map { $0.toUI() }
-                guard !Task.isCancelled, state.search.query == q else { return }
+                guard !Task.isCancelled, searchQuery(from: state.search.query) == q else { return }
                 reduce(.setSearchResults(items))
             } catch {
-                guard !Task.isCancelled, state.search.query == q else { return }
+                guard !Task.isCancelled, searchQuery(from: state.search.query) == q else { return }
                 reduce(.setSearchPhase(.error("Search failed.")))
             }
         }
+    }
+
+    private func searchQuery(from query: String) -> String {
+        query.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func reduce(_ event: FeatureEvent) {
