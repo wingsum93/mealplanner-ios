@@ -6,15 +6,6 @@
 //
 
 enum HomeIntent {
-    // navigation
-    case goToArea(String)
-    case goToCategory(String)
-    case goToSearch
-    case goToRandomPick
-    case dismissRandomPick
-    case pop
-    case replacePath([FeatureRoute])
-    
     // home
     case loadHome
     case refreshHome

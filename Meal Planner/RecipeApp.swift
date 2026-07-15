@@ -11,6 +11,7 @@ import SwiftData
 @main
 struct RecipeApp: App {
     @State private var di: AppDIContainer
+    @StateObject private var appRouter: AppRouter
     @StateObject private var homeVM: FeatureViewModel
     @StateObject private var detailVM: DetailViewModel
     @StateObject private var favVM: FavouriteViewModel
@@ -20,6 +21,7 @@ struct RecipeApp: App {
         let container = AppDIContainer(modelContext: ModelContext(mc),
                                        networkClient: AlamofireNetworkClient())
         _di = State(initialValue: container)
+        _appRouter = StateObject(wrappedValue: AppRouter())
         _homeVM = StateObject(wrappedValue: FeatureViewModel(repository: container.recipeRepository))
         _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
         _favVM = StateObject(wrappedValue: FavouriteViewModel(repository: container.recipeRepository))
@@ -39,6 +41,7 @@ struct RecipeApp: App {
                     // return .handled    // 你已自行處理
                     // return .discarded  // 忽略
                 })
+                .environmentObject(appRouter)
                 .environmentObject(detailVM)
                 .environmentObject(favVM)
         }

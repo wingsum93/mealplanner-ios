@@ -56,7 +56,4 @@ struct FeatureState: Equatable {
   var category = CategoryListState()
   var search = SearchState()
   var randomPick = RandomPickState()
-  var path: [FeatureRoute] = []             // NavigationStack path
-  var isRandomPickPresented = false
-  
 }

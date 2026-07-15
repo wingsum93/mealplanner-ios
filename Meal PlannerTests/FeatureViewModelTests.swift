@@ -92,17 +92,6 @@ struct FeatureViewModelTests {
     }
 
     @MainActor
-    @Test func featureNavigationPathCanBeReplacedByIntent() {
-        let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository())
-
-        viewModel.onIntent(.goToSearch)
-        #expect(viewModel.state.path == [.search])
-
-        viewModel.onIntent(.replacePath([.area("Canadian")]))
-        #expect(viewModel.state.path == [.area("Canadian")])
-    }
-
-    @MainActor
     @Test func randomPickItemsUpdateThroughIntent() {
         let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository())
         let items = [UIRecipeItem.new(id: "1", name: "One")]

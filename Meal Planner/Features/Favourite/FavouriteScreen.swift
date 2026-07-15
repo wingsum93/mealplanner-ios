@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FavouriteScreen :View {
     @EnvironmentObject var vm: FavouriteViewModel
-    @EnvironmentObject var detailVM: DetailViewModel
+    @EnvironmentObject private var appRouter: AppRouter
     
     var body: some View {
         Group {
@@ -70,7 +70,7 @@ struct FavouriteScreen :View {
                                 vm.onIntent(.toggleFavorite(item))
                             }
                             .onTapGesture {
-                                detailVM.onIntent(.setItem(item))
+                                appRouter.presentRecipeDetail(item)
                             }
                         }
                     }

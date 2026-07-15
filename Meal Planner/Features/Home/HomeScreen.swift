@@ -9,7 +9,7 @@ import SwiftUI
 struct HomeScreen: View {
     @ObservedObject var vm: FeatureViewModel
     let heroNamespace: Namespace.ID
-    @EnvironmentObject var detailVM: DetailViewModel
+    @EnvironmentObject private var appRouter: AppRouter
 
     var body: some View {
         ScrollView {
@@ -26,7 +26,7 @@ struct HomeScreen: View {
 
     private var searchEntry: some View {
         SearchBar(placeholder: "Search recipes…") {
-            vm.onIntent(.goToSearch)
+            appRouter.push(.search)
         }
         .matchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
         .accessibilityIdentifier("home.searchEntry")
@@ -47,7 +47,7 @@ struct HomeScreen: View {
             // 1) Featured random recipe
             if let featured = vm.state.home.featured {
                 RecipeHeroCard(item: featured)
-                    .onTapGesture { detailVM.onIntent(.setItem(featured)) }
+                    .onTapGesture { appRouter.presentRecipeDetail(featured) }
                     .padding(.horizontal, 16)
             }
 
@@ -57,7 +57,8 @@ struct HomeScreen: View {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.areas, id: \.self) { area in
                         Button {
-                            vm.onIntent(.goToArea(area))
+                            vm.onIntent(.loadArea(area))
+                            appRouter.push(.area(area))
                         } label: {
                             ImageSquareChip(text: area, imageLink: area.getAreaImageURL())
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
@@ -73,7 +74,8 @@ struct HomeScreen: View {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.categories, id: \.self) { cat in
                         Button {
-                            vm.onIntent(.goToCategory(cat))
+                            vm.onIntent(.loadCategory(cat))
+                            appRouter.push(.category(cat))
                         } label: {
                             ImageSquareChip(text: cat, imageLink: cat.mealCategoryImageLink)
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
@@ -86,7 +88,7 @@ struct HomeScreen: View {
             // 4) Random 10 horizontal
             SectionHeader("Discover")
             Button {
-                vm.onIntent(.goToRandomPick)
+                appRouter.presentRandomPick()
             } label: {
                 Label("Random Pick", systemImage: "sparkles")
                     .font(.subheadline.weight(.semibold))
@@ -99,7 +101,7 @@ struct HomeScreen: View {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.randomTen, id: \.id) { item in
                         RecipeCardSmall(item: item, width: 150)
-                            .onTapGesture { detailVM.onIntent(.setItem(item)) }
+                            .onTapGesture { appRouter.presentRecipeDetail(item) }
                     }
                 }.padding(.horizontal, 16)
             }

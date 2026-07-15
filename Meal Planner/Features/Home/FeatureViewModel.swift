@@ -9,10 +9,6 @@ import Foundation
 import Combine
 
 private enum FeatureEvent: Equatable {
-    case setPath([FeatureRoute])
-    case pushRoute(FeatureRoute)
-    case popRoute
-    case setRandomPickPresented(Bool)
     case setHomePhase(LoadPhase)
     case setHomeContent(featured: UIRecipeItem?, areas: [String], categories: [String], randomTen: [UIRecipeItem])
     case setArea(AreaListState)
@@ -54,31 +50,6 @@ final class FeatureViewModel: ObservableObject {
     
     func onIntent(_ intent: HomeIntent) {
         switch intent {
-            
-            // MARK: Navigation
-        case .goToArea(let a):
-            reduce(.pushRoute(.area(a)))
-            onIntent(.loadArea(a))
-            
-        case .goToCategory(let c):
-            reduce(.pushRoute(.category(c)))
-            onIntent(.loadCategory(c))
-            
-        case .goToSearch:
-            reduce(.pushRoute(.search))
-            
-        case .goToRandomPick:
-            reduce(.setRandomPickPresented(true))
-
-        case .dismissRandomPick:
-            reduce(.setRandomPickPresented(false))
-            
-        case .pop:
-            reduce(.popRoute)
-
-        case .replacePath(let path):
-            reduce(.setPath(path))
-            
             // MARK: Home
         case .loadHome, .refreshHome:
             loadHome()
@@ -286,14 +257,6 @@ final class FeatureViewModel: ObservableObject {
 
     private func reduce(_ event: FeatureEvent) {
         switch event {
-        case .setPath(let path):
-            state.path = path
-        case .pushRoute(let route):
-            state.path.append(route)
-        case .popRoute:
-            if !state.path.isEmpty { _ = state.path.removeLast() }
-        case .setRandomPickPresented(let isPresented):
-            state.isRandomPickPresented = isPresented
         case .setHomePhase(let phase):
             state.home.phase = phase
         case .setHomeContent(let featured, let areas, let categories, let randomTen):

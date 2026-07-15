@@ -8,6 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct RootTabs: View {
+    @EnvironmentObject private var appRouter: AppRouter
     @EnvironmentObject private var detailVM: DetailViewModel
     @StateObject private var settingsViewModel: SettingsViewModel
     @StateObject private var vm:FeatureViewModel
@@ -38,17 +39,37 @@ struct RootTabs: View {
                 Label("Profile", systemImage: "person.circle")
             }
             
-        }.sheet(isPresented: Binding(get: {detailVM.state.isPresented }, set: { newValue in
-            if(newValue == false){
-                detailVM.onIntent(.dismiss)
+        }
+        .sheet(item: $appRouter.activeSheet, onDismiss: {
+            detailVM.onIntent(.dismiss)
+        }) { sheet in
+            switch sheet {
+            case .recipeDetail(let item):
+                DetailSheetView(item: item, vm: detailVM)
+                    .presentationDetents([ .large,.medium])
+                    .presentationDragIndicator(.visible)
+                    .background(Color(.systemGray6))
+                    .presentationSizing(.page)
             }
-        })) {
-            DetailSheetView(vm: detailVM)
-            // Optional detents if you like:
-                .presentationDetents([ .large,.medium])
-                .presentationDragIndicator(.visible)
-                .background(Color(.systemGray6))
-                .presentationSizing(.page)
+        }
+        .fullScreenCover(item: $appRouter.activeFullScreenCover) { cover in
+            switch cover {
+            case .randomPick:
+                NavigationStack {
+                    RandomPickScreen(vm: vm)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button {
+                                    appRouter.dismissFullScreenCover()
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.headline)
+                                }
+                                .accessibilityLabel("Close")
+                            }
+                        }
+                }
+            }
         }
     }
     

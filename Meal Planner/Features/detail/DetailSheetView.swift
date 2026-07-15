@@ -9,102 +9,108 @@ import Kingfisher
 import UIKit
 
 struct DetailSheetView: View {
-    @Environment(\.dismiss) private var dismiss
+    let item: UIRecipeItem
+    @EnvironmentObject private var appRouter: AppRouter
     @ObservedObject var vm: DetailViewModel
     @State private var selectedContentTab: MealDetailContentTab = .instructions
     @State private var favoriteButtonScale = 1.0
 
     var body: some View {
-        // If nil, show nothing (sheet can still be presented/animated by parent)
-        if let item = vm.state.item {
-            ScrollView {
-                VStack(spacing: 16) {
-                    // Header image
-                    KFImage(item.thumbURL)
-                        .placeholder {
-                            Rectangle().fill(Color(.systemGray5))
-                        }
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 280)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                        .overlay(
-                            LinearGradient(
-                                colors: [.clear, .black.opacity(0.45)],
-                                startPoint: .center, endPoint: .bottom
-                            )
-                        )
-                        .overlay(alignment: .bottomLeading) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(item.name)
-                                    .font(.title2.bold())
-                                    .foregroundStyle(.white)
-                                    .lineLimit(2)
-                                    .shadow(radius: 4)
+        let displayedItem = vm.state.item ?? item
 
-                                if let metaText = buildMetaText(area: item.area, category: item.category) {
-                                    MetaChip(text: metaText)
-                                }
+        ScrollView {
+            VStack(spacing: 16) {
+                // Header image
+                KFImage(displayedItem.thumbURL)
+                    .placeholder {
+                        Rectangle().fill(Color(.systemGray5))
+                    }
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 280)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                    .overlay(
+                        LinearGradient(
+                            colors: [.clear, .black.opacity(0.45)],
+                            startPoint: .center, endPoint: .bottom
+                        )
+                    )
+                    .overlay(alignment: .bottomLeading) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(displayedItem.name)
+                                .font(.title2.bold())
+                                .foregroundStyle(.white)
+                                .lineLimit(2)
+                                .shadow(radius: 4)
+
+                            if let metaText = buildMetaText(area: displayedItem.area, category: displayedItem.category) {
+                                MetaChip(text: metaText)
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 12)
                         }
-                        .overlay(alignment: .bottomTrailing) {
-                            FavoriteHeaderButton(
-                                isFavorite: item.isFavorite,
-                                isSaving: vm.state.isSavingFavorite,
-                                scale: favoriteButtonScale,
-                                action: toggleFavorite
-                            )
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 12)
+                    }
+                    .overlay(alignment: .bottomTrailing) {
+                        FavoriteHeaderButton(
+                            isFavorite: displayedItem.isFavorite,
+                            isSaving: vm.state.isSavingFavorite,
+                            scale: favoriteButtonScale,
+                            action: toggleFavorite
+                        )
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 16)
+                    }
+                    .overlay(alignment: .topTrailing) {
+                        CloseSheetButton(action: closeSheet)
+                            .padding(.top, 14)
                             .padding(.trailing, 16)
-                            .padding(.bottom, 16)
-                        }
-                        .overlay(alignment: .topTrailing) {
-                            CloseSheetButton(action: closeSheet)
-                                .padding(.top, 14)
-                                .padding(.trailing, 16)
-                        }
-                        .onLongPressGesture {
-                            print("my id is = " + item.id)
-                        }
-
-                    SectionCard(
-                        header: CardSectionHeader(
-                            systemImage: "doc.text",
-                            title: "Description"
-                        )
-                    ) {
-                        Text(item.description)
-                            .font(.body)
-                            .foregroundStyle(.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(.horizontal, 16)
-
-                    SectionCard(
-                        header: CardSectionHeader(
-                            systemImage: selectedContentTab.systemImage,
-                            title: "Recipe Details"
-                        )
-                    ) {
-                        MealDetailTabbedContent(
-                            item: item,
-                            selectedTab: $selectedContentTab
-                        )
+                    .onLongPressGesture {
+                        print("my id is = " + displayedItem.id)
                     }
-                    .padding(.horizontal, 16)
 
-                    // Watch Button
-                    YoutubeRoundedButton(
-                        title: "Watch Video", systemImage: "arrowtriangle.right.fill", link: item.youtubeLink
+                SectionCard(
+                    header: CardSectionHeader(
+                        systemImage: "doc.text",
+                        title: "Description"
+                    )
+                ) {
+                    Text(displayedItem.description)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 16)
+
+                SectionCard(
+                    header: CardSectionHeader(
+                        systemImage: selectedContentTab.systemImage,
+                        title: "Recipe Details"
+                    )
+                ) {
+                    MealDetailTabbedContent(
+                        item: displayedItem,
+                        selectedTab: $selectedContentTab
                     )
                 }
-                .padding(.bottom, 24)
+                .padding(.horizontal, 16)
+
+                // Watch Button
+                YoutubeRoundedButton(
+                    title: "Watch Video", systemImage: "arrowtriangle.right.fill", link: displayedItem.youtubeLink
+                )
             }
-            .background(Color(.systemGray6))
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
+            .padding(.bottom, 24)
+        }
+        .background(Color(.systemGray6))
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .onAppear {
+            vm.onIntent(.setItem(item))
+        }
+        .onDisappear {
+            vm.onIntent(.dismiss)
         }
     }
 
@@ -125,8 +131,7 @@ struct DetailSheetView: View {
     }
 
     private func closeSheet() {
-        vm.onIntent(.dismiss)
-        dismiss()
+        appRouter.dismissSheet()
     }
 }
 

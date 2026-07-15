@@ -9,15 +9,15 @@ import SwiftUI
 
 struct RecipeMainPage: View {
     @StateObject var viewModel: FeatureViewModel
-    @EnvironmentObject private var detailVM: DetailViewModel
+    @EnvironmentObject private var appRouter: AppRouter
     @EnvironmentObject private var favVM: FavouriteViewModel
     let heroNamespace: Namespace.ID
     @State private var searchRevealOrigin: CGPoint?
     
     var body: some View {
         NavigationStack(path: Binding(
-            get: { viewModel.state.path },
-            set: { viewModel.onIntent(.replacePath($0)) }
+            get: { appRouter.path },
+            set: { appRouter.replacePath($0) }
         )) {
             HomeScreen(vm: viewModel, heroNamespace: heroNamespace)
                 .onPreferenceChange(SearchEntryCenterPreferenceKey.self) { origin in
@@ -32,7 +32,7 @@ struct RecipeMainPage: View {
                             phase: viewModel.state.area.phase,
                             onTapItem: {item in
                                 print("Tapped id =", item.id)
-                                detailVM.onIntent(.setItem(item))
+                                appRouter.presentRecipeDetail(item)
                             }
                         )
                     case .category(let c):
@@ -42,7 +42,7 @@ struct RecipeMainPage: View {
                             phase: viewModel.state.category.phase,
                             onTapItem: {item in
                                 print("Tapped id =", item.id)
-                                detailVM.onIntent(.setItem(item))
+                                appRouter.presentRecipeDetail(item)
                             }
                         )
                     case .search:
@@ -62,7 +62,7 @@ struct RecipeMainPage: View {
                                 // vm.onIntent(.resetSearch)
                             },
                             onItemTap: { item in
-                                detailVM.onIntent(.setItem(item))
+                                appRouter.presentRecipeDetail(item)
                             },
                             onFavoriteToggle: { item, isFavorite in
                                 viewModel.onIntent(.updateSearchFavorite(id: item.id, isFavorite: isFavorite))
@@ -78,31 +78,6 @@ struct RecipeMainPage: View {
                         viewModel.onIntent(.loadHome)
                     }
                 }
-        }
-        .fullScreenCover(
-            isPresented: Binding(
-                get: { viewModel.state.isRandomPickPresented },
-                set: { isPresented in
-                    if !isPresented {
-                        viewModel.onIntent(.dismissRandomPick)
-                    }
-                }
-            )
-        ) {
-            NavigationStack {
-                RandomPickScreen(vm: viewModel)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                viewModel.onIntent(.dismissRandomPick)
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.headline)
-                            }
-                            .accessibilityLabel("Close")
-                        }
-                    }
-            }
         }
         .coordinateSpace(name: HeroSearchTransition.coordinateSpace)
     }
