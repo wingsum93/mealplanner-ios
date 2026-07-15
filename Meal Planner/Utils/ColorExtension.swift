@@ -6,6 +6,6 @@
 //
 import SwiftUI
 extension Color{
-    static let primary = Color("PrimaryColor")
-    static let secondary = Color("SecondaryColor")
+    static let primary = Color("MealPlannerPrimary")
+    static let secondary = Color("MealPlannerSecondary")
 }

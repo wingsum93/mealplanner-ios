@@ -155,7 +155,7 @@ struct DetailSheetView: View {
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.white)
+                                .fill(Color(.secondarySystemGroupedBackground))
                         )
                         .shadow(color: .black.opacity(0.04), radius: 8, y: 2)
                     }
@@ -257,11 +257,11 @@ private struct SectionCard<Content: View>: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white)
+                .fill(Color(.secondarySystemGroupedBackground))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                .stroke(Color(.separator).opacity(0.35), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.04), radius: 6, y: 2)
     }

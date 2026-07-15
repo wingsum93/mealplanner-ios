@@ -61,11 +61,19 @@ final class FavouriteViewModel: ObservableObject {
 
     /// Toggle favourite state for a given recipe
     func toggleFavorite(_ item: UIRecipeItem) {
+        guard let id = Int64(item.id) else {
+            print("❌ Failed to update favorite: invalid recipe id \(item.id)")
+            return
+        }
+
         task?.cancel()
         task = Task { [weak self] in
             guard let self else { return }
             do {
-                try await repo.updateFavorite(id: Int64(item.id)! , isFavorite: !item.isFavorite)
+                if let domainItem = item.toDomain() {
+                    try repo.saveRecipe(domainItem)
+                }
+                try repo.updateFavorite(id: id, isFavorite: !item.isFavorite)
                 // Reload after update to stay in sync
                 await self.loadFavorites()
             } catch {

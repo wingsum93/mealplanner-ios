@@ -10,6 +10,7 @@ import SwiftUI
 struct RecipeMainPage: View {
     @StateObject var viewModel: FeatureViewModel
     @EnvironmentObject private var detailVM: DetailViewModel
+    @EnvironmentObject private var favVM: FavouriteViewModel
     let heroNamespace: Namespace.ID
     @State private var searchRevealOrigin: CGPoint?
     
@@ -60,6 +61,9 @@ struct RecipeMainPage: View {
                             },
                             onItemTap: { item in
                                 detailVM.onIntent(.setItem(item))
+                            },
+                            onFavoriteToggle: { item in
+                                favVM.toggleFavorite(item)
                             }
                         )
                         .navigationTransition(.zoom(sourceID: HeroSearchTransition.searchEntryID, in: heroNamespace))

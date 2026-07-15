@@ -231,7 +231,12 @@ final class FeatureViewModel: ObservableObject {
         searchDebounceTask?.cancel()
         let q = state.search.query
         searchDebounceTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 350_000_000) // 350ms
+            do {
+                try await Task.sleep(nanoseconds: 350_000_000) // 350ms
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
             await self?.search(query: q)
         }
     }
@@ -245,12 +250,15 @@ final class FeatureViewModel: ObservableObject {
         }
         state.search.phase = .loading
         let q = query
-        searchTask = Task {
+        searchTask = Task { [weak self] in
+            guard let self else { return }
             do {
                 let items = try await repo.searchByName(q).map { $0.toUI() }
+                guard !Task.isCancelled, state.search.query == q else { return }
                 state.search.results = items
                 state.search.phase = items.isEmpty ? .empty : .content
             } catch {
+                guard !Task.isCancelled, state.search.query == q else { return }
                 state.search.phase = .error("Search failed.")
             }
         }

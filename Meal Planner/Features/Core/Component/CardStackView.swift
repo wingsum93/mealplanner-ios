@@ -31,8 +31,10 @@ struct CardStackLayout {
         Self.peekStep * CGFloat(Self.maxVisibleCards - 1)
     }
 
-    func visibleItems(from items: [UIRecipeItem]) -> [(offset: Int, element: UIRecipeItem)] {
-        Array(items.prefix(Self.maxVisibleCards).enumerated())
+    func visibleItems(from items: [UIRecipeItem]) -> [CardStackVisibleItem] {
+        Array(items.prefix(Self.maxVisibleCards).enumerated()).map { offset, element in
+            CardStackVisibleItem(offset: offset, element: element)
+        }
     }
 
     func offset(for index: Int) -> CGSize {
@@ -77,6 +79,13 @@ struct CardStackLayout {
     }
 }
 
+struct CardStackVisibleItem: Identifiable, Equatable {
+    let offset: Int
+    let element: UIRecipeItem
+
+    var id: String { element.id }
+}
+
 struct CardStackView: View {
     @Binding var items: [UIRecipeItem]
     var onSwipe: ((UIRecipeItem, SwipeDirection) -> Void)?
@@ -103,7 +112,9 @@ struct CardStackView: View {
 
             ZStack(alignment: .top) {
                 ZStack(alignment: .top) {
-                    ForEach(visibleItems, id: \.offset) { index, item in
+                    ForEach(visibleItems) { visibleItem in
+                        let index = visibleItem.offset
+                        let item = visibleItem.element
                         SwipeCardView(item: item, isTopCard: index == 0)
                             .frame(width: cardWidth, height: cardHeight)
                             .scaleEffect(layout.scale(for: index), anchor: .top)

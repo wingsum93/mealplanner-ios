@@ -14,6 +14,7 @@ struct SearchScreen: View {
     var onCommit: () -> Void
     var onClear: () -> Void
     var onItemTap: (UIRecipeItem) -> Void
+    var onFavoriteToggle: (UIRecipeItem) -> Void
 
     init(
         query: Binding<String>,
@@ -22,7 +23,8 @@ struct SearchScreen: View {
         searchResults: Binding<[UIRecipeItem]>,
         onCommit: @escaping () -> Void = {},
         onClear: @escaping () -> Void = {},
-        onItemTap: @escaping (UIRecipeItem) -> Void = { _ in }
+        onItemTap: @escaping (UIRecipeItem) -> Void = { _ in },
+        onFavoriteToggle: @escaping (UIRecipeItem) -> Void = { _ in }
     ) {
         self._query = query
         self.placeholder = placeholder
@@ -31,6 +33,7 @@ struct SearchScreen: View {
         self.onCommit = onCommit
         self.onClear = onClear
         self.onItemTap = onItemTap
+        self.onFavoriteToggle = onFavoriteToggle
     }
     var body: some View {
         VStack(spacing: 0) {
@@ -67,7 +70,14 @@ struct SearchScreen: View {
             } else {
                 List {
                     ForEach(searchResults, id: \.id) { item in
-                        SearchRecipeRow(item: item,showFavorite: true)
+                        SearchRecipeRow(item: item, showFavorite: true) { isFavorite in
+                            if let index = searchResults.firstIndex(where: { $0.id == item.id }) {
+                                searchResults[index].isFavorite = isFavorite
+                                onFavoriteToggle(item)
+                            } else {
+                                onFavoriteToggle(item)
+                            }
+                        }
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 onItemTap(item)

@@ -47,6 +47,18 @@ struct CardStackLayoutTests {
     }
 
     @Test
+    func visibleItemsUseRecipeIDForIdentity() {
+        let layout = CardStackLayout()
+        let items = (0..<3).map { index in
+            UIRecipeItem.new(id: "meal-\(index)", name: "Meal \(index)")
+        }
+
+        let visible = layout.visibleItems(from: items)
+
+        #expect(visible.map(\.id) == ["meal-0", "meal-1", "meal-2"])
+    }
+
+    @Test
     func sizingUsesWidthFirstWhenHeightAllows() {
         let layout = CardStackLayout()
         let size = CGSize(width: 420, height: 900)

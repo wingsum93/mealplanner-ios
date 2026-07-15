@@ -18,8 +18,10 @@ struct RandomPickScreen: View {
             reloadButton
         }
         .navigationTitle("Random Pick")
-        .onAppear {
-            vm.onIntent(.loadRandomPick)
+        .task {
+            if vm.state.randomPick.phase == .idle {
+                vm.onIntent(.loadRandomPick)
+            }
         }
     }
 
@@ -64,7 +66,7 @@ struct RandomPickScreen: View {
 
     @ViewBuilder
     private var reloadButton: some View {
-        if vm.state.randomPick.phase == .empty {
+        if shouldShowReloadButton {
             Button {
                 vm.onIntent(.loadRandomPick)
             } label: {
@@ -74,6 +76,15 @@ struct RandomPickScreen: View {
             }
             .buttonStyle(.borderedProminent)
             .padding(.horizontal, 24)
+        }
+    }
+
+    private var shouldShowReloadButton: Bool {
+        switch vm.state.randomPick.phase {
+        case .empty, .error:
+            return true
+        case .idle, .loading, .content:
+            return false
         }
     }
 }

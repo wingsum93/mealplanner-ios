@@ -14,8 +14,8 @@ struct IconTextRow:View{
             .font(.caption.weight(.semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(Capsule().fill(Color.white.opacity(0.9)))
-            .foregroundStyle(.black.opacity(0.85))
+            .background(Capsule().fill(.thinMaterial))
+            .foregroundStyle(.primary)
     }
 }
 

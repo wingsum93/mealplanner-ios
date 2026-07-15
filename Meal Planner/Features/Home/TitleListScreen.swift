@@ -15,12 +15,7 @@ struct TitleListScreen: View {
     
     let hPadding: CGFloat = 16
     let interItemSpacing: CGFloat = 12
-    
-    // ❗️注意：用 UIScreen 係固定寬度，旋轉/多工視窗唔會更新
-    private let screenW = UIScreen.main.bounds.width
-    private var cellWidth: CGFloat {
-        (screenW - hPadding * 2 - interItemSpacing) / 2
-    }
+    private let minimumCellWidth: CGFloat = 150
     
     init(title:String,
          items: Binding<[UIRecipeItem]>,
@@ -30,26 +25,33 @@ struct TitleListScreen: View {
         self.onTapItem = onTapItem
     }
     
-    private var columns: [GridItem] {
-        [
-            GridItem(.flexible(), spacing: interItemSpacing),
-            GridItem(.flexible(), spacing: interItemSpacing)
-        ]
+    private func gridMetrics(for containerWidth: CGFloat) -> (columns: [GridItem], cellWidth: CGFloat) {
+        let availableWidth = max(containerWidth - hPadding * 2, minimumCellWidth)
+        let count = max(Int((availableWidth + interItemSpacing) / (minimumCellWidth + interItemSpacing)), 2)
+        let cellWidth = (availableWidth - CGFloat(count - 1) * interItemSpacing) / CGFloat(count)
+        let columns = Array(
+            repeating: GridItem(.fixed(cellWidth), spacing: interItemSpacing),
+            count: count
+        )
+        return (columns, cellWidth)
     }
     
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: interItemSpacing) {
-                ForEach(items, id: \.id) { item in
-                    RecipeCardSmall(item: item, width: cellWidth)
-                        .onTapGesture { onTapItem(item) }
+        GeometryReader { proxy in
+            let metrics = gridMetrics(for: proxy.size.width)
+
+            ScrollView {
+                LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
+                    ForEach(items, id: \.id) { item in
+                        RecipeCardSmall(item: item, width: metrics.cellWidth)
+                            .onTapGesture { onTapItem(item) }
+                    }
                 }
+                .padding(.horizontal, hPadding)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, hPadding)
-            .padding(.top, 12)
-            .padding(.bottom, 24)
         }
         .navigationTitle(title)
     }
 }
-

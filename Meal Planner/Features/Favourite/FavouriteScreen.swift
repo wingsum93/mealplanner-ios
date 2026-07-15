@@ -60,8 +60,8 @@ struct FavouriteScreen :View {
 
                     List {
                         ForEach(vm.filteredFavoriteItems, id: \.id) { item in
-                            SearchRecipeRow(item: item, showFavorite: true) { newFav in
-                                //                    vm.toggleFavorite(item)
+                            SearchRecipeRow(item: item, showFavorite: true) { _ in
+                                vm.toggleFavorite(item)
                             }
                             .onTapGesture {
                                 detailVM.onIntent(.setItem(item))
@@ -76,9 +76,5 @@ struct FavouriteScreen :View {
         .background(Color(.systemGray6)) // base screen background
         .navigationTitle("Favourites")
         .task { vm.loadFavorites() }
-        
-        .navigationTitle("Favourites")
-        
-        
     }
 }
