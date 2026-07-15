@@ -29,6 +29,7 @@ struct RecipeMainPage: View {
                         TitleListScreen(
                             title: a,
                             items: viewModel.state.area.items,
+                            phase: viewModel.state.area.phase,
                             onTapItem: {item in
                                 print("Tapped id =", item.id)
                                 detailVM.onIntent(.setItem(item))
@@ -38,6 +39,7 @@ struct RecipeMainPage: View {
                         TitleListScreen(
                             title: c,
                             items: viewModel.state.category.items,
+                            phase: viewModel.state.category.phase,
                             onTapItem: {item in
                                 print("Tapped id =", item.id)
                                 detailVM.onIntent(.setItem(item))

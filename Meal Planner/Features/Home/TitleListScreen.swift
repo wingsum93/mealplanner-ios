@@ -11,6 +11,7 @@ import Kingfisher
 struct TitleListScreen: View {
     let title: String
     let items: [UIRecipeItem]
+    let phase: LoadPhase
     let onTapItem:(UIRecipeItem)->Void
     
     let hPadding: CGFloat = 16
@@ -19,9 +20,11 @@ struct TitleListScreen: View {
     
     init(title:String,
          items: [UIRecipeItem],
+         phase: LoadPhase = .content,
          onTapItem: @escaping(UIRecipeItem)->Void = {_ in }){
         self.title = title
         self.items = items
+        self.phase = phase
         self.onTapItem = onTapItem
     }
     
@@ -41,17 +44,73 @@ struct TitleListScreen: View {
             let metrics = gridMetrics(for: proxy.size.width)
 
             ScrollView {
-                LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
-                    ForEach(items, id: \.id) { item in
-                        RecipeCardSmall(item: item, width: metrics.cellWidth)
-                            .onTapGesture { onTapItem(item) }
+                if isInitialLoading {
+                    TitleListSkeletonGrid(
+                        columns: metrics.columns,
+                        cellWidth: metrics.cellWidth,
+                        spacing: interItemSpacing,
+                        hPadding: hPadding
+                    )
+                } else {
+                    LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
+                        ForEach(items, id: \.id) { item in
+                            RecipeCardSmall(item: item, width: metrics.cellWidth)
+                                .onTapGesture { onTapItem(item) }
+                        }
                     }
+                    .padding(.horizontal, hPadding)
+                    .padding(.top, 12)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, hPadding)
-                .padding(.top, 12)
-                .padding(.bottom, 24)
             }
         }
         .navigationTitle(title)
+    }
+
+    private var isInitialLoading: Bool {
+        phase == .loading && items.isEmpty
+    }
+}
+
+private struct TitleListSkeletonGrid: View {
+    let columns: [GridItem]
+    let cellWidth: CGFloat
+    let spacing: CGFloat
+    let hPadding: CGFloat
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: spacing) {
+            ForEach(0..<8, id: \.self) { _ in
+                SkeletonTitleListRecipeCard(width: cellWidth)
+            }
+        }
+        .padding(.horizontal, hPadding)
+        .padding(.top, 12)
+        .padding(.bottom, 24)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct SkeletonTitleListRecipeCard: View {
+    let width: CGFloat
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            SkeletonRoundedRectangle(cornerRadius: 12)
+                .frame(width: width, height: width)
+
+            SkeletonRoundedRectangle(cornerRadius: 5)
+                .frame(width: width * 0.78, height: 14)
+
+            HStack(spacing: 6) {
+                SkeletonRoundedRectangle(cornerRadius: 8)
+                    .frame(width: width * 0.34, height: 18)
+
+                SkeletonRoundedRectangle(cornerRadius: 8)
+                    .frame(width: width * 0.28, height: 18)
+            }
+        }
+        .frame(width: width, height: width + 40, alignment: .topLeading)
+        .padding(.bottom, 8)
     }
 }
