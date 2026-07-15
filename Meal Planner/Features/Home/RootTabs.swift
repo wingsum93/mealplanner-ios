@@ -45,7 +45,7 @@ struct RootTabs: View {
                 Label("Profile", systemImage: "person.circle")
             }
             
-        }.sheet(isPresented: Binding(get: {detailVM.state.showDetail }, set: { newValue in
+        }.sheet(isPresented: Binding(get: {detailVM.state.isPresented }, set: { newValue in
             if(newValue == false){
                 detailVM.onIntent(.dismiss)
             }

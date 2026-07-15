@@ -6,24 +6,8 @@
 //
 import Foundation
 
-struct FavouriteState: Equatable {
-    var phase: Phase = .idle
-    var items: [UIRecipeItem] = []
-    var selectedArea: String?
-    var selectedCategory: String?
-    var errorMessage: String?
-}
-
-enum FavouriteIntent {
-    case loadFavorites
-    case selectArea(String?)
-    case selectCategory(String?)
-    case toggleFavorite(UIRecipeItem)
-    case clearError
-}
-
 private enum FavouriteEvent: Equatable {
-    case setPhase(Phase)
+    case setPhase(LoadPhase)
     case setItems([UIRecipeItem])
     case setSelectedArea(String?)
     case setSelectedCategory(String?)
@@ -42,24 +26,6 @@ final class FavouriteViewModel: ObservableObject {
     }
 
     deinit { task?.cancel() }
-
-    var availableAreas: [String] {
-        let areas = state.items.compactMap { $0.area }.filter { !$0.isEmpty }
-        return Array(Set(areas)).sorted()
-    }
-
-    var availableCategories: [String] {
-        let categories = state.items.compactMap { $0.category }.filter { !$0.isEmpty }
-        return Array(Set(categories)).sorted()
-    }
-
-    var filteredFavoriteItems: [UIRecipeItem] {
-        state.items.filter { item in
-            let matchesArea = state.selectedArea.map { $0 == item.area } ?? true
-            let matchesCategory = state.selectedCategory.map { $0 == item.category } ?? true
-            return matchesArea && matchesCategory
-        }
-    }
 
     func onIntent(_ intent: FavouriteIntent) {
         switch intent {

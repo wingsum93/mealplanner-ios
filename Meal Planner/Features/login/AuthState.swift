@@ -11,4 +11,8 @@ struct AuthState: Equatable {
     var showPassword: Bool = false
     var loginErrorMessage: String?
     var isLoggingIn: Bool = false
+
+    var canSubmit: Bool {
+        !email.isEmpty && !password.isEmpty && !isLoggingIn
+    }
 }

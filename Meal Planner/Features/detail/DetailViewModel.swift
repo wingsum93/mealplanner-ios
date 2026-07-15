@@ -7,6 +7,12 @@
 import SwiftUI
 import Observation
 
+private enum DetailEvent: Equatable {
+    case setItem(UIRecipeItem?)
+    case setSavingFavorite(Bool)
+    case setError(String?)
+}
+
 @MainActor
 final class DetailViewModel: ObservableObject {
     @Published private(set) var state: DetailState

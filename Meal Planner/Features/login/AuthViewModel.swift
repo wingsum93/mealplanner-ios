@@ -7,6 +7,16 @@
 
 import Foundation
 
+private enum AuthEvent: Equatable {
+    case setLoggedIn(Bool)
+    case setEmail(String)
+    case setPassword(String)
+    case setShowPassword(Bool)
+    case setLoginError(String?)
+    case setLoggingIn(Bool)
+    case resetLoginForm
+}
+
 @MainActor
 final class AuthViewModel: ObservableObject {
 

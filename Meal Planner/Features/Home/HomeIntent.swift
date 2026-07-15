@@ -12,7 +12,7 @@ enum HomeIntent {
     case goToSearch
     case goToRandomPick
     case pop
-    case replacePath([Route])
+    case replacePath([FeatureRoute])
     
     // home
     case loadHome
@@ -29,25 +29,4 @@ enum HomeIntent {
     case performSearch
     case updateSearchFavorite(id: String, isFavorite: Bool)
     
-}
-
-enum FeatureEvent: Equatable {
-    case setPath([Route])
-    case pushRoute(Route)
-    case popRoute
-    case setHomePhase(Phase)
-    case setHomeContent(featured: UIRecipeItem?, areas: [String], categories: [String], randomTen: [UIRecipeItem])
-    case setArea(AreaListState)
-    case setAreaItems([UIRecipeItem])
-    case setAreaPhase(Phase)
-    case setCategory(CategoryListState)
-    case setCategoryItems([UIRecipeItem])
-    case setCategoryPhase(Phase)
-    case setSearchQuery(String)
-    case setSearchPhase(Phase)
-    case setSearchResults([UIRecipeItem])
-    case setSearchFavorite(id: String, isFavorite: Bool)
-    case resetSearch
-    case setRandomPickPhase(Phase)
-    case setRandomPickItems([UIRecipeItem])
 }

@@ -43,7 +43,7 @@ struct FavouriteScreen :View {
                             set: { vm.onIntent(.selectArea($0)) }
                         )) {
                             Text("All Areas").tag(String?.none)
-                            ForEach(vm.availableAreas, id: \.self) { area in
+                            ForEach(vm.state.availableAreas, id: \.self) { area in
                                 Text(area).tag(Optional(area))
                             }
                         }
@@ -54,7 +54,7 @@ struct FavouriteScreen :View {
                             set: { vm.onIntent(.selectCategory($0)) }
                         )) {
                             Text("All Categories").tag(String?.none)
-                            ForEach(vm.availableCategories, id: \.self) { category in
+                            ForEach(vm.state.availableCategories, id: \.self) { category in
                                 Text(category).tag(Optional(category))
                             }
                         }
@@ -65,7 +65,7 @@ struct FavouriteScreen :View {
                     .padding(.vertical, 12)
 
                     List {
-                        ForEach(vm.filteredFavoriteItems, id: \.id) { item in
+                        ForEach(vm.state.filteredItems, id: \.id) { item in
                             SearchRecipeRow(item: item, showFavorite: true) { _ in
                                 vm.onIntent(.toggleFavorite(item))
                             }

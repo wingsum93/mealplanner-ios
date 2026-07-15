@@ -72,6 +72,39 @@ struct Meal_PlannerTests {
         #expect(viewModel.state.randomPick.phase == .content)
     }
 
+    @Test func favouriteStateDerivesFiltersAndAvailableOptions() {
+        var state = FavouriteState(items: [
+            UIRecipeItem.new(id: "1", name: "A", area: "Thai", category: "Seafood"),
+            UIRecipeItem.new(id: "2", name: "B", area: "Thai", category: "Dessert"),
+            UIRecipeItem.new(id: "3", name: "C", area: "Canadian", category: "Seafood")
+        ])
+
+        #expect(state.availableAreas == ["Canadian", "Thai"])
+        #expect(state.availableCategories == ["Dessert", "Seafood"])
+        #expect(state.filteredItems.map(\.id) == ["1", "2", "3"])
+
+        state.selectedArea = "Thai"
+        state.selectedCategory = "Seafood"
+
+        #expect(state.filteredItems.map(\.id) == ["1"])
+    }
+
+    @Test func authStateCanSubmitRequiresCredentialsAndIdleSubmitState() {
+        #expect(AuthState().canSubmit == false)
+        #expect(AuthState(email: "eric", password: "test").canSubmit)
+        #expect(AuthState(email: "eric", password: "test", isLoggingIn: true).canSubmit == false)
+    }
+
+    @Test func detailStatePresentationFollowsSelectedItem() {
+        #expect(DetailState().isPresented == false)
+        #expect(DetailState(item: UIRecipeItem.new(id: "1", name: "Recipe")).isPresented)
+    }
+
+    @Test func loadPhaseEqualityIncludesErrorMessage() {
+        #expect(LoadPhase.error("Search failed.") == .error("Search failed."))
+        #expect(LoadPhase.error("Search failed.") != .error("Failed to load favourites."))
+    }
+
     @MainActor
     @Test func authValidatesRequiredFieldsAndResetsForm() async throws {
         let viewModel = AuthViewModel(localDataSource: AuthLocalDataSourceSpy())
@@ -129,12 +162,12 @@ struct Meal_PlannerTests {
         try await Task.sleep(nanoseconds: 50_000_000)
 
         #expect(viewModel.state.items.map(\.id) == ["1"])
-        #expect(viewModel.availableAreas == ["Thai"])
-        #expect(viewModel.availableCategories == ["Seafood"])
+        #expect(viewModel.state.availableAreas == ["Thai"])
+        #expect(viewModel.state.availableCategories == ["Seafood"])
 
         viewModel.onIntent(.selectArea("Thai"))
         viewModel.onIntent(.selectCategory("Seafood"))
-        #expect(viewModel.filteredFavoriteItems.count == 1)
+        #expect(viewModel.state.filteredItems.count == 1)
 
         viewModel.onIntent(.toggleFavorite(favorite.toUI()))
         try await Task.sleep(nanoseconds: 50_000_000)

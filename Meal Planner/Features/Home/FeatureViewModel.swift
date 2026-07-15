@@ -8,6 +8,27 @@
 import Foundation
 import Combine
 
+private enum FeatureEvent: Equatable {
+    case setPath([FeatureRoute])
+    case pushRoute(FeatureRoute)
+    case popRoute
+    case setHomePhase(LoadPhase)
+    case setHomeContent(featured: UIRecipeItem?, areas: [String], categories: [String], randomTen: [UIRecipeItem])
+    case setArea(AreaListState)
+    case setAreaItems([UIRecipeItem])
+    case setAreaPhase(LoadPhase)
+    case setCategory(CategoryListState)
+    case setCategoryItems([UIRecipeItem])
+    case setCategoryPhase(LoadPhase)
+    case setSearchQuery(String)
+    case setSearchPhase(LoadPhase)
+    case setSearchResults([UIRecipeItem])
+    case setSearchFavorite(id: String, isFavorite: Bool)
+    case resetSearch
+    case setRandomPickPhase(LoadPhase)
+    case setRandomPickItems([UIRecipeItem])
+}
+
 @MainActor
 final class FeatureViewModel: ObservableObject {
     @Published private(set) var state = FeatureState()

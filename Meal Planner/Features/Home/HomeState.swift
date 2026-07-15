@@ -5,10 +5,16 @@
 //  Created by eric ho on 3/8/2025.
 //
 
-enum Phase: Equatable { case idle, loading, content, empty, error(String) }
+enum LoadPhase: Equatable {
+    case idle
+    case loading
+    case content
+    case empty
+    case error(String)
+}
 
 struct HomeState: Equatable {
-  var phase: Phase = .idle
+  var phase: LoadPhase = .idle
   var featured: UIRecipeItem?
   var areas: [String] = []
   var categories: [String] = []
@@ -16,29 +22,29 @@ struct HomeState: Equatable {
 }
 
 struct AreaListState: Equatable {
-  var phase: Phase = .idle
+  var phase: LoadPhase = .idle
   var area: String = ""
   var items: [UIRecipeItem] = []
 }
 
 struct CategoryListState: Equatable {
-  var phase: Phase = .idle
+  var phase: LoadPhase = .idle
   var category: String = ""
   var items: [UIRecipeItem] = []
 }
 
 struct SearchState: Equatable {
-  var phase: Phase = .idle
+  var phase: LoadPhase = .idle
   var query: String = ""
   var results: [UIRecipeItem] = []
 }
 
 struct RandomPickState: Equatable {
-  var phase: Phase = .idle
+  var phase: LoadPhase = .idle
   var items: [UIRecipeItem] = []
 }
 
-enum Route: Hashable {
+enum FeatureRoute: Hashable {
   case area(String)
   case category(String)
   case search
@@ -51,6 +57,6 @@ struct FeatureState: Equatable {
   var category = CategoryListState()
   var search = SearchState()
   var randomPick = RandomPickState()
-  var path: [Route] = []             // NavigationStack path
+  var path: [FeatureRoute] = []             // NavigationStack path
   
 }

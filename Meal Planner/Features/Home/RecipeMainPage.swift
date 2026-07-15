@@ -23,7 +23,7 @@ struct RecipeMainPage: View {
                 .onPreferenceChange(SearchEntryCenterPreferenceKey.self) { origin in
                     searchRevealOrigin = origin
                 }
-                .navigationDestination(for: Route.self) { route in
+                .navigationDestination(for: FeatureRoute.self) { route in
                     switch route {
                     case .area(let a):
                         TitleListScreen(

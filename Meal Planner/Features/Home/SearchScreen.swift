@@ -9,7 +9,7 @@ import SwiftUI
 struct SearchScreen: View {
     @Binding var query: String
     var placeholder: String
-    var searchPhase: Phase
+    var searchPhase: LoadPhase
     var searchResults: [UIRecipeItem]
     var onCommit: () -> Void
     var onClear: () -> Void
@@ -19,7 +19,7 @@ struct SearchScreen: View {
     init(
         query: Binding<String>,
         placeholder: String = "Search...",
-        searchPhase: Phase,
+        searchPhase: LoadPhase,
         searchResults: [UIRecipeItem],
         onCommit: @escaping () -> Void = {},
         onClear: @escaping () -> Void = {},

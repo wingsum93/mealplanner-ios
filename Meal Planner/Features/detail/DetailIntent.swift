@@ -12,10 +12,3 @@ enum DetailIntent {
     case dismiss
     case setItem(_ item: UIRecipeItem)
 }
-
-// MARK: - Events (Reducer inputs)
-enum DetailEvent: Equatable {
-    case setItem(UIRecipeItem?)
-    case setSavingFavorite(Bool)
-    case setError(String?)
-}
