@@ -7,46 +7,29 @@
 import SwiftUI
 
 struct ProfileScreen:View{
-    @ObservedObject var authViewModel: AuthViewModel
     @ObservedObject var settingsViewModel: SettingsViewModel
-    let onLoginBtnClicked:() -> Void
     
     init(
-        authViewModel: AuthViewModel,
-        settingsViewModel: SettingsViewModel,
-        _ onLoginBtnClicked:@escaping ()->Void = {}
+        settingsViewModel: SettingsViewModel
     ) {
-        self.authViewModel = authViewModel
         self.settingsViewModel = settingsViewModel
-        self.onLoginBtnClicked = onLoginBtnClicked
     }
     
     // MARK: - Convenience initializer for preview
-    init(isLoggedIn: Bool = false) {
-        let mockVM = AuthViewModel(localDataSource: MockLoginLocalDataSource(loggedIn: isLoggedIn))
+    init() {
         let mockSettingsVM = SettingsViewModel(localDataSource: MockRecipeLocalDataSource())
-        self.init(authViewModel: mockVM, settingsViewModel: mockSettingsVM)
+        self.init(settingsViewModel: mockSettingsVM)
     }
     
     var body: some View{
         SettingsScreen(
-            isLoggedIn: authViewModel.state.isLoggedIn,
-            settingsViewModel: settingsViewModel,
-            onLogin: onLoginBtnClicked,
-            onLogout: { _authViewModel.wrappedValue.onIntent(.logout) }
+            settingsViewModel: settingsViewModel
         )
-        .onAppear {
-            authViewModel.onIntent(.load)
-        }
     }
 }
 
-#Preview("Logged Out") {
-    ProfileScreen(isLoggedIn: false)
-}
-
-#Preview("Logged In") {
-    ProfileScreen(isLoggedIn: true)
+#Preview {
+    ProfileScreen()
 }
 
 private struct MockRecipeLocalDataSource: RecipeLocalDataSource {

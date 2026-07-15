@@ -7,69 +7,18 @@
 
 import SwiftUI
 struct SettingsScreen: View {
-    let isLoggedIn: Bool
-    let onLogin: () -> Void
-    let onLogout: () -> Void
     @ObservedObject var settingsViewModel: SettingsViewModel
 
     @State private var pendingAction: SettingsAction?
 
     init(
-        isLoggedIn: Bool,
-        settingsViewModel: SettingsViewModel,
-        onLogin: @escaping () -> Void = {},
-        onLogout: @escaping () -> Void = {}
+        settingsViewModel: SettingsViewModel
     ) {
-        self.isLoggedIn = isLoggedIn
         self.settingsViewModel = settingsViewModel
-        self.onLogin = onLogin
-        self.onLogout = onLogout
     }
     
     var body: some View {
         List {
-            Section("Account") {
-                VStack(spacing: 16) {
-                    Image("person")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
-                        .clipShape(Circle())
-                        .foregroundColor(.gray.opacity(0.6))
-
-                    Text("Profile Content")
-                        .font(.title)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    if isLoggedIn {
-                        Button(action: onLogout) {
-                            Text("Logout")
-                                .fontWeight(.bold)
-                                .font(.title3)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .cornerRadius(40)
-                        }
-                    } else {
-                        Button(action: onLogin) {
-                            Text("Log in")
-                                .fontWeight(.bold)
-                                .font(.title3)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .cornerRadius(40)
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-            }
-
             Section("Data") {
                 Button("Clear cached recipes") {
                     pendingAction = .clearCachedRecipes
@@ -165,7 +114,6 @@ struct SettingsScreen: View {
 #Preview {
     let mockLocal = MockRecipeLocalDataSource()
     SettingsScreen(
-        isLoggedIn: false,
         settingsViewModel: SettingsViewModel(localDataSource: mockLocal)
     )
 }

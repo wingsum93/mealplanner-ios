@@ -12,7 +12,6 @@ import SwiftData
 struct RecipeApp: App {
     @State private var di: AppDIContainer
     @StateObject private var homeVM: FeatureViewModel
-    @StateObject private var authVM: AuthViewModel
     @StateObject private var detailVM: DetailViewModel
     @StateObject private var favVM: FavouriteViewModel
     @StateObject private var settingsVM: SettingsViewModel
@@ -22,7 +21,6 @@ struct RecipeApp: App {
                                        networkClient: AlamofireNetworkClient())
         _di = State(initialValue: container)
         _homeVM = StateObject(wrappedValue: FeatureViewModel(repository: container.recipeRepository))
-        _authVM = StateObject(wrappedValue: AuthViewModel(localDataSource: LoginLocalDataSourceImpl())) // your existing one
         _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
         _favVM = StateObject(wrappedValue: FavouriteViewModel(repository: container.recipeRepository))
         _settingsVM = StateObject(wrappedValue: container.makeSettingsViewModel())
@@ -32,7 +30,6 @@ struct RecipeApp: App {
         WindowGroup {
             RootTabs(
                 homeViewModel: homeVM,
-                authViewModel: authVM,
                 settingsViewModel: settingsVM
             )
                 .environment(\.openURL, OpenURLAction { url in
