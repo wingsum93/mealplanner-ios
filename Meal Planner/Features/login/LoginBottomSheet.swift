@@ -12,42 +12,46 @@ struct LoginBottomSheet:View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var authViewModel: AuthViewModel
     
-    @State private var email = ""
-    @State private var password = ""
-    @State private var showPassword = false
-    @State private var showError = false
-    
     var body: some View {
         VStack(spacing: 16) {
             Text("RecipeApp-IOS").font(.title2).bold()
             Image("AppIcon").resizable().frame(width: 72, height: 72).clipShape(Circle())
             
-            TextField("Email", text: $authViewModel.email)
+            TextField("Email", text: Binding(
+                get: { authViewModel.state.email },
+                set: { authViewModel.onIntent(.updateEmail($0)) }
+            ))
                 .textInputAutocapitalization(.none)
                 .padding()
                 .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
             
             ZStack(alignment: .trailing) {
                 Group {
-                    if authViewModel.showPassword {
-                        TextField("Password", text: $authViewModel.password)
+                    if authViewModel.state.showPassword {
+                        TextField("Password", text: Binding(
+                            get: { authViewModel.state.password },
+                            set: { authViewModel.onIntent(.updatePassword($0)) }
+                        ))
                     } else {
-                        SecureField("Password", text: $authViewModel.password)
+                        SecureField("Password", text: Binding(
+                            get: { authViewModel.state.password },
+                            set: { authViewModel.onIntent(.updatePassword($0)) }
+                        ))
                     }
                 }
                 .padding()
                 .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray))
                 
                 Button {
-                    authViewModel.showPassword.toggle()
+                    authViewModel.onIntent(.togglePasswordVisibility)
                 } label: {
-                    Image(systemName: authViewModel.showPassword ? "eye" : "eye.slash")
+                    Image(systemName: authViewModel.state.showPassword ? "eye" : "eye.slash")
                         .foregroundColor(.gray)
                         .padding()
                 }
             }
             
-            if let error = authViewModel.loginErrorMessage {
+            if let error = authViewModel.state.loginErrorMessage {
                 Text(error)
                     .foregroundColor(.red)
                     .font(.caption)
@@ -55,11 +59,9 @@ struct LoginBottomSheet:View {
             }
             
             Button("Login") {
-                authViewModel.performLogin {
-                    authViewModel.resetInputFields()
-                    dismiss()
-                }
+                authViewModel.onIntent(.submitLogin)
             }
+            .disabled(authViewModel.state.isLoggingIn)
             .padding()
             .frame(maxWidth: .infinity)
             .background(Color.orange)
@@ -68,6 +70,11 @@ struct LoginBottomSheet:View {
         }
         .padding()
         .presentationDetents([.height(420)])
+        .onChange(of: authViewModel.state.isLoggedIn) { _, isLoggedIn in
+            guard isLoggedIn else { return }
+            authViewModel.onIntent(.resetLoginForm)
+            dismiss()
+        }
     }
     
 }

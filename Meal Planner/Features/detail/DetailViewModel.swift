@@ -11,11 +11,14 @@ import Observation
 final class DetailViewModel: ObservableObject {
     @Published private(set) var state: DetailState
     private let repo: RecipeRepository
+    private var favoriteTask: Task<Void, Never>?
 
     init( repository: RecipeRepository) {
         self.repo = repository
         self.state = .init()
     }
+
+    deinit { favoriteTask?.cancel() }
 
     func onIntent(_ intent: DetailIntent) {
         switch intent {
@@ -24,14 +27,14 @@ final class DetailViewModel: ObservableObject {
         case .toggleFavorite:
             toggleFavorite()
         case .clearError:
-            reduce(state: &state, event: .setError(nil))
+            reduce(.setError(nil))
         case .dismiss:
-            state.item = nil
+            reduce(.setItem(nil))
         }
     }
 
     private func setData(_ item:UIRecipeItem){
-        state.item = item
+        reduce(.setItem(item))
         guard let domainItem = item.toDomain() else {
             #if DEBUG
             print("❌ saveRecipe error: invalid id \(item.id)")
@@ -53,27 +56,40 @@ final class DetailViewModel: ObservableObject {
         let old = state.item
         guard let old else { return }
         guard let id = Int64(old.id) else {
-            reduce(state: &state, event: .setError("Invalid recipe id. Please try again."))
+            reduce(.setError("Invalid recipe id. Please try again."))
             return
         }
         let new = old.togglingFavorite()
-        reduce(state: &state, event: .setItem(new))
-        reduce(state: &state, event: .setSavingFavorite(true))
+        reduce(.setItem(new))
+        reduce(.setSavingFavorite(true))
 
         // 2) Persist
-        Task {
+        favoriteTask?.cancel()
+        favoriteTask = Task { [weak self] in
+            guard let self else { return }
             do {
-                try await repo.updateFavorite(id: id, isFavorite: new.isFavorite)
-                reduce(state: &state, event: .setSavingFavorite(false))
+                try repo.updateFavorite(id: id, isFavorite: new.isFavorite)
+                reduce(.setSavingFavorite(false))
             } catch {
                 // 3) Roll back on failure
-                reduce(state: &state, event: .setItem(old))
-                reduce(state: &state, event: .setSavingFavorite(false))
-                reduce(state: &state, event: .setError("Failed to update favourite. Please try again."))
+                reduce(.setItem(old))
+                reduce(.setSavingFavorite(false))
+                reduce(.setError("Failed to update favourite. Please try again."))
                 #if DEBUG
                 print("❌ toggleFavorite error:", error)
                 #endif
             }
+        }
+    }
+
+    private func reduce(_ event: DetailEvent) {
+        switch event {
+        case .setItem(let item):
+            state.item = item
+        case .setSavingFavorite(let saving):
+            state.isSavingFavorite = saving
+        case .setError(let msg):
+            state.errorMessage = msg
         }
     }
 }

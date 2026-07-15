@@ -13,7 +13,7 @@ struct FavouriteScreen :View {
     
     var body: some View {
         Group {
-            if vm.favoriteItems.isEmpty {
+            if vm.state.items.isEmpty {
                 // Empty state with big Lottie
                 VStack {
                     Spacer()
@@ -38,7 +38,10 @@ struct FavouriteScreen :View {
             } else {
                 VStack(spacing: 0) {
                     HStack(spacing: 12) {
-                        Picker("Area", selection: $vm.selectedArea) {
+                        Picker("Area", selection: Binding(
+                            get: { vm.state.selectedArea },
+                            set: { vm.onIntent(.selectArea($0)) }
+                        )) {
                             Text("All Areas").tag(String?.none)
                             ForEach(vm.availableAreas, id: \.self) { area in
                                 Text(area).tag(Optional(area))
@@ -46,7 +49,10 @@ struct FavouriteScreen :View {
                         }
                         .pickerStyle(.menu)
 
-                        Picker("Category", selection: $vm.selectedCategory) {
+                        Picker("Category", selection: Binding(
+                            get: { vm.state.selectedCategory },
+                            set: { vm.onIntent(.selectCategory($0)) }
+                        )) {
                             Text("All Categories").tag(String?.none)
                             ForEach(vm.availableCategories, id: \.self) { category in
                                 Text(category).tag(Optional(category))
@@ -61,7 +67,7 @@ struct FavouriteScreen :View {
                     List {
                         ForEach(vm.filteredFavoriteItems, id: \.id) { item in
                             SearchRecipeRow(item: item, showFavorite: true) { _ in
-                                vm.toggleFavorite(item)
+                                vm.onIntent(.toggleFavorite(item))
                             }
                             .onTapGesture {
                                 detailVM.onIntent(.setItem(item))
@@ -69,12 +75,23 @@ struct FavouriteScreen :View {
                         }
                     }
                     .listStyle(.plain)
-                    .refreshable { vm.loadFavorites() }
+                    .refreshable { vm.onIntent(.loadFavorites) }
                 }
             }
         }
         .background(Color(.systemGray6)) // base screen background
         .navigationTitle("Favourites")
-        .task { vm.loadFavorites() }
+        .task { vm.onIntent(.loadFavorites) }
+        .alert(
+            "Unable to update favourites",
+            isPresented: Binding(
+                get: { vm.state.errorMessage != nil },
+                set: { if !$0 { vm.onIntent(.clearError) } }
+            )
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(vm.state.errorMessage ?? "")
+        }
     }
 }

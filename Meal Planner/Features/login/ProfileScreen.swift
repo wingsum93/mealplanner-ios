@@ -23,12 +23,9 @@ struct ProfileScreen:View{
     
     // MARK: - Convenience initializer for preview
     init(isLoggedIn: Bool = false) {
-        let mockVM = AuthViewModel(localDataSource: MockLoginLocalDataSource())
+        let mockVM = AuthViewModel(localDataSource: MockLoginLocalDataSource(loggedIn: isLoggedIn))
         let mockSettingsVM = SettingsViewModel(localDataSource: MockRecipeLocalDataSource())
         self.init(authViewModel: mockVM, settingsViewModel: mockSettingsVM)
-        if isLoggedIn {
-            mockVM.onIntent(.loginSuccess)
-        }
     }
     
     var body: some View{

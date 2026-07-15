@@ -10,7 +10,7 @@ import Combine
 
 @MainActor
 final class FeatureViewModel: ObservableObject {
-    @Published var state = FeatureState()
+    @Published private(set) var state = FeatureState()
     
     private let repo: RecipeRepository
     
@@ -33,21 +33,24 @@ final class FeatureViewModel: ObservableObject {
             
             // MARK: Navigation
         case .goToArea(let a):
-            state.path.append(.area(a))
+            reduce(.pushRoute(.area(a)))
             onIntent(.loadArea(a))
             
         case .goToCategory(let c):
-            state.path.append(.category(c))
+            reduce(.pushRoute(.category(c)))
             onIntent(.loadCategory(c))
             
         case .goToSearch:
-            state.path.append(.search)
+            reduce(.pushRoute(.search))
             
         case .goToRandomPick:
-            state.path.append(.randomPick)
+            reduce(.pushRoute(.randomPick))
             
         case .pop:
-            if !state.path.isEmpty { _ = state.path.removeLast() }
+            reduce(.popRoute)
+
+        case .replacePath(let path):
+            reduce(.setPath(path))
             
             // MARK: Home
         case .loadHome, .refreshHome:
@@ -56,8 +59,7 @@ final class FeatureViewModel: ObservableObject {
         case .loadRandomPick:
             loadRandomPick()
         case .updateRandomPickItems(let items):
-            state.randomPick.items = items
-            state.randomPick.phase = items.isEmpty ? .empty : .content
+            reduce(.setRandomPickItems(items))
             
             // MARK: Lists
         case .loadArea(let area):         loadArea(area)
@@ -65,11 +67,14 @@ final class FeatureViewModel: ObservableObject {
             
             // MARK: Search
         case .updateQuery(let q):
-            state.search.query = q
+            reduce(.setSearchQuery(q))
             debounceSearch()
             
         case .performSearch:
             search(query: state.search.query)
+
+        case .updateSearchFavorite(let id, let isFavorite):
+            reduce(.setSearchFavorite(id: id, isFavorite: isFavorite))
             
         }
     
@@ -78,9 +83,8 @@ final class FeatureViewModel: ObservableObject {
     
     // HOME
     private func loadHome() {
-        print("load hoem")
         homeTask?.cancel()
-        state.home.phase = .loading
+        reduce(.setHomePhase(.loading))
         homeTask = Task { [weak self] in
             guard let self else { return }
             async let featured = repo.getRandomRecipe()
@@ -99,26 +103,10 @@ final class FeatureViewModel: ObservableObject {
             }
             do {
                 let (f, a, c, r10) = try await (featured, areas, cats, random10)
-                // Debug log：原始數據
-                print("🔍 Featured raw:", f)
-                print("🔍 Areas count:", a.count, "->", a)
-                print("🔍 Categories count:", c.count, "->", c)
-                print("🔍 Random 10 count:", r10.count)
-                // 轉 UI model 後
-                let fUI = f.toUI()
-                print("✅ Featured UI model:", fUI)
-                
-                state.home.featured = f.toUI()
-                state.home.areas = a
-                state.home.categories = c
-                state.home.randomTen = r10
-                print("eric here")
-                print(f.toUI())
-                let has = state.home.featured != nil || !a.isEmpty || !c.isEmpty || !r10.isEmpty
-                state.home.phase = has ? .content : .empty
+                let featured = f.toUI()
+                reduce(.setHomeContent(featured: featured, areas: a, categories: c, randomTen: r10))
             } catch {
-                print("❌ Home load error:", error.localizedDescription)
-                state.home.phase = .error("Couldn’t load home. Pull to retry.")
+                reduce(.setHomePhase(.error("Couldn’t load home. Pull to retry.")))
             }
         }
     }
@@ -126,7 +114,7 @@ final class FeatureViewModel: ObservableObject {
     // RANDOM PICK
     private func loadRandomPick() {
         randomPickTask?.cancel()
-        state.randomPick.phase = .loading
+        reduce(.setRandomPickPhase(.loading))
         randomPickTask = Task { [weak self] in
             guard let self else { return }
             do {
@@ -141,11 +129,10 @@ final class FeatureViewModel: ObservableObject {
                     return out
                 }
                 if Task.isCancelled { return }
-                state.randomPick.items = items
-                state.randomPick.phase = items.isEmpty ? .empty : .content
+                reduce(.setRandomPickItems(items))
             } catch {
                 if Task.isCancelled { return }
-                state.randomPick.phase = .error("Couldn’t load random picks. Pull to retry.")
+                reduce(.setRandomPickPhase(.error("Couldn’t load random picks. Pull to retry.")))
             }
         }
     }
@@ -153,7 +140,7 @@ final class FeatureViewModel: ObservableObject {
     // AREA LIST
     private func loadArea(_ area: String) {
         areaTask?.cancel()
-        state.area = AreaListState(phase: .loading, area: area, items: [])
+        reduce(.setArea(AreaListState(phase: .loading, area: area, items: [])))
         areaTask = Task {[weak self] in
             guard let self else { return }
             do {
@@ -179,11 +166,10 @@ final class FeatureViewModel: ObservableObject {
                 }
                 
                 if Task.isCancelled { return }
-                self.state.area.items = enriched
-                self.state.area.phase = enriched.isEmpty ? .empty : .content
+                self.reduce(.setAreaItems(enriched))
             } catch {
                 if Task.isCancelled { return }
-                self.state.area.phase = .error("Failed to load \(area).")
+                self.reduce(.setAreaPhase(.error("Failed to load \(area).")))
             }
         }
     }
@@ -191,7 +177,7 @@ final class FeatureViewModel: ObservableObject {
     // CATEGORY LIST
     private func loadCategory(_ category: String) {
         categoryTask?.cancel()
-        state.category = CategoryListState(phase: .loading, category: category, items: [])
+        reduce(.setCategory(CategoryListState(phase: .loading, category: category, items: [])))
         categoryTask = Task {[weak self] in
             guard let self else { return }
             do {
@@ -217,11 +203,10 @@ final class FeatureViewModel: ObservableObject {
                 }
                 
                 if Task.isCancelled { return }
-                self.state.category.items = enriched
-                self.state.category.phase = enriched.isEmpty ? .empty : .content
+                self.reduce(.setCategoryItems(enriched))
             } catch {
                 if Task.isCancelled { return }
-                self.state.category.phase = .error("Failed to load \(category).")
+                self.reduce(.setCategoryPhase(.error("Failed to load \(category).")))
             }
         }
     }
@@ -244,23 +229,73 @@ final class FeatureViewModel: ObservableObject {
     private func search(query: String) {
         searchTask?.cancel()
         if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            state.search.phase = .idle
-            state.search.results = []
+            reduce(.resetSearch)
             return
         }
-        state.search.phase = .loading
+        reduce(.setSearchPhase(.loading))
         let q = query
         searchTask = Task { [weak self] in
             guard let self else { return }
             do {
                 let items = try await repo.searchByName(q).map { $0.toUI() }
                 guard !Task.isCancelled, state.search.query == q else { return }
-                state.search.results = items
-                state.search.phase = items.isEmpty ? .empty : .content
+                reduce(.setSearchResults(items))
             } catch {
                 guard !Task.isCancelled, state.search.query == q else { return }
-                state.search.phase = .error("Search failed.")
+                reduce(.setSearchPhase(.error("Search failed.")))
             }
+        }
+    }
+
+    private func reduce(_ event: FeatureEvent) {
+        switch event {
+        case .setPath(let path):
+            state.path = path
+        case .pushRoute(let route):
+            state.path.append(route)
+        case .popRoute:
+            if !state.path.isEmpty { _ = state.path.removeLast() }
+        case .setHomePhase(let phase):
+            state.home.phase = phase
+        case .setHomeContent(let featured, let areas, let categories, let randomTen):
+            state.home.featured = featured
+            state.home.areas = areas
+            state.home.categories = categories
+            state.home.randomTen = randomTen
+            let hasContent = featured != nil || !areas.isEmpty || !categories.isEmpty || !randomTen.isEmpty
+            state.home.phase = hasContent ? .content : .empty
+        case .setArea(let area):
+            state.area = area
+        case .setAreaItems(let items):
+            state.area.items = items
+            state.area.phase = items.isEmpty ? .empty : .content
+        case .setAreaPhase(let phase):
+            state.area.phase = phase
+        case .setCategory(let category):
+            state.category = category
+        case .setCategoryItems(let items):
+            state.category.items = items
+            state.category.phase = items.isEmpty ? .empty : .content
+        case .setCategoryPhase(let phase):
+            state.category.phase = phase
+        case .setSearchQuery(let query):
+            state.search.query = query
+        case .setSearchPhase(let phase):
+            state.search.phase = phase
+        case .setSearchResults(let results):
+            state.search.results = results
+            state.search.phase = results.isEmpty ? .empty : .content
+        case .setSearchFavorite(let id, let isFavorite):
+            guard let index = state.search.results.firstIndex(where: { $0.id == id }) else { return }
+            state.search.results[index] = state.search.results[index].with(isFavorite: isFavorite)
+        case .resetSearch:
+            state.search.phase = .idle
+            state.search.results = []
+        case .setRandomPickPhase(let phase):
+            state.randomPick.phase = phase
+        case .setRandomPickItems(let items):
+            state.randomPick.items = items
+            state.randomPick.phase = items.isEmpty ? .empty : .content
         }
     }
 }

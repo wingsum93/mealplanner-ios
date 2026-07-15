@@ -13,7 +13,6 @@ struct SettingsScreen: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
 
     @State private var pendingAction: SettingsAction?
-    @State private var errorMessage: String?
 
     init(
         isLoggedIn: Bool,
@@ -115,7 +114,7 @@ struct SettingsScreen: View {
             Button("Cancel", role: .cancel) { }
             if let action = pendingAction {
                 Button(action.confirmButtonTitle, role: .destructive) {
-                    handleSettingsAction(action)
+                    settingsViewModel.onIntent(.perform(action))
                     pendingAction = nil
                 }
             }
@@ -124,24 +123,14 @@ struct SettingsScreen: View {
         }
         .alert(
             "Unable to update data",
-            isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
+            isPresented: Binding(
+                get: { settingsViewModel.state.errorMessage != nil },
+                set: { if !$0 { settingsViewModel.onIntent(.clearError) } }
+            )
         ) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text(errorMessage ?? "")
-        }
-    }
-
-    private func handleSettingsAction(_ action: SettingsAction) {
-        do {
-            switch action {
-            case .clearCachedRecipes:
-                try settingsViewModel.clearCachedRecipes()
-            case .resetFavorites:
-                try settingsViewModel.resetFavorites()
-            }
-        } catch {
-            errorMessage = error.localizedDescription
+            Text(settingsViewModel.state.errorMessage ?? "")
         }
     }
 
@@ -179,31 +168,6 @@ struct SettingsScreen: View {
         isLoggedIn: false,
         settingsViewModel: SettingsViewModel(localDataSource: mockLocal)
     )
-}
-
-private enum SettingsAction: String, Identifiable {
-    case clearCachedRecipes
-    case resetFavorites
-
-    var id: String { rawValue }
-
-    var confirmButtonTitle: String {
-        switch self {
-        case .clearCachedRecipes:
-            return "Clear cache"
-        case .resetFavorites:
-            return "Reset favorites"
-        }
-    }
-
-    var confirmMessage: String {
-        switch self {
-        case .clearCachedRecipes:
-            return "This removes all cached recipes from this device."
-        case .resetFavorites:
-            return "This clears the favorite flag for all recipes."
-        }
-    }
 }
 
 private struct MockRecipeLocalDataSource: RecipeLocalDataSource {

@@ -10,26 +10,26 @@ struct SearchScreen: View {
     @Binding var query: String
     var placeholder: String
     var searchPhase: Phase
-    @Binding var searchResults: [UIRecipeItem]
+    var searchResults: [UIRecipeItem]
     var onCommit: () -> Void
     var onClear: () -> Void
     var onItemTap: (UIRecipeItem) -> Void
-    var onFavoriteToggle: (UIRecipeItem) -> Void
+    var onFavoriteToggle: (UIRecipeItem, Bool) -> Void
 
     init(
         query: Binding<String>,
         placeholder: String = "Search...",
         searchPhase: Phase,
-        searchResults: Binding<[UIRecipeItem]>,
+        searchResults: [UIRecipeItem],
         onCommit: @escaping () -> Void = {},
         onClear: @escaping () -> Void = {},
         onItemTap: @escaping (UIRecipeItem) -> Void = { _ in },
-        onFavoriteToggle: @escaping (UIRecipeItem) -> Void = { _ in }
+        onFavoriteToggle: @escaping (UIRecipeItem, Bool) -> Void = { _, _ in }
     ) {
         self._query = query
         self.placeholder = placeholder
         self.searchPhase = searchPhase
-        self._searchResults = searchResults
+        self.searchResults = searchResults
         self.onCommit = onCommit
         self.onClear = onClear
         self.onItemTap = onItemTap
@@ -71,12 +71,7 @@ struct SearchScreen: View {
                 List {
                     ForEach(searchResults, id: \.id) { item in
                         SearchRecipeRow(item: item, showFavorite: true) { isFavorite in
-                            if let index = searchResults.firstIndex(where: { $0.id == item.id }) {
-                                searchResults[index].isFavorite = isFavorite
-                                onFavoriteToggle(item)
-                            } else {
-                                onFavoriteToggle(item)
-                            }
+                            onFavoriteToggle(item, isFavorite)
                         }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -108,7 +103,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .content,
-        searchResults: $results
+        searchResults: results
     )
 }
 
@@ -119,7 +114,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .loading,
-        searchResults: $results
+        searchResults: results
     )
 }
 
@@ -130,7 +125,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .empty,
-        searchResults: $results
+        searchResults: results
     )
 }
 #Preview("Error") {
@@ -140,7 +135,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .error("no s"),
-        searchResults: $results
+        searchResults: results
     )
 }
 #Preview("Idle") {
@@ -150,6 +145,6 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .idle,
-        searchResults: $results
+        searchResults: results
     )
 }

@@ -19,16 +19,3 @@ enum DetailEvent: Equatable {
     case setSavingFavorite(Bool)
     case setError(String?)
 }
-
-// MARK: - Reducer (pure)
-@inline(__always)
-func reduce(state: inout DetailState, event: DetailEvent) {
-    switch event {
-    case .setItem(let item):
-        state.item = item
-    case .setSavingFavorite(let saving):
-        state.isSavingFavorite = saving
-    case .setError(let msg):
-        state.errorMessage = msg
-    }
-}

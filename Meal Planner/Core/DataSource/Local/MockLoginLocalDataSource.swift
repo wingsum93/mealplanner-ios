@@ -6,8 +6,10 @@
 //
 
 struct MockLoginLocalDataSource: LoginLocalDataSource {
+    var loggedIn: Bool = false
+
     func login(username: String, password: String) async -> Bool { true }
-    func isLoggedIn() -> Bool { false }
+    func isLoggedIn() -> Bool { loggedIn }
     func setLoggedIn(_ value: Bool) {}
     func logout() {}
 }

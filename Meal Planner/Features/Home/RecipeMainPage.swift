@@ -15,7 +15,10 @@ struct RecipeMainPage: View {
     @State private var searchRevealOrigin: CGPoint?
     
     var body: some View {
-        NavigationStack(path: $viewModel.state.path) {
+        NavigationStack(path: Binding(
+            get: { viewModel.state.path },
+            set: { viewModel.onIntent(.replacePath($0)) }
+        )) {
             HomeScreen(vm: viewModel, heroNamespace: heroNamespace)
                 .onPreferenceChange(SearchEntryCenterPreferenceKey.self) { origin in
                     searchRevealOrigin = origin
@@ -25,7 +28,7 @@ struct RecipeMainPage: View {
                     case .area(let a):
                         TitleListScreen(
                             title: a,
-                            items: $viewModel.state.area.items,
+                            items: viewModel.state.area.items,
                             onTapItem: {item in
                                 print("Tapped id =", item.id)
                                 detailVM.onIntent(.setItem(item))
@@ -34,7 +37,7 @@ struct RecipeMainPage: View {
                     case .category(let c):
                         TitleListScreen(
                             title: c,
-                            items: $viewModel.state.category.items,
+                            items: viewModel.state.category.items,
                             onTapItem: {item in
                                 print("Tapped id =", item.id)
                                 detailVM.onIntent(.setItem(item))
@@ -48,10 +51,7 @@ struct RecipeMainPage: View {
                             ),
                             placeholder: "Search recipes…",
                             searchPhase: viewModel.state.search.phase,
-                            searchResults: Binding(
-                                get: { viewModel.state.search.results },
-                                set: { _ in } // ignore external mutation
-                            ),
+                            searchResults: viewModel.state.search.results,
                             onCommit: {
                                 viewModel.onIntent(.performSearch)
                             },
@@ -62,8 +62,9 @@ struct RecipeMainPage: View {
                             onItemTap: { item in
                                 detailVM.onIntent(.setItem(item))
                             },
-                            onFavoriteToggle: { item in
-                                favVM.toggleFavorite(item)
+                            onFavoriteToggle: { item, isFavorite in
+                                viewModel.onIntent(.updateSearchFavorite(id: item.id, isFavorite: isFavorite))
+                                favVM.onIntent(.toggleFavorite(item))
                             }
                         )
                         .navigationTransition(.zoom(sourceID: HeroSearchTransition.searchEntryID, in: heroNamespace))

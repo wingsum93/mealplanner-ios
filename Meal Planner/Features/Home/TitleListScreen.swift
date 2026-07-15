@@ -10,7 +10,7 @@ import Kingfisher
 // Use for area list and category list
 struct TitleListScreen: View {
     let title: String
-    @Binding var items: [UIRecipeItem]           // 你的模型類型
+    let items: [UIRecipeItem]
     let onTapItem:(UIRecipeItem)->Void
     
     let hPadding: CGFloat = 16
@@ -18,10 +18,10 @@ struct TitleListScreen: View {
     private let minimumCellWidth: CGFloat = 150
     
     init(title:String,
-         items: Binding<[UIRecipeItem]>,
+         items: [UIRecipeItem],
          onTapItem: @escaping(UIRecipeItem)->Void = {_ in }){
         self.title = title
-        self._items = items      // ✅ 注意用底線
+        self.items = items
         self.onTapItem = onTapItem
     }
     
