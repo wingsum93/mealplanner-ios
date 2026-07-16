@@ -107,7 +107,7 @@ struct CardStackView: View {
             let visibleItems = layout.visibleItems(from: items)
             let arc = ArcDragGeometry(
                 maxX: cardWidth * 0.55,
-                maxYOffset: -cardHeight * 0.2
+                centerY: size.height * 1.5
             )
 
             ZStack(alignment: .top) {
@@ -254,25 +254,31 @@ private struct ArcDragGeometry {
     let radius: CGFloat
     let thetaMax: CGFloat
 
-    init(maxX: CGFloat, maxYOffset: CGFloat) {
-        let safeYOffset = maxYOffset == 0 ? -1 : maxYOffset
-        self.maxX = maxX
-        self.maxYOffset = safeYOffset
-        let center = (maxX * maxX + safeYOffset * safeYOffset) / (2 * safeYOffset)
-        centerY = center
-        radius = abs(center)
-        thetaMax = radius == 0 ? 0 : asin(maxX / radius)
+    init(maxX: CGFloat, centerY: CGFloat) {
+        let safeMaxX = max(maxX, 0)
+        let safeCenterY = max(centerY, safeMaxX + 1)
+        let safeRadius = safeCenterY
+
+        self.maxX = safeMaxX
+        self.centerY = safeCenterY
+        radius = safeRadius
+        thetaMax = safeRadius == 0 ? 0 : asin(min(safeMaxX / safeRadius, 1))
+        maxYOffset = Self.yOffset(for: safeMaxX, centerY: safeCenterY, radius: safeRadius)
     }
 
     func offset(for translationX: CGFloat) -> (offset: CGSize, theta: CGFloat) {
         let clampedX = min(max(translationX, -maxX), maxX)
-        let theta = asin(abs(clampedX) / radius)
-        let y = centerY + radius * cos(theta)
+        let theta = radius == 0 ? 0 : asin(min(abs(clampedX) / radius, 1))
+        let y = Self.yOffset(for: clampedX, centerY: centerY, radius: radius)
         return (CGSize(width: clampedX, height: y), theta)
     }
 
     func isBeyondThreshold(theta: CGFloat) -> Bool {
         theta >= thetaMax * 0.2
+    }
+
+    private static func yOffset(for x: CGFloat, centerY: CGFloat, radius: CGFloat) -> CGFloat {
+        centerY - sqrt(max((radius * radius) - (x * x), 0))
     }
 }
 
