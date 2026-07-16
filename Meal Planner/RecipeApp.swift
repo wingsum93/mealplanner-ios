@@ -17,7 +17,13 @@ struct RecipeApp: App {
     @StateObject private var favVM: FavouriteViewModel
     @StateObject private var settingsVM: SettingsViewModel
     init() {
-        let mc = try! ModelContainer(for: RecipeEntity.self, IngredientEntity.self)
+        let isUITestingInMemoryStore = CommandLine.arguments.contains("-uiTestingInMemoryStore")
+        let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: isUITestingInMemoryStore)
+        let mc = try! ModelContainer(
+            for: RecipeEntity.self,
+            IngredientEntity.self,
+            configurations: modelConfiguration
+        )
         let container = AppDIContainer(modelContext: ModelContext(mc),
                                        networkClient: AlamofireNetworkClient())
         _di = State(initialValue: container)

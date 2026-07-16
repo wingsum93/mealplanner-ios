@@ -56,7 +56,6 @@ final class FavouriteViewModel: ObservableObject {
                 if !Task.isCancelled {
                     reduce(.setItems([]))
                     reduce(.setPhase(.error("Failed to load favourites.")))
-                    reduce(.setError(error.localizedDescription))
                 }
             }
         }

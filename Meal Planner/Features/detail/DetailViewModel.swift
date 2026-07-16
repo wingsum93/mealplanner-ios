@@ -40,14 +40,18 @@ final class DetailViewModel: ObservableObject {
     }
 
     private func setData(_ item:UIRecipeItem){
-        reduce(.setItem(item))
-        guard let domainItem = item.toDomain() else {
+        guard let id = Int64(item.id) else {
             #if DEBUG
             print("❌ saveRecipe error: invalid id \(item.id)")
             #endif
             return
         }
-        
+
+        let reconciledItem = item.with(isFavorite: repo.isFavourite(id: id))
+        reduce(.setItem(reconciledItem))
+
+        guard let domainItem = reconciledItem.toDomain() else { return }
+
         do {
             try repo.saveRecipe(domainItem)
         } catch {

@@ -11,6 +11,18 @@ import Testing
 struct DetailViewModelTests {
 
     @MainActor
+    @Test func detailInitialFavoriteStateUsesSavedBookmark() {
+        let savedFavorite = makeRecipe(id: 7, title: "Detail", isFavorite: true)
+        let repository = FavoriteRecipeRepository(favorites: [savedFavorite])
+        let viewModel = DetailViewModel(repository: repository)
+        let staleItem = makeRecipe(id: 7, title: "Detail", isFavorite: false).toUI()
+
+        viewModel.onIntent(.setItem(staleItem))
+
+        #expect(viewModel.state.item?.isFavorite == true)
+    }
+
+    @MainActor
     @Test func detailToggleFavoriteRollsBackOnFailure() async throws {
         let repository = FavoriteRecipeRepository()
         repository.shouldFailUpdate = true

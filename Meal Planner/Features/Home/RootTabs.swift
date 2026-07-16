@@ -28,7 +28,9 @@ struct RootTabs: View {
             RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
                 .tabItem{Label("Home", systemImage: "house")}
             
-            FavouriteScreen()
+            NavigationStack {
+                FavouriteScreen()
+            }
                 .tabItem{
                     Label("Favourite", systemImage: "star.fill")
                 }

@@ -106,6 +106,7 @@ final class AuthLocalDataSourceSpy: LoginLocalDataSource {
 
 final class FavoriteRecipeRepository: RecipeRepository {
     var favorites: [RecipeItem]
+    var shouldFailLoad = false
     var shouldFailUpdate = false
 
     init(favorites: [RecipeItem] = []) {
@@ -134,7 +135,11 @@ final class FavoriteRecipeRepository: RecipeRepository {
     }
 
     func getAllFavoriteRecipes() throws -> [RecipeItem] {
-        favorites.filter(\.isFavorite)
+        if shouldFailLoad {
+            throw TestError.expected
+        }
+
+        return favorites.filter(\.isFavorite)
     }
 
     func getAllIngredients() async throws -> [Ingredient] { [] }
