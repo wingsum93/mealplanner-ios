@@ -152,13 +152,42 @@ final class FavoriteRecipeRepository: RecipeRepository {
 
 final class SettingsLocalDataSourceSpy: RecipeLocalDataSource {
     var error: Error?
+    var summary = SettingsDataSummary(
+        savedRecipeCount: 3,
+        favoriteRecipeCount: 1,
+        cachedCategoryCount: 2,
+        cachedAreaCount: 4,
+        cachedIngredientCount: 5
+    )
+    private(set) var summaryCallCount = 0
+    private(set) var clearBrowseCacheCallCount = 0
+    private(set) var clearLookupCachesCallCount = 0
+    private(set) var resetFavoritesCallCount = 0
 
-    func clearCachedRecipes() throws {
+    func getSettingsDataSummary() throws -> SettingsDataSummary {
+        summaryCallCount += 1
         if let error { throw error }
+        return summary
+    }
+
+    func clearBrowseCachePreservingFavorites() throws {
+        clearBrowseCacheCallCount += 1
+        if let error { throw error }
+        summary.savedRecipeCount = summary.favoriteRecipeCount
+    }
+
+    func clearLookupCaches() throws {
+        clearLookupCachesCallCount += 1
+        if let error { throw error }
+        summary.cachedCategoryCount = 0
+        summary.cachedAreaCount = 0
+        summary.cachedIngredientCount = 0
     }
 
     func resetFavorites() throws {
+        resetFavoritesCallCount += 1
         if let error { throw error }
+        summary.favoriteRecipeCount = 0
     }
 
     func saveRecipe(_ item: RecipeEntity) throws {}

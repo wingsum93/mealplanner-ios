@@ -19,12 +19,70 @@ struct SettingsScreen: View {
     
     var body: some View {
         List {
-            Section("Data") {
-                Button("Clear cached recipes") {
-                    pendingAction = .clearCachedRecipes
+            Section("Storage Overview") {
+                SettingsSummaryRow(
+                    title: "Saved recipes",
+                    value: settingsViewModel.state.summary.savedRecipeCount,
+                    systemImage: "fork.knife"
+                )
+                SettingsSummaryRow(
+                    title: "Favorites",
+                    value: settingsViewModel.state.summary.favoriteRecipeCount,
+                    systemImage: "star.fill"
+                )
+                SettingsSummaryRow(
+                    title: "Categories",
+                    value: settingsViewModel.state.summary.cachedCategoryCount,
+                    systemImage: "square.grid.2x2"
+                )
+                SettingsSummaryRow(
+                    title: "Areas",
+                    value: settingsViewModel.state.summary.cachedAreaCount,
+                    systemImage: "map"
+                )
+                SettingsSummaryRow(
+                    title: "Ingredients",
+                    value: settingsViewModel.state.summary.cachedIngredientCount,
+                    systemImage: "leaf"
+                )
+            }
+
+            if settingsViewModel.state.statusMessage != nil || settingsViewModel.state.errorMessage != nil {
+                Section("Status") {
+                    if let statusMessage = settingsViewModel.state.statusMessage {
+                        Label(statusMessage, systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+                    if let errorMessage = settingsViewModel.state.errorMessage {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                    }
                 }
-                Button("Reset favorites") {
+            }
+
+            Section("Data Tools") {
+                Button {
+                    settingsViewModel.onIntent(.loadSummary)
+                } label: {
+                    Label("Reload storage overview", systemImage: "arrow.clockwise")
+                }
+
+                Button {
+                    pendingAction = .clearBrowseCache
+                } label: {
+                    Label("Clear browse cache", systemImage: "trash")
+                }
+
+                Button {
+                    pendingAction = .clearLookupCaches
+                } label: {
+                    Label("Clear lookup caches", systemImage: "tray")
+                }
+
+                Button(role: .destructive) {
                     pendingAction = .resetFavorites
+                } label: {
+                    Label("Reset favorites", systemImage: "star.slash")
                 }
             }
 
@@ -56,6 +114,9 @@ struct SettingsScreen: View {
             }
         }
         .listStyle(.insetGrouped)
+        .task {
+            settingsViewModel.onIntent(.loadSummary)
+        }
         .confirmationDialog(
             "Confirm action",
             isPresented: Binding(get: { pendingAction != nil }, set: { if !$0 { pendingAction = nil } })
@@ -70,16 +131,8 @@ struct SettingsScreen: View {
         } message: {
             Text(pendingAction?.confirmMessage ?? "")
         }
-        .alert(
-            "Unable to update data",
-            isPresented: Binding(
-                get: { settingsViewModel.state.errorMessage != nil },
-                set: { if !$0 { settingsViewModel.onIntent(.clearError) } }
-            )
-        ) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(settingsViewModel.state.errorMessage ?? "")
+        .onDisappear {
+            settingsViewModel.onIntent(.clearStatus)
         }
     }
 
@@ -130,6 +183,33 @@ private struct MockRecipeLocalDataSource: RecipeLocalDataSource {
     func updateFavorite(id: Int64, isFavorite: Bool) throws { }
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeEntity] { [] }
-    func clearCachedRecipes() throws { }
+    func getSettingsDataSummary() throws -> SettingsDataSummary {
+        SettingsDataSummary(
+            savedRecipeCount: 12,
+            favoriteRecipeCount: 4,
+            cachedCategoryCount: 8,
+            cachedAreaCount: 6,
+            cachedIngredientCount: 20
+        )
+    }
+    func clearBrowseCachePreservingFavorites() throws { }
+    func clearLookupCaches() throws { }
     func resetFavorites() throws { }
+}
+
+private struct SettingsSummaryRow: View {
+    let title: String
+    let value: Int
+    let systemImage: String
+
+    var body: some View {
+        HStack {
+            Label(title, systemImage: systemImage)
+            Spacer()
+            Text(value.formatted())
+                .font(.headline)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+    }
 }

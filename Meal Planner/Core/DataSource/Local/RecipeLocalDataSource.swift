@@ -24,6 +24,8 @@ protocol RecipeLocalDataSource{
     func getAllFavoriteRecipes() throws -> [RecipeEntity]
 
     // settings
-    func clearCachedRecipes() throws
+    func getSettingsDataSummary() throws -> SettingsDataSummary
+    func clearBrowseCachePreservingFavorites() throws
+    func clearLookupCaches() throws
     func resetFavorites() throws
 }

@@ -24,8 +24,13 @@ struct RecipeApp: App {
         _appRouter = StateObject(wrappedValue: AppRouter())
         _homeVM = StateObject(wrappedValue: FeatureViewModel(repository: container.recipeRepository))
         _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
-        _favVM = StateObject(wrappedValue: FavouriteViewModel(repository: container.recipeRepository))
-        _settingsVM = StateObject(wrappedValue: container.makeSettingsViewModel())
+        let favouriteViewModel = FavouriteViewModel(repository: container.recipeRepository)
+        _favVM = StateObject(wrappedValue: favouriteViewModel)
+        _settingsVM = StateObject(
+            wrappedValue: container.makeSettingsViewModel {
+                favouriteViewModel.onIntent(.loadFavorites)
+            }
+        )
     }
     
     var body: some Scene {

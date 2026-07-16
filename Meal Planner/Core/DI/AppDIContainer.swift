@@ -50,7 +50,12 @@ final class AppDIContainer {
         FeatureViewModel(repository: _recipeRepository)
     }
 
-    func makeSettingsViewModel() -> SettingsViewModel {
-        SettingsViewModel(localDataSource: _recipeLocalDataSource)
+    func makeSettingsViewModel(
+        onFavoritesReset: @escaping @MainActor () -> Void = {}
+    ) -> SettingsViewModel {
+        SettingsViewModel(
+            localDataSource: _recipeLocalDataSource,
+            onFavoritesReset: onFavoritesReset
+        )
     }
 }

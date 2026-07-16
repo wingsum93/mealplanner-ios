@@ -44,6 +44,8 @@ private struct MockRecipeLocalDataSource: RecipeLocalDataSource {
     func updateFavorite(id: Int64, isFavorite: Bool) throws { }
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeEntity] { [] }
-    func clearCachedRecipes() throws { }
+    func getSettingsDataSummary() throws -> SettingsDataSummary { SettingsDataSummary() }
+    func clearBrowseCachePreservingFavorites() throws { }
+    func clearLookupCaches() throws { }
     func resetFavorites() throws { }
 }
