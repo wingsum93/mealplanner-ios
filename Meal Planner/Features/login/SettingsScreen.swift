@@ -152,7 +152,7 @@ struct SettingsScreen: View {
     }
 
     private var privacyPolicyURL: URL? {
-        URL(string: "https://www.mealplanner.app/privacy")
+        URL(string: "https://www.fatboytech.org/app-dish-mint/privacy")
     }
 
     private var lottieURL: URL {

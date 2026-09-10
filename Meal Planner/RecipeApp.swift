@@ -17,6 +17,8 @@ struct RecipeApp: App {
     @StateObject private var favVM: FavouriteViewModel
     @StateObject private var settingsVM: SettingsViewModel
     init() {
+        LegacyAuthStorageCleanup.removeLegacyAuthData()
+
         let isUITestingInMemoryStore = CommandLine.arguments.contains("-uiTestingInMemoryStore")
         let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: isUITestingInMemoryStore)
         let mc = try! ModelContainer(

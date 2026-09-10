@@ -78,32 +78,6 @@ final class DebouncedSearchRecipeRepository: RecipeRepository {
     func getAllFavoriteRecipes() throws -> [RecipeItem] { [] }
 }
 
-final class AuthLocalDataSourceSpy: LoginLocalDataSource {
-    var loginResult: Bool
-    var loggedIn: Bool
-
-    init(loginResult: Bool = true, loggedIn: Bool = false) {
-        self.loginResult = loginResult
-        self.loggedIn = loggedIn
-    }
-
-    func login(username: String, password: String) async -> Bool {
-        loginResult
-    }
-
-    func isLoggedIn() -> Bool {
-        loggedIn
-    }
-
-    func setLoggedIn(_ status: Bool) {
-        loggedIn = status
-    }
-
-    func logout() {
-        loggedIn = false
-    }
-}
-
 final class FavoriteRecipeRepository: RecipeRepository {
     var favorites: [RecipeItem]
     var shouldFailLoad = false

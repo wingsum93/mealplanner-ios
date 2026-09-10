@@ -7,7 +7,6 @@ use themealdb api
 - [ ] pretty detail screen
 - [x] lottie view
 - [ ] favorite screen, separate vm
-- [ ] login fullscreen?
 
 ### Obstacle
 - [] have not decide the data structure of fav 

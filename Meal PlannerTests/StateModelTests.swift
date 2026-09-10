@@ -27,12 +27,6 @@ struct StateModelTests {
         #expect(state.filteredItems.map(\.id) == ["1"])
     }
 
-    @Test func authStateCanSubmitRequiresCredentialsAndIdleSubmitState() {
-        #expect(AuthState().canSubmit == false)
-        #expect(AuthState(email: "eric", password: "test").canSubmit)
-        #expect(AuthState(email: "eric", password: "test", isLoggingIn: true).canSubmit == false)
-    }
-
     @Test func detailStatePresentationFollowsSelectedItem() {
         #expect(DetailState().isPresented == false)
         #expect(DetailState(item: UIRecipeItem.new(id: "1", name: "Recipe")).isPresented)
