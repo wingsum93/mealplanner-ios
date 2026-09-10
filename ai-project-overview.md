@@ -9,11 +9,11 @@ Presentation Layer
 
 SwiftUI Views (HomeScreen, ProfileScreen, RecipeMainPage, LoadedHomePageView, etc.)
 
-ViewModels following MVI (HomeViewModel, AuthViewModel)
+ViewModels following MVI (HomeViewModel, SettingsViewModel)
 
-HomeScreenState / AuthState to hold UI state
+HomeScreenState / SettingsState to hold UI state
 
-Intent enums to trigger actions (HomeIntent, AuthIntent)
+Intent enums to trigger actions (HomeIntent, SettingsIntent)
 
 Domain Layer
 
@@ -125,19 +125,11 @@ Categories & Areas as chips (wrapping layout)
 
 Profile Page
 
-If logged out → UnloggedInView with login button
+Renders SettingsScreen without account login
 
-If logged in → ProfileContentView with logout
+Shows storage overview, data tools, about links, and open-source links
 
-Triggers LoginBottomSheet
-
-Login Flow
-
-AuthViewModel manages isLoggedIn state (@MainActor, @Published)
-
-Local login with stored credentials in UserDefaults
-
-Reactive UI updates via observed ViewModel state
+Startup cleanup removes legacy fake-login UserDefaults keys from older installs
 
 🧩 Utility & UI Components
 RecipeCardSmall / RecipeCardLarge — reusable recipe cards

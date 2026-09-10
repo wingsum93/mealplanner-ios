@@ -18,8 +18,8 @@ struct TextChip: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(
-            Capsule().fill(Color.white.opacity(0.85))
+            Capsule().fill(.thinMaterial)
         )
-        .foregroundStyle(.black.opacity(0.8))
+        .foregroundStyle(.primary)
     }
 }

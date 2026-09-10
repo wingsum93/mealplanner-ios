@@ -49,4 +49,13 @@ final class AppDIContainer {
         // HomeViewModel is typically @MainActor, so creating it here is safe.
         FeatureViewModel(repository: _recipeRepository)
     }
+
+    func makeSettingsViewModel(
+        onFavoritesReset: @escaping @MainActor () -> Void = {}
+    ) -> SettingsViewModel {
+        SettingsViewModel(
+            localDataSource: _recipeLocalDataSource,
+            onFavoritesReset: onFavoritesReset
+        )
+    }
 }

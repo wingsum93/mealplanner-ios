@@ -38,4 +38,93 @@ final class Meal_PlannerUITests: XCTestCase {
             XCUIApplication().launch()
         }
     }
+
+    @MainActor
+    func testFavouriteTabFirstVisitShowsEmptyStateAfterLoading() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestingInMemoryStore"]
+        app.launch()
+
+        let favouriteTab = app.tabBars.buttons["Favourite"]
+        XCTAssertTrue(favouriteTab.waitForExistence(timeout: 5), "Favourite tab was not found.")
+        favouriteTab.tap()
+
+        let favouriteTitle = app.navigationBars.staticTexts["Favourites"]
+        XCTAssertTrue(favouriteTitle.waitForExistence(timeout: 5), "Favourite navigation title did not appear.")
+
+        let emptyState = app.otherElements["favourite.empty"]
+        XCTAssertTrue(emptyState.waitForExistence(timeout: 5), "Favourite empty state did not appear after loading.")
+    }
+
+    @MainActor
+    func testNavigateToSearchFromHomeSearchEntry() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let searchEntry = app.buttons["home.searchEntry"]
+        XCTAssertTrue(waitAndReveal(element: searchEntry, in: app), "Home search entry was not found.")
+        searchEntry.tap()
+
+        let searchTitle = app.navigationBars.staticTexts["Search"]
+        XCTAssertTrue(searchTitle.waitForExistence(timeout: 5), "Failed to open Search screen.")
+
+        let identifiedSearchField = app.textFields["search.field"]
+        let placeholderSearchField = app.textFields["Search recipes…"]
+        let didFindSearchField = identifiedSearchField.waitForExistence(timeout: 3) || placeholderSearchField.waitForExistence(timeout: 3)
+        XCTAssertTrue(didFindSearchField, "Search field did not appear.")
+    }
+
+    @MainActor
+    func testNavigateToRandomPickAndCapture() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let randomPickButton = app.buttons["Random Pick"]
+        XCTAssertTrue(waitAndReveal(element: randomPickButton, in: app), "Random Pick button was not found on Home screen.")
+        randomPickButton.tap()
+
+        let randomPickTitle = app.navigationBars.staticTexts["Random Pick"]
+        XCTAssertTrue(randomPickTitle.waitForExistence(timeout: 10), "Failed to open Random Pick screen.")
+
+        let topCard = app.otherElements["randomPick.topCard"].firstMatch
+        XCTAssertTrue(topCard.waitForExistence(timeout: 15), "Top random pick card was not found.")
+        XCTAssertTrue(topCard.isHittable, "Top random pick card should be hittable.")
+
+        let appFrame = app.frame
+        XCTAssertGreaterThan(topCard.frame.width, 0, "Top random pick card width should be non-zero.")
+        XCTAssertLessThan(topCard.frame.width, appFrame.width * 0.95, "Top random pick card should not stretch to full screen width.")
+
+        let topCardImage = app.otherElements["randomPick.topCard.image"].firstMatch
+        XCTAssertTrue(topCardImage.exists, "Top random pick image layer was not found.")
+
+        // Give async image loading a short window before capture.
+        sleep(2)
+        let screenshot = XCUIScreen.main.screenshot()
+        let attachment = XCTAttachment(screenshot: screenshot)
+        attachment.name = "random-pick-screen"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    private func waitAndReveal(element: XCUIElement, in app: XCUIApplication, maxSwipes: Int = 6) -> Bool {
+        if element.waitForExistence(timeout: 3) && element.isHittable {
+            return true
+        }
+
+        for _ in 0..<maxSwipes {
+            app.swipeUp()
+            if element.waitForExistence(timeout: 1.5) && element.isHittable {
+                return true
+            }
+        }
+
+        for _ in 0..<maxSwipes {
+            app.swipeDown()
+            if element.waitForExistence(timeout: 1.5) && element.isHittable {
+                return true
+            }
+        }
+
+        return element.waitForExistence(timeout: 1)
+    }
 }

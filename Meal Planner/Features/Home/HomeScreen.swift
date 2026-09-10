@@ -8,25 +8,47 @@
 import SwiftUI
 struct HomeScreen: View {
     @ObservedObject var vm: FeatureViewModel
+    let heroNamespace: Namespace.ID
+    @EnvironmentObject private var appRouter: AppRouter
 
     var body: some View {
         ScrollView {
-            // 5) Search bar (navigates to Search page)
-            SearchBar(placeholder: "Search recipes…") {
-                vm.onIntent(.goToSearch)
+            searchEntry
+
+            if isInitialHomeLoading {
+                SkeletonHomePageView()
+            } else {
+                homeContent
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+        }
+        .navigationTitle("Recipes")
+    }
+
+    private var searchEntry: some View {
+        SearchBar(placeholder: "Search recipes…") {
+            appRouter.push(.search)
+        }
+        .matchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
+        .accessibilityIdentifier("home.searchEntry")
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: SearchEntryCenterPreferenceKey.self,
+                    value: proxy.frame(in: .named(HeroSearchTransition.coordinateSpace)).center
+                )
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+    }
+
+    private var homeContent: some View {
+        Group {
             // 1) Featured random recipe
             if let featured = vm.state.home.featured {
                 RecipeHeroCard(item: featured)
-                    .onTapGesture { vm.onIntent(.goToDetail(featured.id)) }
+                    .onTapGesture { appRouter.presentRecipeDetail(featured) }
                     .padding(.horizontal, 16)
-                    
-            } else if vm.state.home.phase == .loading {
-                RecipeHeroCard(item: .sample)
-                    .padding(.horizontal, 16)
-                    .shimmer(vm.state.home.phase == .loading)
             }
 
             // 2) Areas horizontal
@@ -35,14 +57,14 @@ struct HomeScreen: View {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.areas, id: \.self) { area in
                         Button {
-                            vm.onIntent(.goToArea(area))
+                            vm.onIntent(.loadArea(area))
+                            appRouter.push(.area(area))
                         } label: {
                             ImageSquareChip(text: area, imageLink: area.getAreaImageURL())
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
                         }
                         .buttonStyle(.plain)
                     }
-                    
                 }.padding(.horizontal, 16)
             }
 
@@ -52,7 +74,8 @@ struct HomeScreen: View {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.categories, id: \.self) { cat in
                         Button {
-                            vm.onIntent(.goToCategory(cat))
+                            vm.onIntent(.loadCategory(cat))
+                            appRouter.push(.category(cat))
                         } label: {
                             ImageSquareChip(text: cat, imageLink: cat.mealCategoryImageLink)
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
@@ -64,21 +87,38 @@ struct HomeScreen: View {
 
             // 4) Random 10 horizontal
             SectionHeader("Discover")
+            Button {
+                appRouter.presentRandomPick()
+            } label: {
+                Label("Random Pick", systemImage: "sparkles")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 4)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.randomTen, id: \.id) { item in
-                        RecipeCardSmall(item: item)
-                            .onTapGesture { vm.onIntent(.goToDetail(item.id)) }
+                        RecipeCardSmall(item: item, width: 150)
+                            .onTapGesture { appRouter.presentRecipeDetail(item) }
                     }
                 }.padding(.horizontal, 16)
             }
         }
-        .overlay {
-            if case .loading = vm.state.home.phase {
-                SkeletonHomePageView() // your loader
-            }
-        }
-        .navigationTitle("Recipes")
+    }
+
+    private var isInitialHomeLoading: Bool {
+        vm.state.home.phase == .loading
+        && vm.state.home.featured == nil
+        && vm.state.home.areas.isEmpty
+        && vm.state.home.categories.isEmpty
+        && vm.state.home.randomTen.isEmpty
     }
 }
 
+private extension CGRect {
+    var center: CGPoint {
+        CGPoint(x: midX, y: midY)
+    }
+}

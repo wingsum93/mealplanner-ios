@@ -18,6 +18,5 @@ struct RecipeItem: Identifiable, Equatable {
     let instructions: [String]
     let tags: [String]
     let isFavorite: Bool
-    let rating: Int64
 }
 

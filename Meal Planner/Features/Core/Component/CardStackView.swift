@@ -1,0 +1,384 @@
+//
+//  CardStackView.swift
+//  Meal Planner
+//
+//  Created by eric ho on 29/8/2025.
+//
+import SwiftUI
+
+enum SwipeDirection {
+    case left
+    case right
+}
+
+struct CardStackLayout {
+    static let maxVisibleCards = 3
+    static let peekStep: CGFloat = 14
+    static let cardWidthFactor: CGFloat = 0.85
+    static let portraitWidthToHeight: CGFloat = 9.0 / 16.0
+    static let maxRotationDegrees: Double = 30
+
+    private let scales: [CGFloat] = [1.00, 0.96, 0.92]
+    private let opacities: [Double] = [1.00, 0.90, 0.80]
+
+    struct Sizing {
+        let cardWidth: CGFloat
+        let cardHeight: CGFloat
+        let stackHeight: CGFloat
+    }
+
+    var totalPeekHeight: CGFloat {
+        Self.peekStep * CGFloat(Self.maxVisibleCards - 1)
+    }
+
+    func visibleItems(from items: [UIRecipeItem]) -> [CardStackVisibleItem] {
+        Array(items.prefix(Self.maxVisibleCards).enumerated()).map { offset, element in
+            CardStackVisibleItem(offset: offset, element: element)
+        }
+    }
+
+    func offset(for index: Int) -> CGSize {
+        CGSize(width: 0, height: CGFloat(index) * Self.peekStep)
+    }
+
+    func scale(for index: Int) -> CGFloat {
+        scales[clamped(index, upperBound: scales.count - 1)]
+    }
+
+    func opacity(for index: Int) -> Double {
+        opacities[clamped(index, upperBound: opacities.count - 1)]
+    }
+
+    func sizing(in size: CGSize) -> Sizing {
+        let preferredCardWidth = max(size.width * Self.cardWidthFactor, 1)
+        let preferredCardHeight = preferredCardWidth / Self.portraitWidthToHeight
+        let availableCardHeight = size.height - totalPeekHeight
+        if availableCardHeight <= 0 {
+            return Sizing(
+                cardWidth: preferredCardWidth,
+                cardHeight: preferredCardHeight,
+                stackHeight: preferredCardHeight + totalPeekHeight
+            )
+        }
+        let cardHeight = min(preferredCardHeight, availableCardHeight)
+        let cardWidth = cardHeight * Self.portraitWidthToHeight
+        return Sizing(
+            cardWidth: cardWidth,
+            cardHeight: cardHeight,
+            stackHeight: cardHeight + totalPeekHeight
+        )
+    }
+
+    static func rotationDegrees(dragX: CGFloat, maxX: CGFloat) -> Double {
+        guard maxX != 0 else { return 0 }
+        return Double(dragX / maxX) * Self.maxRotationDegrees
+    }
+
+    private func clamped(_ value: Int, upperBound: Int) -> Int {
+        min(max(value, 0), upperBound)
+    }
+}
+
+struct CardStackVisibleItem: Identifiable, Equatable {
+    let offset: Int
+    let element: UIRecipeItem
+
+    var id: String { element.id }
+}
+
+struct CardStackView: View {
+    @Binding var items: [UIRecipeItem]
+    var onSwipe: ((UIRecipeItem, SwipeDirection) -> Void)?
+
+    @State private var dragOffset: CGSize = .zero
+    @State private var dragTheta: CGFloat = 0
+    @State private var swipeDirection: SwipeDirection?
+    @State private var lastSwiped: (item: UIRecipeItem, direction: SwipeDirection)?
+    @State private var isAnimatingOut = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            let layout = CardStackLayout()
+            let sizing = layout.sizing(in: size)
+            let cardWidth = sizing.cardWidth
+            let cardHeight = sizing.cardHeight
+            let stackHeight = sizing.stackHeight
+            let visibleItems = layout.visibleItems(from: items)
+            let arc = ArcDragGeometry(
+                maxX: cardWidth * 0.55,
+                centerY: size.height * 1.5
+            )
+
+            ZStack(alignment: .top) {
+                ZStack(alignment: .top) {
+                    ForEach(visibleItems) { visibleItem in
+                        let index = visibleItem.offset
+                        let item = visibleItem.element
+                        let isTopCard = index == 0
+                        SwipeCardView(
+                            item: item,
+                            isTopCard: isTopCard,
+                            swipeDirection: isTopCard ? swipeDirection : nil,
+                            swipeProgress: isTopCard ? swipeProgress(for: arc) : 0
+                        )
+                            .frame(width: cardWidth, height: cardHeight)
+                            .scaleEffect(layout.scale(for: index), anchor: .top)
+                            .opacity(layout.opacity(for: index))
+                            .offset(layout.offset(for: index))
+                            .offset(index == 0 ? dragOffset : .zero)
+                            .rotationEffect(index == 0 ? Angle(degrees: rotation(for: arc)) : .zero)
+                            .zIndex(Double(visibleItems.count - index))
+                            .allowsHitTesting(index == 0)
+                            .gesture(index == 0 ? dragGesture(arc: arc) : nil)
+                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: dragOffset)
+                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: items)
+                    }
+                }
+                .frame(width: cardWidth, height: stackHeight, alignment: .top)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+                if let lastSwiped {
+                    VStack {
+                        Spacer()
+                        undoButton(for: lastSwiped, arc: arc)
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+    }
+
+    private func dragGesture(arc: ArcDragGeometry) -> some Gesture {
+        DragGesture()
+            .onChanged { value in
+                guard items.first != nil, !isAnimatingOut else { return }
+                let result = arc.offset(for: value.translation.width)
+                dragOffset = result.offset
+                dragTheta = result.theta
+                swipeDirection = result.offset.width > 0 ? .right : result.offset.width < 0 ? .left : nil
+            }
+            .onEnded { value in
+                guard items.first != nil, !isAnimatingOut else { return }
+                let result = arc.offset(for: value.translation.width)
+                if arc.isBeyondThreshold(theta: result.theta) {
+                    performSwipe(direction: result.offset.width >= 0 ? .right : .left, arc: arc)
+                } else {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        dragOffset = .zero
+                        dragTheta = 0
+                        swipeDirection = nil
+                    }
+                }
+            }
+    }
+
+    private func performSwipe(direction: SwipeDirection, arc: ArcDragGeometry) {
+        guard let item = items.first else { return }
+        let sign: CGFloat = direction == .right ? 1 : -1
+        let finalOffset = CGSize(width: arc.maxX * 1.35 * sign, height: arc.maxYOffset)
+
+        isAnimatingOut = true
+        swipeDirection = direction
+        withAnimation(.easeInOut(duration: 0.25)) {
+            dragOffset = finalOffset
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            _ = withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                items.removeFirst()
+            }
+            lastSwiped = (item: item, direction: direction)
+            onSwipe?(item, direction)
+            dragOffset = .zero
+            dragTheta = 0
+            swipeDirection = nil
+            isAnimatingOut = false
+        }
+    }
+
+    private func undoButton(for last: (item: UIRecipeItem, direction: SwipeDirection), arc: ArcDragGeometry) -> some View {
+        Button {
+            undoSwipe(last: last, arc: arc)
+        } label: {
+            Label("Undo", systemImage: "arrow.uturn.backward")
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial, in: Capsule())
+        }
+        .padding(.bottom, 8)
+        .disabled(isAnimatingOut)
+    }
+
+    private func undoSwipe(last: (item: UIRecipeItem, direction: SwipeDirection), arc: ArcDragGeometry) {
+        guard !isAnimatingOut else { return }
+        let sign: CGFloat = last.direction == .right ? 1 : -1
+        let startOffset = CGSize(width: arc.maxX * 1.1 * sign, height: arc.maxYOffset)
+
+        isAnimatingOut = true
+        lastSwiped = nil
+        withAnimation(.none) {
+            items.insert(last.item, at: 0)
+            dragOffset = startOffset
+        }
+        DispatchQueue.main.async {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+                dragOffset = .zero
+            }
+            dragTheta = 0
+            swipeDirection = nil
+            isAnimatingOut = false
+        }
+    }
+
+    private func rotation(for arc: ArcDragGeometry) -> Double {
+        CardStackLayout.rotationDegrees(dragX: dragOffset.width, maxX: arc.maxX)
+    }
+
+    private func swipeProgress(for arc: ArcDragGeometry) -> CGFloat {
+        guard arc.thetaMax != 0 else { return 0 }
+        return min(dragTheta / arc.thetaMax, 1)
+    }
+}
+
+private enum RandomPickAccessibilityID {
+    static let topCard = "randomPick.topCard"
+    static let topCardImage = "randomPick.topCard.image"
+}
+
+private struct ArcDragGeometry {
+    let maxX: CGFloat
+    let maxYOffset: CGFloat
+    let centerY: CGFloat
+    let radius: CGFloat
+    let thetaMax: CGFloat
+
+    init(maxX: CGFloat, centerY: CGFloat) {
+        let safeMaxX = max(maxX, 0)
+        let safeCenterY = max(centerY, safeMaxX + 1)
+        let safeRadius = safeCenterY
+
+        self.maxX = safeMaxX
+        self.centerY = safeCenterY
+        radius = safeRadius
+        thetaMax = safeRadius == 0 ? 0 : asin(min(safeMaxX / safeRadius, 1))
+        maxYOffset = Self.yOffset(for: safeMaxX, centerY: safeCenterY, radius: safeRadius)
+    }
+
+    func offset(for translationX: CGFloat) -> (offset: CGSize, theta: CGFloat) {
+        let clampedX = min(max(translationX, -maxX), maxX)
+        let theta = radius == 0 ? 0 : asin(min(abs(clampedX) / radius, 1))
+        let y = Self.yOffset(for: clampedX, centerY: centerY, radius: radius)
+        return (CGSize(width: clampedX, height: y), theta)
+    }
+
+    func isBeyondThreshold(theta: CGFloat) -> Bool {
+        theta >= thetaMax * 0.2
+    }
+
+    private static func yOffset(for x: CGFloat, centerY: CGFloat, radius: CGFloat) -> CGFloat {
+        centerY - sqrt(max((radius * radius) - (x * x), 0))
+    }
+}
+
+private struct SwipeCardView: View {
+    let item: UIRecipeItem
+    let isTopCard: Bool
+    let swipeDirection: SwipeDirection?
+    let swipeProgress: CGFloat
+    private let cardShape = RoundedRectangle(cornerRadius: 28, style: .continuous)
+
+    var body: some View {
+        cardShape
+            .fill(Color(.systemGray5))
+            .overlay {
+                imageLayer
+            }
+            .overlay {
+                LinearGradient(
+                colors: [.clear, .black.opacity(0.65)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(item.name)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                    if let area = item.area, let category = item.category {
+                        Text("\(area) • \(category)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                }
+                .padding(20)
+            }
+            .overlay {
+                SwipeCardFeedbackOverlay(
+                    direction: swipeDirection,
+                    progress: swipeProgress
+                )
+            }
+        .clipShape(cardShape)
+        .contentShape(cardShape)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCard : "randomPick.card")
+        .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 8)
+    }
+
+    private var imageLayer: some View {
+        AsyncImage(url: item.thumbURL) { phase in
+            if let image = phase.image {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                Rectangle()
+                    .fill(Color(.systemGray5))
+                    .overlay(
+                        ProgressView()
+                    )
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+        .accessibilityElement(children: .ignore)
+        .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCardImage : "randomPick.card.image")
+    }
+}
+
+private struct SwipeCardFeedbackOverlay: View {
+    let direction: SwipeDirection?
+    let progress: CGFloat
+
+    var body: some View {
+        ZStack {
+            if let direction {
+                Color(direction == .right ? .systemRed : .systemGray)
+                    .opacity(min(progress * 0.45, 0.35))
+
+                Image(systemName: direction == .right ? "heart.fill" : "xmark")
+                    .font(.system(size: 52, weight: .bold))
+                    .foregroundStyle(.white)
+                    .shadow(radius: 8)
+                    .opacity(min(progress * 1.2, 1))
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+#Preview {
+    CardStackView(items: .constant([
+        .sample,
+        .new(id: "2", name: "Spiced Noodles"),
+        .new(id: "3", name: "Citrus Salad"),
+        .new(id: "4", name: "Veggie Sushi"),
+        .new(id: "5", name: "Miso Ramen")
+    ]))
+    .padding()
+    .background(Color(.systemGroupedBackground))
+}

@@ -8,39 +8,70 @@ import SwiftUI
 import SwiftData
 
 struct RootTabs: View {
-    @State private var showLoginDialog = false
-    @StateObject private var authViewModel:AuthViewModel
+    @EnvironmentObject private var appRouter: AppRouter
+    @EnvironmentObject private var detailVM: DetailViewModel
+    @StateObject private var settingsViewModel: SettingsViewModel
     @StateObject private var vm:FeatureViewModel
     @Namespace private var heroNS  // shared namespace
     
-    init( homeViewModel:FeatureViewModel,authViewModel:AuthViewModel) {
-        _authViewModel = StateObject(wrappedValue: authViewModel)
+    init(
+        homeViewModel: FeatureViewModel,
+        settingsViewModel: SettingsViewModel
+    ) {
+        _settingsViewModel = StateObject(wrappedValue: settingsViewModel)
         _vm = StateObject(wrappedValue:homeViewModel)
     }
     
     var body: some View{
         
         TabView{
-            RecipeMainPage(viewModel: vm)
+            RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
                 .tabItem{Label("Home", systemImage: "house")}
             
-            FavouriteScreen()
+            NavigationStack {
+                FavouriteScreen()
+            }
                 .tabItem{
                     Label("Favourite", systemImage: "star.fill")
                 }
-            ProfileScreen(authViewModel: authViewModel){
-                showLoginDialog = true
+            ProfileScreen(
+                settingsViewModel: settingsViewModel
+            )
+            .tabItem{
+                Label("Profile", systemImage: "person.circle")
             }
-                .tabItem{
-                    Label("Profile", systemImage: "person.circle")
-                }
-            SelfEsteem(click: { showLoginDialog = !showLoginDialog})
-                .tabItem{
-                    Label("Me", systemImage: "star.fill")
-                }
             
-        }.sheet(isPresented: $showLoginDialog) {
-            LoginBottomSheet(authViewModel: authViewModel)
+        }
+        .sheet(item: $appRouter.activeSheet, onDismiss: {
+            detailVM.onIntent(.dismiss)
+        }) { sheet in
+            switch sheet {
+            case .recipeDetail(let item):
+                DetailSheetView(item: item, vm: detailVM)
+                    .presentationDetents([ .large,.medium])
+                    .presentationDragIndicator(.visible)
+                    .background(Color(.systemGray6))
+                    .presentationSizing(.page)
+            }
+        }
+        .fullScreenCover(item: $appRouter.activeFullScreenCover) { cover in
+            switch cover {
+            case .randomPick:
+                NavigationStack {
+                    RandomPickScreen(vm: vm)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button {
+                                    appRouter.dismissFullScreenCover()
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.headline)
+                                }
+                                .accessibilityLabel("Close")
+                            }
+                        }
+                }
+            }
         }
     }
     

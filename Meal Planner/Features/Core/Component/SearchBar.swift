@@ -27,6 +27,9 @@ struct SearchBar: View {
                 .fill(Color(.systemGray6))
         )
         .contentShape(Rectangle()) // ensures full tap area
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(placeholder)
+        .accessibilityAddTraits(.isButton)
         .onTapGesture(perform: onTap)
     }
 }

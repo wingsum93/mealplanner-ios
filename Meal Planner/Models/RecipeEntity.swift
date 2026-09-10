@@ -21,7 +21,6 @@ final class RecipeEntity {
     var instructions: [String]
     var tags: [String]
     var isFavorite: Bool
-    var rating: Int64
 
     init(
         id: Int64,
@@ -35,8 +34,7 @@ final class RecipeEntity {
         measures: [String],
         instructions: [String],
         tags: [String],
-        isFavorite: Bool,
-        rating: Int64
+        isFavorite: Bool
     ) {
         self.id = id
         self.title = title
@@ -50,6 +48,5 @@ final class RecipeEntity {
         self.instructions = instructions
         self.tags = tags
         self.isFavorite = isFavorite
-        self.rating = rating
     }
 }

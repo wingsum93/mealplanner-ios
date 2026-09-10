@@ -6,16 +6,11 @@
 //
 
 enum HomeIntent {
-    // navigation
-    case goToArea(String)
-    case goToCategory(String)
-    case goToSearch
-    case goToDetail(String)
-    case pop
-    
     // home
     case loadHome
     case refreshHome
+    case loadRandomPick
+    case updateRandomPickItems([UIRecipeItem])
     
     // lists
     case loadArea(String)
@@ -24,8 +19,6 @@ enum HomeIntent {
     // search
     case updateQuery(String)
     case performSearch
+    case updateSearchFavorite(id: String, isFavorite: Bool)
     
-    // detail
-    case loadDetail(String)
-    case toggleFavorite(id: String, isFavorite: Bool)
 }

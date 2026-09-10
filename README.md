@@ -3,7 +3,14 @@ Swift UI mvi project :
 use themealdb api
 
 
+## Roadmap
+- [ ] pretty detail screen
+- [x] lottie view
+- [ ] favorite screen, separate vm
 
+### Obstacle
+- [] have not decide the data structure of fav 
+- [] attractive layout of favourite page, middle tab
 
 
 ## Data Source

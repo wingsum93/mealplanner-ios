@@ -9,6 +9,7 @@ import Kingfisher
 
 struct RecipeCardSmall: View {
     let item: UIRecipeItem
+    var width: CGFloat
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -18,19 +19,23 @@ struct RecipeCardSmall: View {
                 }
                 .resizable()
                 .scaledToFill()
-                .frame(width: 120, height: 120)
+                .frame(width: width, height: width) // square image
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
             Text(item.name)
                 .font(.subheadline)
                 .lineLimit(1)
-
-            TagChipsRow(tags: item.ingredients,availableWidth: 120)
-            .foregroundColor(.secondary)
+            let sortedTags = item.ingredients.sorted { $0.count < $1.count }
+            TagChipsRow(
+                tags: sortedTags,
+                availableWidth: width,
+                spacing: 6
+            )
         }
-        .frame(width: 120)
+        .frame(width: width,height: width + 40, alignment: .leading)
+        .padding(.bottom,8)
     }
 }
 #Preview {
-    RecipeCardSmall(item: .sample)
+    RecipeCardSmall(item: .sample,width: .infinity)
 }

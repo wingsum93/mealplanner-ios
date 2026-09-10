@@ -88,4 +88,48 @@ public final class RecipeLocalDataSourceImpl: RecipeLocalDataSource {
         )
         return try context.fetch(descriptor)
     }
+
+    func getSettingsDataSummary() throws -> SettingsDataSummary {
+        let descriptor = FetchDescriptor<RecipeEntity>()
+        let favoriteDescriptor = FetchDescriptor<RecipeEntity>(
+            predicate: #Predicate { $0.isFavorite == true }
+        )
+        let ingredientDescriptor = FetchDescriptor<IngredientEntity>()
+
+        return SettingsDataSummary(
+            savedRecipeCount: try context.fetchCount(descriptor),
+            favoriteRecipeCount: try context.fetchCount(favoriteDescriptor),
+            cachedCategoryCount: (try getAllCategories()).count,
+            cachedAreaCount: (try getAllAreas()).count,
+            cachedIngredientCount: try context.fetchCount(ingredientDescriptor)
+        )
+    }
+
+    func clearBrowseCachePreservingFavorites() throws {
+        let descriptor = FetchDescriptor<RecipeEntity>(
+            predicate: #Predicate { $0.isFavorite == false }
+        )
+        let recipes = try context.fetch(descriptor)
+        recipes.forEach { context.delete($0) }
+        try context.save()
+    }
+
+    func clearLookupCaches() throws {
+        UserDefaults.standard.removeObject(forKey: categoryKey)
+        UserDefaults.standard.removeObject(forKey: areaKey)
+
+        let descriptor = FetchDescriptor<IngredientEntity>()
+        let ingredients = try context.fetch(descriptor)
+        ingredients.forEach { context.delete($0) }
+        try context.save()
+    }
+
+    func resetFavorites() throws {
+        let descriptor = FetchDescriptor<RecipeEntity>(
+            predicate: #Predicate { $0.isFavorite == true }
+        )
+        let recipes = try context.fetch(descriptor)
+        recipes.forEach { $0.isFavorite = false }
+        try context.save()
+    }
 }

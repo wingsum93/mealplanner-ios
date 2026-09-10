@@ -9,28 +9,31 @@ import SwiftUI
 struct SearchScreen: View {
     @Binding var query: String
     var placeholder: String
-    var searchPhase: Phase
-    @Binding var searchResults: [UIRecipeItem]
+    var searchPhase: LoadPhase
+    var searchResults: [UIRecipeItem]
     var onCommit: () -> Void
     var onClear: () -> Void
-    var onItemTap: (String) -> Void
+    var onItemTap: (UIRecipeItem) -> Void
+    var onFavoriteToggle: (UIRecipeItem, Bool) -> Void
 
     init(
         query: Binding<String>,
         placeholder: String = "Search...",
-        searchPhase: Phase,
-        searchResults: Binding<[UIRecipeItem]>,
+        searchPhase: LoadPhase,
+        searchResults: [UIRecipeItem],
         onCommit: @escaping () -> Void = {},
         onClear: @escaping () -> Void = {},
-        onItemTap: @escaping (String) -> Void = { _ in }
+        onItemTap: @escaping (UIRecipeItem) -> Void = { _ in },
+        onFavoriteToggle: @escaping (UIRecipeItem, Bool) -> Void = { _, _ in }
     ) {
         self._query = query
         self.placeholder = placeholder
         self.searchPhase = searchPhase
-        self._searchResults = searchResults
+        self.searchResults = searchResults
         self.onCommit = onCommit
         self.onClear = onClear
         self.onItemTap = onItemTap
+        self.onFavoriteToggle = onFavoriteToggle
     }
     var body: some View {
         VStack(spacing: 0) {
@@ -45,6 +48,7 @@ struct SearchScreen: View {
 
             content
         }
+        .accessibilityIdentifier("search.container")
         .navigationTitle("Search")
     }
 
@@ -66,10 +70,12 @@ struct SearchScreen: View {
             } else {
                 List {
                     ForEach(searchResults, id: \.id) { item in
-                        SearchRecipeRow(item: item,showFavorite: true)
+                        SearchRecipeRow(item: item, showFavorite: true) { isFavorite in
+                            onFavoriteToggle(item, isFavorite)
+                        }
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                onItemTap(item.id)
+                                onItemTap(item)
                             }
                     }
                 }
@@ -97,7 +103,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .content,
-        searchResults: $results
+        searchResults: results
     )
 }
 
@@ -108,7 +114,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .loading,
-        searchResults: $results
+        searchResults: results
     )
 }
 
@@ -119,7 +125,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .empty,
-        searchResults: $results
+        searchResults: results
     )
 }
 #Preview("Error") {
@@ -129,7 +135,7 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .error("no s"),
-        searchResults: $results
+        searchResults: results
     )
 }
 #Preview("Idle") {
@@ -139,8 +145,6 @@ struct SearchScreen: View {
     SearchScreen(
         query: $query,
         searchPhase: .idle,
-        searchResults: $results
+        searchResults: results
     )
 }
-
-

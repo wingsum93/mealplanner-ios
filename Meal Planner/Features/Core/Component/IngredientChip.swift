@@ -67,7 +67,7 @@ struct IngredientChip: View {
 
         
     ScrollView(.horizontal, showsIndicators: false) {
-        HStack(spacing: 10) {
+        VStack(spacing: 10) {
             ForEach(items, id: \.name) { item in
                 IngredientChip(name: item.name, dose: item.dose, imageUrl: item.imageUrl)
             }

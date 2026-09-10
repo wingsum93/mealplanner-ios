@@ -20,8 +20,7 @@ extension RecipeEntity {
             measures: measures,
             instructions: instructions,
             tags: tags,
-            isFavorite: isFavorite,
-            rating: rating
+            isFavorite: isFavorite
         )
     }
 }
@@ -40,8 +39,7 @@ extension RecipeItem {
             measures: measures,
             instructions: instructions,
             tags: tags,
-            isFavorite: isFavorite,
-            rating: rating
+            isFavorite: isFavorite
         )
     }
     
@@ -58,6 +56,29 @@ extension RecipeItem {
             instructions: instructions,
             tags: tags,
             youtubeLink: youtubeLink,
+            isFavorite: isFavorite
+        )
+    }
+}
+
+extension UIRecipeItem {
+    func toDomain() -> RecipeItem? {
+        guard let id = Int64(id) else {
+            return nil
+        }
+        
+        return RecipeItem(
+            id: id,
+            title: name,
+            description: description,
+            category: category ?? "",
+            area: area ?? "",
+            imageUrl: thumbURL?.absoluteString ?? "",
+            youtubeLink: youtubeLink,
+            ingredients: ingredients,
+            measures: measures,
+            instructions: instructions,
+            tags: tags,
             isFavorite: isFavorite
         )
     }
@@ -130,8 +151,7 @@ extension RecipeItemDto {
             measures: measures,
             instructions: cleanedInstructions,
             tags:tags,
-            isFavorite: false,
-            rating: 3
+            isFavorite: false
         )
     }
     private func toSafeStringList(_ input: String?...) -> [String] {
@@ -219,5 +239,3 @@ extension IngredientEntity {
         )
     }
 }
-
-
