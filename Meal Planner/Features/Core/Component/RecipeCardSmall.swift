@@ -12,7 +12,7 @@ struct RecipeCardSmall: View {
     var width: CGFloat
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 5) {
             KFImage(item.thumbURL)
                 .placeholder {
                     Color.gray.allowsHitTesting(false) // 載入中顯示
@@ -25,6 +25,7 @@ struct RecipeCardSmall: View {
             Text(item.name)
                 .font(.subheadline)
                 .lineLimit(1)
+
             let sortedTags = item.ingredients.sorted { $0.count < $1.count }
             TagChipsRow(
                 tags: sortedTags,
@@ -32,10 +33,10 @@ struct RecipeCardSmall: View {
                 spacing: 6
             )
         }
-        .frame(width: width,height: width + 40, alignment: .leading)
-        .padding(.bottom,8)
+        .frame(width: width, height: width + 46, alignment: .leading)
+        .padding(.bottom, 8)
     }
 }
 #Preview {
-    RecipeCardSmall(item: .sample,width: .infinity)
+    RecipeCardSmall(item: .sample, width: 170)
 }
