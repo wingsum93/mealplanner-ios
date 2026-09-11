@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Kingfisher
+
 struct HomeScreen: View {
     @ObservedObject var vm: FeatureViewModel
     let heroNamespace: Namespace.ID
@@ -90,13 +92,14 @@ struct HomeScreen: View {
             Button {
                 appRouter.presentRandomPick()
             } label: {
-                Label("Random Pick", systemImage: "sparkles")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                RandomPickFeatureCard(items: Array(vm.state.home.randomTen.prefix(3)))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Random Pick")
+            .accessibilityIdentifier("home.randomPickCard")
             .padding(.horizontal, 16)
-            .padding(.bottom, 4)
+            .padding(.bottom, 8)
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(vm.state.home.randomTen, id: \.id) { item in
@@ -114,6 +117,85 @@ struct HomeScreen: View {
         && vm.state.home.areas.isEmpty
         && vm.state.home.categories.isEmpty
         && vm.state.home.randomTen.isEmpty
+    }
+}
+
+private struct RandomPickFeatureCard: View {
+    let items: [UIRecipeItem]
+
+    var body: some View {
+        HStack(spacing: 14) {
+            iconBadge
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Random Pick")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.primary)
+
+                Text("Swipe through 10 fresh recipe ideas.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 8)
+
+            if !items.isEmpty {
+                previewStack
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.secondary)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color(.separator).opacity(0.3), lineWidth: 1)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private var iconBadge: some View {
+        Image(systemName: "sparkles")
+            .font(.title3.weight(.bold))
+            .foregroundStyle(.white)
+            .frame(width: 44, height: 44)
+            .background(
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.orange, Color.pink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+    }
+
+    private var previewStack: some View {
+        HStack(spacing: -10) {
+            ForEach(items, id: \.id) { item in
+                KFImage(item.thumbURL)
+                    .placeholder {
+                        Color.gray.opacity(0.35)
+                    }
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 42, height: 42)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color(.systemBackground), lineWidth: 2)
+                    )
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
