@@ -98,25 +98,30 @@ struct SettingsScreen: View {
             }
 
             Section("About") {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(appVersionText)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                SettingsInfoRow(
+                    title: "Version Name",
+                    value: appVersionName,
+                    systemImage: "tag"
+                )
 
-                    HStack(spacing: 4) {
-                        Text("Data courtesy of")
-                        Link("TheMealDB", destination: theMealDBURL)
-                    }
-                    .font(.subheadline)
+                SettingsInfoRow(
+                    title: "Build Number",
+                    value: appBuildNumber,
+                    systemImage: "number"
+                )
 
-                    if let feedbackURL {
-                        Link("Feedback & Support", destination: feedbackURL)
-                    }
-                    if let privacyPolicyURL {
-                        Link("Privacy Policy", destination: privacyPolicyURL)
-                    }
+                HStack(spacing: 4) {
+                    Text("Data courtesy of")
+                    Link("TheMealDB", destination: theMealDBURL)
                 }
-                .padding(.vertical, 4)
+                .font(.subheadline)
+
+                if let feedbackURL {
+                    Link("Feedback & Support", destination: feedbackURL)
+                }
+                if let privacyPolicyURL {
+                    Link("Privacy Policy", destination: privacyPolicyURL)
+                }
             }
 
             Section("Open Source") {
@@ -147,11 +152,12 @@ struct SettingsScreen: View {
         }
     }
 
-    private var appVersionText: String {
-        let info = Bundle.main.infoDictionary
-        let version = info?["CFBundleShortVersionString"] as? String ?? "1.0"
-        let build = info?["CFBundleVersion"] as? String ?? "1"
-        return "Version \(version) (\(build))"
+    private var appVersionName: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
+    }
+
+    private var appBuildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "Unknown"
     }
 
     private var theMealDBURL: URL {
@@ -222,5 +228,22 @@ private struct SettingsSummaryRow: View {
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
         }
+    }
+}
+
+private struct SettingsInfoRow: View {
+    let title: String
+    let value: String
+    let systemImage: String
+
+    var body: some View {
+        HStack {
+            Label(title, systemImage: systemImage)
+            Spacer()
+            Text(value)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+        .font(.subheadline)
     }
 }

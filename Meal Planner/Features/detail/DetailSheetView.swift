@@ -259,43 +259,90 @@ private struct IngredientsTab: View {
     let measures: [String]
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             ForEach(ingredients.indices, id: \.self) { index in
-                HStack(spacing: 12) {
-                    let ingredient = ingredients[index]
-
-                    KFImage(URL(string: ingredient.getMealImageLink()))
-                        .placeholder { RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray5)) }
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 48, height: 48)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(ingredient)
-                            .font(.body.weight(.semibold))
-                        let measure = index < measures.count ? measures[index] : ""
-                        Text(measure)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-
-                if index < ingredients.count - 1 {
-                    Divider()
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 20)
-                }
+                IngredientRow(
+                    ingredient: ingredients[index],
+                    measure: index < measures.count ? measures[index] : ""
+                )
             }
         }
+    }
+}
+
+private struct IngredientRow: View {
+    let ingredient: String
+    let measure: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            KFImage(URL(string: ingredient.getMealImageLink()))
+                .placeholder {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.secondary.opacity(0.14))
+                        .overlay {
+                            Image(systemName: "leaf.fill")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.primary.opacity(0.75))
+                        }
+                }
+                .resizable()
+                .scaledToFill()
+                .frame(width: 48, height: 48)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.white.opacity(0.75), lineWidth: 1)
+                )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(ingredient)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Color.primary)
+                    .lineLimit(1)
+
+                if !measure.isEmpty {
+                    Text(measure)
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemGroupedBackground))
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.secondary.opacity(0.12),
+                            Color.primary.opacity(0.07),
+                            Color(.systemBackground).opacity(0.86)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.primary.opacity(0.18),
+                            Color.secondary.opacity(0.22)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: Color.primary.opacity(0.06), radius: 6, x: 0, y: 3)
+        .accessibilityElement(children: .combine)
     }
 }
 
