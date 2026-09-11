@@ -60,6 +60,17 @@ struct SettingsScreen: View {
                 }
             }
 
+            Section("Display") {
+                Toggle(
+                    isOn: Binding(
+                        get: { settingsViewModel.state.showLargeMealPage },
+                        set: { settingsViewModel.onIntent(.setShowLargeMealPage($0)) }
+                    )
+                ) {
+                    Label("Show large Meal Page", systemImage: "rectangle.expand.vertical")
+                }
+            }
+
             Section("Data Tools") {
                 Button {
                     settingsViewModel.onIntent(.loadSummary)

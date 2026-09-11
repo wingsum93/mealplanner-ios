@@ -104,8 +104,6 @@ struct DetailSheetView: View {
             .padding(.bottom, 24)
         }
         .background(Color(.systemGray6))
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
         .onAppear {
             vm.onIntent(.setItem(item))
         }

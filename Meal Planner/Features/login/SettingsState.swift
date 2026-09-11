@@ -15,8 +15,13 @@ struct SettingsDataSummary: Equatable {
 
 struct SettingsState: Equatable {
     var summary = SettingsDataSummary()
+    var showLargeMealPage = false
     var statusMessage: String?
     var errorMessage: String?
+}
+
+enum SettingsDefaultsKey {
+    static let showLargeMealPage = "showLargeMealPage"
 }
 
 enum SettingsAction: String, Identifiable, Equatable {
@@ -63,5 +68,6 @@ enum SettingsAction: String, Identifiable, Equatable {
 enum SettingsIntent {
     case loadSummary
     case perform(SettingsAction)
+    case setShowLargeMealPage(Bool)
     case clearStatus
 }

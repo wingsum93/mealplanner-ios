@@ -5,6 +5,7 @@
 //  Created by Codex on 15/7/2026.
 //
 
+import Foundation
 import Testing
 @testable import Meal_Planner
 
@@ -18,6 +19,53 @@ struct SettingsViewModelTests {
         #expect(localDataSource.summaryCallCount == 1)
         #expect(viewModel.state.summary == localDataSource.summary)
         #expect(viewModel.state.errorMessage == nil)
+    }
+
+    @MainActor
+    @Test func showLargeMealPageDefaultsToFalseWhenMissing() {
+        let (defaults, suiteName) = makeUserDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let viewModel = SettingsViewModel(
+            localDataSource: SettingsLocalDataSourceSpy(),
+            userDefaults: defaults
+        )
+
+        #expect(viewModel.state.showLargeMealPage == false)
+    }
+
+    @MainActor
+    @Test func showLargeMealPageLoadsSavedTrueValue() {
+        let (defaults, suiteName) = makeUserDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(true, forKey: SettingsDefaultsKey.showLargeMealPage)
+
+        let viewModel = SettingsViewModel(
+            localDataSource: SettingsLocalDataSourceSpy(),
+            userDefaults: defaults
+        )
+
+        #expect(viewModel.state.showLargeMealPage == true)
+    }
+
+    @MainActor
+    @Test func showLargeMealPageToggleUpdatesStateAndPersists() {
+        let (defaults, suiteName) = makeUserDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let viewModel = SettingsViewModel(
+            localDataSource: SettingsLocalDataSourceSpy(),
+            userDefaults: defaults
+        )
+
+        viewModel.onIntent(.setShowLargeMealPage(true))
+
+        #expect(viewModel.state.showLargeMealPage == true)
+        #expect(defaults.bool(forKey: SettingsDefaultsKey.showLargeMealPage) == true)
+
+        viewModel.onIntent(.setShowLargeMealPage(false))
+
+        #expect(viewModel.state.showLargeMealPage == false)
+        #expect(defaults.bool(forKey: SettingsDefaultsKey.showLargeMealPage) == false)
     }
 
     @MainActor
@@ -125,5 +173,12 @@ struct SettingsViewModelTests {
 
         viewModel.onIntent(.clearStatus)
         #expect(viewModel.state.errorMessage == nil)
+    }
+
+    private func makeUserDefaults() -> (defaults: UserDefaults, suiteName: String) {
+        let suiteName = "SettingsViewModelTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        return (defaults, suiteName)
     }
 }

@@ -12,6 +12,7 @@ struct RootTabs: View {
     @EnvironmentObject private var detailVM: DetailViewModel
     @StateObject private var settingsViewModel: SettingsViewModel
     @StateObject private var vm:FeatureViewModel
+    @State private var recipeDetailDetent: PresentationDetent = .medium
     @Namespace private var heroNS  // shared namespace
     
     init(
@@ -42,16 +43,22 @@ struct RootTabs: View {
             }
             
         }
+        .onChange(of: appRouter.activeSheet) { sheet in
+            seedRecipeDetailDetent(for: sheet)
+        }
         .sheet(item: $appRouter.activeSheet, onDismiss: {
             detailVM.onIntent(.dismiss)
         }) { sheet in
             switch sheet {
             case .recipeDetail(let item):
                 DetailSheetView(item: item, vm: detailVM)
-                    .presentationDetents([ .large,.medium])
+                    .presentationDetents([.medium, .large], selection: $recipeDetailDetent)
                     .presentationDragIndicator(.visible)
                     .background(Color(.systemGray6))
                     .pagePresentationSizingIfAvailable()
+                    .onAppear {
+                        seedRecipeDetailDetent(for: sheet)
+                    }
             }
         }
         .fullScreenCover(item: $appRouter.activeFullScreenCover) { cover in
@@ -75,6 +82,10 @@ struct RootTabs: View {
         }
     }
     
+    private func seedRecipeDetailDetent(for sheet: AppSheet?) {
+        guard case .recipeDetail = sheet else { return }
+        recipeDetailDetent = settingsViewModel.state.showLargeMealPage ? .large : .medium
+    }
 }
 
 private extension View {

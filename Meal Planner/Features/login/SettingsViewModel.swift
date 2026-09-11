@@ -9,6 +9,7 @@ import Foundation
 
 private enum SettingsEvent: Equatable {
     case setSummary(SettingsDataSummary)
+    case setShowLargeMealPage(Bool)
     case setStatus(String?)
     case setError(String?)
 }
@@ -17,14 +18,18 @@ private enum SettingsEvent: Equatable {
 final class SettingsViewModel: ObservableObject {
     @Published private(set) var state = SettingsState()
     private let localDataSource: RecipeLocalDataSource
+    private let userDefaults: UserDefaults
     private let onFavoritesReset: @MainActor () -> Void
 
     init(
         localDataSource: RecipeLocalDataSource,
+        userDefaults: UserDefaults = .standard,
         onFavoritesReset: @escaping @MainActor () -> Void = {}
     ) {
         self.localDataSource = localDataSource
+        self.userDefaults = userDefaults
         self.onFavoritesReset = onFavoritesReset
+        state.showLargeMealPage = userDefaults.bool(forKey: SettingsDefaultsKey.showLargeMealPage)
         loadSummary()
     }
 
@@ -34,6 +39,9 @@ final class SettingsViewModel: ObservableObject {
             loadSummary()
         case .perform(let action):
             perform(action)
+        case .setShowLargeMealPage(let isEnabled):
+            userDefaults.set(isEnabled, forKey: SettingsDefaultsKey.showLargeMealPage)
+            reduce(.setShowLargeMealPage(isEnabled))
         case .clearStatus:
             reduce(.setStatus(nil))
             reduce(.setError(nil))
@@ -75,6 +83,8 @@ final class SettingsViewModel: ObservableObject {
         switch event {
         case .setSummary(let summary):
             state.summary = summary
+        case .setShowLargeMealPage(let isEnabled):
+            state.showLargeMealPage = isEnabled
         case .setStatus(let message):
             state.statusMessage = message
         case .setError(let message):
