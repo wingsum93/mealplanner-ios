@@ -28,7 +28,7 @@ struct HomeScreen: View {
         SearchBar(placeholder: "Search recipes…") {
             appRouter.push(.search)
         }
-        .matchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
+        .searchMatchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
         .accessibilityIdentifier("home.searchEntry")
         .background {
             GeometryReader { proxy in

@@ -69,7 +69,7 @@ struct RecipeMainPage: View {
                                 favVM.onIntent(.toggleFavorite(item))
                             }
                         )
-                        .navigationTransition(.zoom(sourceID: HeroSearchTransition.searchEntryID, in: heroNamespace))
+                        .searchNavigationTransition(sourceID: HeroSearchTransition.searchEntryID, in: heroNamespace)
                         .circularReveal(from: searchRevealOrigin)
                     }
                 }
@@ -175,5 +175,23 @@ private struct CircularRevealModifier: ViewModifier {
 extension View {
     func circularReveal(from origin: CGPoint?) -> some View {
         modifier(CircularRevealModifier(origin: origin))
+    }
+
+    @ViewBuilder
+    func searchMatchedTransitionSource(id: String, in namespace: Namespace.ID) -> some View {
+        if #available(iOS 18.0, *) {
+            matchedTransitionSource(id: id, in: namespace)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func searchNavigationTransition(sourceID: String, in namespace: Namespace.ID) -> some View {
+        if #available(iOS 18.0, *) {
+            navigationTransition(.zoom(sourceID: sourceID, in: namespace))
+        } else {
+            self
+        }
     }
 }

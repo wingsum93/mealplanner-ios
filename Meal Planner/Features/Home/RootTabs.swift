@@ -51,7 +51,7 @@ struct RootTabs: View {
                     .presentationDetents([ .large,.medium])
                     .presentationDragIndicator(.visible)
                     .background(Color(.systemGray6))
-                    .presentationSizing(.page)
+                    .pagePresentationSizingIfAvailable()
             }
         }
         .fullScreenCover(item: $appRouter.activeFullScreenCover) { cover in
@@ -75,6 +75,17 @@ struct RootTabs: View {
         }
     }
     
+}
+
+private extension View {
+    @ViewBuilder
+    func pagePresentationSizingIfAvailable() -> some View {
+        if #available(iOS 18.0, *) {
+            presentationSizing(.page)
+        } else {
+            self
+        }
+    }
 }
 
 //#Preview {
