@@ -101,4 +101,50 @@ struct FeatureViewModelTests {
         #expect(viewModel.state.randomPick.items == items)
         #expect(viewModel.state.randomPick.phase == .content)
     }
+
+    @MainActor
+    @Test func loadIngredientsPopulatesState() async throws {
+        let viewModel = FeatureViewModel(repository: DummyRecipeRepository())
+
+        viewModel.onIntent(.loadIngredients)
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        #expect(viewModel.state.ingredients.items.map(\.name) == ["Beef", "Garlic"])
+        #expect(viewModel.state.ingredients.phase == .content)
+    }
+
+    @MainActor
+    @Test func loadIngredientsWithEmptyResultSetsEmptyPhase() async throws {
+        let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository())
+
+        viewModel.onIntent(.loadIngredients)
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        #expect(viewModel.state.ingredients.items.isEmpty)
+        #expect(viewModel.state.ingredients.phase == .empty)
+    }
+
+    @MainActor
+    @Test func loadIngredientMealsPopulatesState() async throws {
+        let viewModel = FeatureViewModel(repository: DummyRecipeRepository())
+
+        viewModel.onIntent(.loadIngredientMeals("Beef"))
+        try await Task.sleep(nanoseconds: 300_000_000)
+
+        #expect(viewModel.state.ingredientMeals.ingredient == "Beef")
+        #expect(viewModel.state.ingredientMeals.phase == .content)
+        #expect(!viewModel.state.ingredientMeals.items.isEmpty)
+    }
+
+    @MainActor
+    @Test func loadIngredientMealsWithEmptyResultSetsEmptyPhase() async throws {
+        let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository())
+
+        viewModel.onIntent(.loadIngredientMeals("Beef"))
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        #expect(viewModel.state.ingredientMeals.ingredient == "Beef")
+        #expect(viewModel.state.ingredientMeals.items.isEmpty)
+        #expect(viewModel.state.ingredientMeals.phase == .empty)
+    }
 }

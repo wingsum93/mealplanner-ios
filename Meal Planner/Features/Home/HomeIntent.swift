@@ -15,6 +15,8 @@ enum HomeIntent {
     // lists
     case loadArea(String)
     case loadCategory(String)
+    case loadIngredients
+    case loadIngredientMeals(String)
     
     // search
     case updateQuery(String)

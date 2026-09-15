@@ -11,12 +11,18 @@ import Combine
 private enum FeatureEvent: Equatable {
     case setHomePhase(LoadPhase)
     case setHomeContent(featured: UIRecipeItem?, areas: [String], categories: [String], randomTen: [UIRecipeItem])
+    case setHomeIngredients([Ingredient])
     case setArea(AreaListState)
     case setAreaItems([UIRecipeItem])
     case setAreaPhase(LoadPhase)
     case setCategory(CategoryListState)
     case setCategoryItems([UIRecipeItem])
     case setCategoryPhase(LoadPhase)
+    case setIngredients([Ingredient])
+    case setIngredientsPhase(LoadPhase)
+    case setIngredientMeals(IngredientMealsState)
+    case setIngredientMealsItems([UIRecipeItem])
+    case setIngredientMealsPhase(LoadPhase)
     case setSearchQuery(String)
     case setSearchPhase(LoadPhase)
     case setSearchResults([UIRecipeItem])
@@ -38,6 +44,8 @@ final class FeatureViewModel: ObservableObject {
     private var homeTask: Task<Void, Never>?
     private var areaTask: Task<Void, Never>?
     private var categoryTask: Task<Void, Never>?
+    private var ingredientsTask: Task<Void, Never>?
+    private var ingredientMealsTask: Task<Void, Never>?
     private var searchTask: Task<Void, Never>?
     private var detailTask: Task<Void, Never>?
     private var randomPickTask: Task<Void, Never>?
@@ -62,6 +70,8 @@ final class FeatureViewModel: ObservableObject {
             // MARK: Lists
         case .loadArea(let area):         loadArea(area)
         case .loadCategory(let category): loadCategory(category)
+        case .loadIngredients:            loadIngredients()
+        case .loadIngredientMeals(let ingredient): loadIngredientMeals(ingredient)
             
             // MARK: Search
         case .updateQuery(let q):
@@ -88,6 +98,7 @@ final class FeatureViewModel: ObservableObject {
             async let featured = repo.getRandomRecipe()
             async let areas    = repo.getAllArea()
             async let cats     = repo.getAllCategory()
+            async let ingredients = repo.getAllIngredients()
             async let random10 = withThrowingTaskGroup(of: UIRecipeItem?.self) { group -> [UIRecipeItem] in
                 // 10 randoms in parallel, filter nils and dedupe by id
                 for _ in 0..<10 {
@@ -99,10 +110,12 @@ final class FeatureViewModel: ObservableObject {
                 }
                 return out
             }
+            let loadedIngredients = (try? await ingredients) ?? []
             do {
                 let (f, a, c, r10) = try await (featured, areas, cats, random10)
                 let featured = f.toUI()
                 reduce(.setHomeContent(featured: featured, areas: a, categories: c, randomTen: r10))
+                reduce(.setHomeIngredients(loadedIngredients))
             } catch {
                 reduce(.setHomePhase(.error("Couldn’t load home. Pull to retry.")))
             }
@@ -209,6 +222,58 @@ final class FeatureViewModel: ObservableObject {
         }
     }
     
+    // INGREDIENTS LIST
+    private func loadIngredients() {
+        ingredientsTask?.cancel()
+        reduce(.setIngredientsPhase(.loading))
+        ingredientsTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let items = try await repo.getAllIngredients()
+                if Task.isCancelled { return }
+                reduce(.setIngredients(items))
+            } catch {
+                if Task.isCancelled { return }
+                reduce(.setIngredientsPhase(.error("Failed to load ingredients.")))
+            }
+        }
+    }
+
+    // MEALS BY INGREDIENT
+    private func loadIngredientMeals(_ ingredient: String) {
+        ingredientMealsTask?.cancel()
+        reduce(.setIngredientMeals(IngredientMealsState(phase: .loading, ingredient: ingredient, items: [])))
+        ingredientMealsTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                // 1) Base list
+                let base = try await repo.getBySingleIngredient(ingredient).map { $0.toUI() }
+                if Task.isCancelled { return }
+
+                // 2) Concurrently fetch details and prefer them if available
+                let enriched = try await withThrowingTaskGroup(of: (String, UIRecipeItem?).self) { group in
+                    for item in base {
+                        group.addTask {
+                            let detail = try await self.repo.getRecipeDetail(id: item.id).toUI()
+                            return (item.id, detail)
+                        }
+                    }
+                    var dict: [String: UIRecipeItem] = [:]
+                    for try await (id, detail) in group {
+                        if let d = detail { dict[id] = d }
+                    }
+                    return base.map { dict[$0.id] ?? $0 }
+                }
+
+                if Task.isCancelled { return }
+                self.reduce(.setIngredientMealsItems(enriched))
+            } catch {
+                if Task.isCancelled { return }
+                self.reduce(.setIngredientMealsPhase(.error("Failed to load \(ingredient).")))
+            }
+        }
+    }
+
     // SEARCH
     private func debounceSearch() {
         searchDebounceTask?.cancel()
@@ -280,6 +345,21 @@ final class FeatureViewModel: ObservableObject {
             state.category.phase = items.isEmpty ? .empty : .content
         case .setCategoryPhase(let phase):
             state.category.phase = phase
+        case .setHomeIngredients(let items):
+            state.ingredients.items = items
+            state.ingredients.phase = items.isEmpty ? .empty : .content
+        case .setIngredients(let items):
+            state.ingredients.items = items
+            state.ingredients.phase = items.isEmpty ? .empty : .content
+        case .setIngredientsPhase(let phase):
+            state.ingredients.phase = phase
+        case .setIngredientMeals(let meals):
+            state.ingredientMeals = meals
+        case .setIngredientMealsItems(let items):
+            state.ingredientMeals.items = items
+            state.ingredientMeals.phase = items.isEmpty ? .empty : .content
+        case .setIngredientMealsPhase(let phase):
+            state.ingredientMeals.phase = phase
         case .setSearchQuery(let query):
             state.search.query = query
         case .setSearchPhase(let phase):

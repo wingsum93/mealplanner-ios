@@ -87,7 +87,33 @@ struct HomeScreen: View {
                 }.padding(.horizontal, 16)
             }
 
-            // 4) Random 10 horizontal
+            // 4) Ingredients horizontal
+            if !vm.state.ingredients.items.isEmpty {
+                SectionHeader("Ingredients")
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(vm.state.ingredients.items.prefix(20)) { ingredient in
+                            Button {
+                                vm.onIntent(.loadIngredientMeals(ingredient.name))
+                                appRouter.push(.ingredient(ingredient.name))
+                            } label: {
+                                IngredientSquareCard(name: ingredient.name)
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        Button {
+                            appRouter.push(.ingredientList)
+                        } label: {
+                            SeeAllIngredientCard()
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("home.ingredientsSeeAll")
+                    }.padding(.horizontal, 16)
+                }
+            }
+
+            // 5) Random 10 horizontal
             SectionHeader("Discover")
             Button {
                 appRouter.presentRandomPick()
@@ -117,6 +143,7 @@ struct HomeScreen: View {
         && vm.state.home.areas.isEmpty
         && vm.state.home.categories.isEmpty
         && vm.state.home.randomTen.isEmpty
+        && vm.state.ingredients.items.isEmpty
     }
 }
 
@@ -196,6 +223,32 @@ private struct RandomPickFeatureCard: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+private struct SeeAllIngredientCard: View {
+    var size: CGFloat = 88
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Image(systemName: "chevron.right.circle.fill")
+                .font(.title2)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: size, height: size)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(.secondarySystemBackground))
+                )
+
+            Text("See all")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: size)
+        }
+        .frame(width: size)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("See all ingredients")
     }
 }
 
