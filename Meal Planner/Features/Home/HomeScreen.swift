@@ -212,6 +212,9 @@ private struct RandomPickFeatureCard: View {
                     .placeholder {
                         Color.gray.opacity(0.35)
                     }
+                    .onFailureView {
+                        ImageLoadFailureView(iconSize: 16)
+                    }
                     .resizable()
                     .scaledToFill()
                     .frame(width: 42, height: 42)

@@ -25,6 +25,9 @@ struct DetailSheetView: View {
                     .placeholder {
                         Rectangle().fill(Color(.systemGray5))
                     }
+                    .onFailureView {
+                        ImageLoadFailureView(iconSize: 48)
+                    }
                     .resizable()
                     .scaledToFill()
                     .frame(height: 280)
@@ -285,6 +288,10 @@ private struct IngredientRow: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(Color.primary.opacity(0.75))
                         }
+                }
+                .onFailureView {
+                    ImageLoadFailureView(iconSize: 18)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .resizable()
                 .scaledToFill()

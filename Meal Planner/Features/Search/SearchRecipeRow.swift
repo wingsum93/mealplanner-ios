@@ -19,6 +19,9 @@ struct SearchRecipeRow: View {
                 .placeholder {
                     Color.gray // 載入中顯示
                 }
+                .onFailureView {
+                    ImageLoadFailureView()
+                }
                 .resizable()
                 .frame(width: 120, height: 80)
                 .scaledToFill()

@@ -17,6 +17,9 @@ struct RecipeCardSmall: View {
                 .placeholder {
                     Color.gray.allowsHitTesting(false) // 載入中顯示
                 }
+                .onFailureView {
+                    ImageLoadFailureView()
+                }
                 .resizable()
                 .scaledToFill()
                 .frame(width: width, height: width) // square image

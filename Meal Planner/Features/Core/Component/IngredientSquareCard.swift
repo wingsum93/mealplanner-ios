@@ -11,6 +11,15 @@ import Kingfisher
 struct IngredientSquareCard: View {
     let name: String
     var size: CGFloat = 88
+    private let imageURL: URL?
+    @Environment(\.displayScale) private var displayScale
+
+    init(name: String, size: CGFloat = 88) {
+        self.name = name
+        self.size = size
+        let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name
+        self.imageURL = URL(string: "https://www.themealdb.com/images/ingredients/\(encoded)-small.png")
+    }
 
     var body: some View {
         VStack(spacing: 6) {
@@ -18,6 +27,16 @@ struct IngredientSquareCard: View {
                 .placeholder {
                     Color.gray.opacity(0.2)
                 }
+                .onFailureView {
+                    ImageLoadFailureView(iconSize: size * 0.35)
+                }
+                .setProcessor(
+                    DownsamplingImageProcessor(
+                        size: CGSize(width: size * displayScale, height: size * displayScale)
+                    )
+                )
+                .scaleFactor(displayScale)
+                .cancelOnDisappear(true)
                 .resizable()
                 .scaledToFit()
                 .frame(width: size, height: size)
@@ -38,11 +57,6 @@ struct IngredientSquareCard: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(name))
-    }
-
-    private var imageURL: URL? {
-        let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name
-        return URL(string: "https://www.themealdb.com/images/ingredients/\(encoded)-small.png")
     }
 }
 
