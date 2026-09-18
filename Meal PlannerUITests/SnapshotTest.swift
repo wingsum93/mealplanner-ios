@@ -137,6 +137,13 @@ final class SnapshotTest: XCTestCase {
         tap("home.featuredRecipeButton", in: app)
         XCTAssertTrue(waitFor("detail.sheet", in: app), "Detail sheet did not render.")
         capture("11-detail-sheet", in: app)
+
+        let ingredientsTab = app.buttons["Ingredients"]
+        XCTAssertTrue(ingredientsTab.waitForExistence(timeout: defaultTimeout), "Ingredients tab did not appear.")
+        ingredientsTab.tap()
+        tap("detail.ingredientChip.0", in: app)
+        XCTAssertTrue(waitFor("titleList.recipeCard.0", in: app), "Ingredient meals list did not load from detail.")
+        capture("12-detail-ingredient-meals", in: app)
     }
 
     private func waitForHomeContent(in app: XCUIApplication) {
