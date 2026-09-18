@@ -1,3 +1,44 @@
-# Xcode generated data
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xcuserstate
+xcuserdata/
 **/xcuserdata/**/xcdebugger/
 **/xcshareddata/
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+*.hmap
+
+# Xcode archives and symbols
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
