@@ -26,6 +26,9 @@ struct ImageSquareChip: View {
                 .placeholder {
                     Color.gray // 載入中顯示
                 }
+                .onFailureView {
+                    ImageLoadFailureView()
+                }
                 .scaledToFill()
                 .frame(width: size, height: size)
                 .clipped()

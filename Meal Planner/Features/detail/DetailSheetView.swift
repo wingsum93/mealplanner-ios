@@ -12,6 +12,7 @@ struct DetailSheetView: View {
     let item: UIRecipeItem
     @EnvironmentObject private var appRouter: AppRouter
     @ObservedObject var vm: DetailViewModel
+    let onTapIngredient: (String) -> Void
     @State private var selectedContentTab: MealDetailContentTab = .instructions
     @State private var favoriteButtonScale = 1.0
 
@@ -24,6 +25,9 @@ struct DetailSheetView: View {
                 KFImage(displayedItem.thumbURL)
                     .placeholder {
                         Rectangle().fill(Color(.systemGray5))
+                    }
+                    .onFailureView {
+                        ImageLoadFailureView(iconSize: 48)
                     }
                     .resizable()
                     .scaledToFill()
@@ -91,7 +95,8 @@ struct DetailSheetView: View {
                 ) {
                     MealDetailTabbedContent(
                         item: displayedItem,
-                        selectedTab: $selectedContentTab
+                        selectedTab: $selectedContentTab,
+                        onTapIngredient: onTapIngredient
                     )
                 }
                 .padding(.horizontal, 16)
@@ -104,6 +109,7 @@ struct DetailSheetView: View {
             .padding(.bottom, 24)
         }
         .background(Color(.systemGray6))
+        .accessibilityIdentifier("detail.sheet")
         .onAppear {
             vm.onIntent(.setItem(item))
         }
@@ -145,6 +151,15 @@ private enum MealDetailContentTab: String, CaseIterable, Identifiable {
             return "info.circle"
         case .ingredients:
             return "leaf.fill"
+        }
+    }
+
+    var accessibilityIdentifier: String {
+        switch self {
+        case .instructions:
+            return "detail.tab.instructions"
+        case .ingredients:
+            return "detail.tab.ingredients"
         }
     }
 }
@@ -204,12 +219,14 @@ private struct CloseSheetButton: View {
 private struct MealDetailTabbedContent: View {
     let item: UIRecipeItem
     @Binding var selectedTab: MealDetailContentTab
+    let onTapIngredient: (String) -> Void
 
     var body: some View {
         VStack(spacing: 14) {
             Picker("Recipe detail section", selection: $selectedTab) {
                 ForEach(MealDetailContentTab.allCases) { tab in
                     Label(tab.rawValue, systemImage: tab.systemImage)
+                        .accessibilityIdentifier(tab.accessibilityIdentifier)
                         .tag(tab)
                 }
             }
@@ -220,7 +237,11 @@ private struct MealDetailTabbedContent: View {
                 case .instructions:
                     InstructionsTab(instructions: item.instructions)
                 case .ingredients:
-                    IngredientsTab(ingredients: item.ingredients, measures: item.measures)
+                    IngredientsTab(
+                        ingredients: item.ingredients,
+                        measures: item.measures,
+                        onTapIngredient: onTapIngredient
+                    )
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -257,14 +278,23 @@ private struct InstructionsTab: View {
 private struct IngredientsTab: View {
     let ingredients: [String]
     let measures: [String]
+    let onTapIngredient: (String) -> Void
 
     var body: some View {
         VStack(spacing: 8) {
             ForEach(ingredients.indices, id: \.self) { index in
-                IngredientRow(
-                    ingredient: ingredients[index],
-                    measure: index < measures.count ? measures[index] : ""
-                )
+                Button {
+                    onTapIngredient(ingredients[index])
+                } label: {
+                    IngredientRow(
+                        ingredient: ingredients[index],
+                        measure: index < measures.count ? measures[index] : ""
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("detail.ingredientChip.\(index)")
+                .accessibilityLabel(ingredients[index])
+                .accessibilityHint("Shows recipes with this ingredient")
             }
         }
     }
@@ -285,6 +315,10 @@ private struct IngredientRow: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(Color.primary.opacity(0.75))
                         }
+                }
+                .onFailureView {
+                    ImageLoadFailureView(iconSize: 18)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .resizable()
                 .scaledToFill()

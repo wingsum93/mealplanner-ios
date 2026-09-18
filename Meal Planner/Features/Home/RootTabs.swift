@@ -25,9 +25,10 @@ struct RootTabs: View {
     
     var body: some View{
         
-        TabView{
+        TabView(selection: $appRouter.selectedTab) {
             RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
                 .tabItem{Label("Home", systemImage: "house")}
+                .tag(AppTab.home)
             
             NavigationStack {
                 FavouriteScreen()
@@ -35,12 +36,14 @@ struct RootTabs: View {
                 .tabItem{
                     Label("Favourite", systemImage: "star.fill")
                 }
+                .tag(AppTab.favourite)
             ProfileScreen(
                 settingsViewModel: settingsViewModel
             )
             .tabItem{
                 Label("Profile", systemImage: "person.circle")
             }
+            .tag(AppTab.profile)
             
         }
         .onChange(of: appRouter.activeSheet) { sheet in
@@ -51,7 +54,14 @@ struct RootTabs: View {
         }) { sheet in
             switch sheet {
             case .recipeDetail(let item):
-                DetailSheetView(item: item, vm: detailVM)
+                DetailSheetView(
+                    item: item,
+                    vm: detailVM,
+                    onTapIngredient: { ingredient in
+                        vm.onIntent(.loadIngredientMeals(ingredient))
+                        appRouter.showIngredientMeals(ingredient)
+                    }
+                )
                     .presentationDetents([.medium, .large], selection: $recipeDetailDetent)
                     .presentationDragIndicator(.visible)
                     .background(Color(.systemGray6))

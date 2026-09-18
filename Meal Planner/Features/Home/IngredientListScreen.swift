@@ -1,33 +1,34 @@
 //
-//  AreaListScreen.swift
+//  IngredientListScreen.swift
 //  Meal Planner
 //
-//  Created by eric ho on 13/8/2025.
+//  Created by eric ho on 16/9/2026.
 //
-import SwiftUI
-import Kingfisher
 
-// Use for area list and category list
-struct TitleListScreen: View {
+import SwiftUI
+
+struct IngredientListScreen: View {
     let title: String
-    let items: [UIRecipeItem]
+    let items: [Ingredient]
     let phase: LoadPhase
-    let onTapItem:(UIRecipeItem)->Void
-    
+    let onTapIngredient: (Ingredient) -> Void
+
     let hPadding: CGFloat = 16
     let interItemSpacing: CGFloat = 12
-    private let minimumCellWidth: CGFloat = 150
-    
-    init(title:String,
-         items: [UIRecipeItem],
-         phase: LoadPhase = .content,
-         onTapItem: @escaping(UIRecipeItem)->Void = {_ in }){
+    private let minimumCellWidth: CGFloat = 88
+
+    init(
+        title: String = "Ingredients",
+        items: [Ingredient],
+        phase: LoadPhase = .content,
+        onTapIngredient: @escaping (Ingredient) -> Void = { _ in }
+    ) {
         self.title = title
         self.items = items
         self.phase = phase
-        self.onTapItem = onTapItem
+        self.onTapIngredient = onTapIngredient
     }
-    
+
     private func gridMetrics(for containerWidth: CGFloat) -> (columns: [GridItem], cellWidth: CGFloat) {
         let availableWidth = max(containerWidth - hPadding * 2, minimumCellWidth)
         let count = max(Int((availableWidth + interItemSpacing) / (minimumCellWidth + interItemSpacing)), 2)
@@ -38,14 +39,14 @@ struct TitleListScreen: View {
         )
         return (columns, cellWidth)
     }
-    
+
     var body: some View {
         GeometryReader { proxy in
             let metrics = gridMetrics(for: proxy.size.width)
 
             ScrollView {
                 if isInitialLoading {
-                    TitleListSkeletonGrid(
+                    IngredientListSkeletonGrid(
                         columns: metrics.columns,
                         cellWidth: metrics.cellWidth,
                         spacing: interItemSpacing,
@@ -54,12 +55,12 @@ struct TitleListScreen: View {
                 } else {
                     LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                            RecipeCardSmall(item: item, width: metrics.cellWidth)
-                                .accessibilityIdentifier("titleList.recipeCard.\(index)")
-                                .onTapGesture { onTapItem(item) }
+                            IngredientSquareCard(name: item.name, size: metrics.cellWidth)
+                                .accessibilityIdentifier("ingredientList.card.\(index)")
+                                .onTapGesture { onTapIngredient(item) }
                         }
                     }
-                    .accessibilityIdentifier("titleList.grid")
+                    .accessibilityIdentifier("ingredientList.grid")
                     .padding(.horizontal, hPadding)
                     .padding(.top, 12)
                     .padding(.bottom, 24)
@@ -67,7 +68,7 @@ struct TitleListScreen: View {
             }
         }
         .navigationTitle(title)
-        .accessibilityIdentifier("titleList.screen")
+        .accessibilityIdentifier("ingredientList.screen")
     }
 
     private var isInitialLoading: Bool {
@@ -75,7 +76,7 @@ struct TitleListScreen: View {
     }
 }
 
-private struct TitleListSkeletonGrid: View {
+private struct IngredientListSkeletonGrid: View {
     let columns: [GridItem]
     let cellWidth: CGFloat
     let spacing: CGFloat
@@ -83,8 +84,8 @@ private struct TitleListSkeletonGrid: View {
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: spacing) {
-            ForEach(0..<8, id: \.self) { _ in
-                SkeletonTitleListRecipeCard(width: cellWidth)
+            ForEach(0..<12, id: \.self) { _ in
+                SkeletonIngredientCard(width: cellWidth)
             }
         }
         .padding(.horizontal, hPadding)
@@ -94,26 +95,17 @@ private struct TitleListSkeletonGrid: View {
     }
 }
 
-private struct SkeletonTitleListRecipeCard: View {
+private struct SkeletonIngredientCard: View {
     let width: CGFloat
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            SkeletonRoundedRectangle(cornerRadius: 12)
+        VStack(spacing: 6) {
+            SkeletonRoundedRectangle(cornerRadius: 10)
                 .frame(width: width, height: width)
 
             SkeletonRoundedRectangle(cornerRadius: 5)
-                .frame(width: width * 0.78, height: 14)
-
-            HStack(spacing: 6) {
-                SkeletonRoundedRectangle(cornerRadius: 8)
-                    .frame(width: width * 0.34, height: 18)
-
-                SkeletonRoundedRectangle(cornerRadius: 8)
-                    .frame(width: width * 0.28, height: 18)
-            }
+                .frame(width: width * 0.7, height: 12)
         }
-        .frame(width: width, height: width + 40, alignment: .topLeading)
-        .padding(.bottom, 8)
+        .frame(width: width)
     }
 }

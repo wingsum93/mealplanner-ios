@@ -17,6 +17,9 @@ struct RecipeHeroCard: View {
                 .placeholder {
                     Color.gray // 載入中顯示
                 }
+                .onFailureView {
+                    ImageLoadFailureView()
+                }
                 .resizable()
                 .scaledToFill()
                 .frame(height: 200)

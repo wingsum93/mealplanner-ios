@@ -51,4 +51,18 @@ struct AppRouterTests {
         router.dismissFullScreenCover()
         #expect(router.activeFullScreenCover == nil)
     }
+
+    @MainActor
+    @Test func showIngredientMealsSelectsHomePushesRouteAndDismissesSheet() {
+        let router = AppRouter()
+        let item = UIRecipeItem.new(id: "1", name: "One")
+        router.selectedTab = .favourite
+        router.presentRecipeDetail(item)
+
+        router.showIngredientMeals("Beef")
+
+        #expect(router.selectedTab == .home)
+        #expect(router.path == [.ingredient("Beef")])
+        #expect(router.activeSheet == nil)
+    }
 }

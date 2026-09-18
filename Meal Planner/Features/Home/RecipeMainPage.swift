@@ -71,6 +71,35 @@ struct RecipeMainPage: View {
                         )
                         .searchNavigationTransition(sourceID: HeroSearchTransition.searchEntryID, in: heroNamespace)
                         .circularReveal(from: searchRevealOrigin)
+                    case .ingredientList:
+                        IngredientListScreen(
+                            items: viewModel.state.ingredients.items,
+                            phase: viewModel.state.ingredients.phase,
+                            onTapIngredient: { ingredient in
+                                viewModel.onIntent(.loadIngredientMeals(ingredient.name))
+                                appRouter.push(.ingredient(ingredient.name))
+                            }
+                        )
+                        .task {
+                            if viewModel.state.ingredients.phase == .idle {
+                                viewModel.onIntent(.loadIngredients)
+                            }
+                        }
+                    case .ingredient(let name):
+                        TitleListScreen(
+                            title: name,
+                            items: viewModel.state.ingredientMeals.items,
+                            phase: viewModel.state.ingredientMeals.phase,
+                            onTapItem: { item in
+                                appRouter.presentRecipeDetail(item)
+                            }
+                        )
+                        .task {
+                            if viewModel.state.ingredientMeals.ingredient != name
+                                || viewModel.state.ingredientMeals.phase == .idle {
+                                viewModel.onIntent(.loadIngredientMeals(name))
+                            }
+                        }
                     }
                 }
                 .task { // first load only once

@@ -9,6 +9,7 @@ import Combine
 
 @MainActor
 final class AppRouter: ObservableObject {
+    @Published var selectedTab: AppTab = .home
     @Published var path: [FeatureRoute] = []
     @Published var activeSheet: AppSheet?
     @Published var activeFullScreenCover: AppFullScreenCover?
@@ -35,6 +36,12 @@ final class AppRouter: ObservableObject {
         activeSheet = nil
     }
 
+    func showIngredientMeals(_ ingredient: String) {
+        selectedTab = .home
+        path.append(.ingredient(ingredient))
+        activeSheet = nil
+    }
+
     func presentRandomPick() {
         activeFullScreenCover = .randomPick
     }
@@ -42,6 +49,12 @@ final class AppRouter: ObservableObject {
     func dismissFullScreenCover() {
         activeFullScreenCover = nil
     }
+}
+
+enum AppTab: Hashable {
+    case home
+    case favourite
+    case profile
 }
 
 enum AppSheet: Identifiable, Equatable {

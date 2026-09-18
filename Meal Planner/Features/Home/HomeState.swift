@@ -44,10 +44,23 @@ struct RandomPickState: Equatable {
   var items: [UIRecipeItem] = []
 }
 
+struct IngredientListState: Equatable {
+  var phase: LoadPhase = .idle
+  var items: [Ingredient] = []
+}
+
+struct IngredientMealsState: Equatable {
+  var phase: LoadPhase = .idle
+  var ingredient: String = ""
+  var items: [UIRecipeItem] = []
+}
+
 enum FeatureRoute: Hashable {
   case area(String)
   case category(String)
   case search
+  case ingredientList
+  case ingredient(String)
 }
 
 struct FeatureState: Equatable {
@@ -56,4 +69,6 @@ struct FeatureState: Equatable {
   var category = CategoryListState()
   var search = SearchState()
   var randomPick = RandomPickState()
+  var ingredients = IngredientListState()
+  var ingredientMeals = IngredientMealsState()
 }
