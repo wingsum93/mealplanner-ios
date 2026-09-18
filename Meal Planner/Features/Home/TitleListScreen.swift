@@ -53,11 +53,13 @@ struct TitleListScreen: View {
                     )
                 } else {
                     LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
-                        ForEach(items, id: \.id) { item in
+                        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                             RecipeCardSmall(item: item, width: metrics.cellWidth)
+                                .accessibilityIdentifier("titleList.recipeCard.\(index)")
                                 .onTapGesture { onTapItem(item) }
                         }
                     }
+                    .accessibilityIdentifier("titleList.grid")
                     .padding(.horizontal, hPadding)
                     .padding(.top, 12)
                     .padding(.bottom, 24)
@@ -65,6 +67,7 @@ struct TitleListScreen: View {
             }
         }
         .navigationTitle(title)
+        .accessibilityIdentifier("titleList.screen")
     }
 
     private var isInitialLoading: Bool {

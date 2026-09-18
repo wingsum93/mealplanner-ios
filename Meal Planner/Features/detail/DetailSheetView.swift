@@ -107,6 +107,7 @@ struct DetailSheetView: View {
             .padding(.bottom, 24)
         }
         .background(Color(.systemGray6))
+        .accessibilityIdentifier("detail.sheet")
         .onAppear {
             vm.onIntent(.setItem(item))
         }

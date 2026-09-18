@@ -54,11 +54,13 @@ struct IngredientListScreen: View {
                     )
                 } else {
                     LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
-                        ForEach(items, id: \.id) { item in
+                        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                             IngredientSquareCard(name: item.name, size: metrics.cellWidth)
+                                .accessibilityIdentifier("ingredientList.card.\(index)")
                                 .onTapGesture { onTapIngredient(item) }
                         }
                     }
+                    .accessibilityIdentifier("ingredientList.grid")
                     .padding(.horizontal, hPadding)
                     .padding(.top, 12)
                     .padding(.bottom, 24)
@@ -66,6 +68,7 @@ struct IngredientListScreen: View {
             }
         }
         .navigationTitle(title)
+        .accessibilityIdentifier("ingredientList.screen")
     }
 
     private var isInitialLoading: Bool {

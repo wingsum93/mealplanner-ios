@@ -56,23 +56,33 @@ struct SearchScreen: View {
     private var content: some View {
         switch searchPhase {
         case .idle:
-            EmptySearchPlaceholder()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack {
+                EmptySearchPlaceholder()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityIdentifier("search.idle")
 
         case .loading:
-            SpiningCatLoadingView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack {
+                SpiningCatLoadingView()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .scaleEffect(x:0.7, y:0.7, anchor: .center)
+                .accessibilityIdentifier("search.loading")
         case .content:
             if searchResults.isEmpty {
-                EmptyStateView(message: "No results")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ZStack {
+                    EmptyStateView(message: "No results")
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .accessibilityIdentifier("search.empty")
             } else {
                 List {
-                    ForEach(searchResults, id: \.id) { item in
+                    ForEach(Array(searchResults.enumerated()), id: \.element.id) { index, item in
                         SearchRecipeRow(item: item, showFavorite: true) { isFavorite in
                             onFavoriteToggle(item, isFavorite)
                         }
+                            .accessibilityIdentifier("search.resultRow.\(index)")
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 onItemTap(item)
@@ -80,15 +90,22 @@ struct SearchScreen: View {
                     }
                 }
                 .listStyle(.plain)
+                .accessibilityIdentifier("search.results")
             }
 
         case .empty:
-            EmptyStateView(message: "No results")
-                .frame(maxWidth: .infinity)
+            ZStack {
+                EmptyStateView(message: "No results")
+            }
+            .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("search.empty")
 
         case .error(let msg):
-            ErrorView(message: msg, onAction: onCommit)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack {
+                ErrorView(message: msg, onAction: onCommit)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityIdentifier("search.error")
         }
     }
 }

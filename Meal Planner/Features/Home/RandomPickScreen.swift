@@ -17,6 +17,7 @@ struct RandomPickScreen: View {
                 .frame(maxHeight: .infinity, alignment: .top)
             reloadButton
         }
+        .accessibilityIdentifier("randomPick.screen")
         .navigationTitle("Random Pick")
         .task {
             if vm.state.randomPick.phase == .idle {
@@ -39,11 +40,13 @@ struct RandomPickScreen: View {
         switch vm.state.randomPick.phase {
         case .loading:
             RandomPickLoadingView(message: "Finding 10 tasty ideas for you.")
+                .accessibilityIdentifier("randomPick.loading")
         case .error(let message):
             RandomPickErrorView(
                 message: message,
                 retryAction: { vm.onIntent(.loadRandomPick) }
             )
+            .accessibilityIdentifier("randomPick.error")
         case .content:
             let itemsBinding: Binding<[UIRecipeItem]> = Binding(
                 get: { vm.state.randomPick.items },
@@ -54,13 +57,16 @@ struct RandomPickScreen: View {
 
             CardStackView(items: itemsBinding)
                 .padding(.horizontal, 20)
+                .accessibilityIdentifier("randomPick.content")
         case .empty:
             EmptyStateView(
                 title: "Nothing to pick yet",
                 description: "Tap below and we’ll pull another batch of random recipes."
             )
+            .accessibilityIdentifier("randomPick.empty")
         case .idle:
             RandomPickLoadingView(message: "Warming up the shuffle.")
+                .accessibilityIdentifier("randomPick.idle")
         }
     }
 

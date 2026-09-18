@@ -130,6 +130,7 @@ struct SettingsScreen: View {
             }
         }
         .listStyle(.insetGrouped)
+        .accessibilityIdentifier("settings.screen")
         .task {
             settingsViewModel.onIntent(.loadSummary)
         }
