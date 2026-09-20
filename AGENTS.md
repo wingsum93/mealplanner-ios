@@ -38,3 +38,6 @@
 ## Security & Configuration Tips
 
 - TheMealDB base URL and an `apiKey` currently live in `Meal Planner/Core/DataSource/Remote/RecipeRemoteDataSourceImpl.swift`. Treat it as a sample/public key; do not commit real secrets. Prefer `.xcconfig` or environment-based configuration for private keys.
+
+## Base Component
+skip writing test for all components unless explicit say
