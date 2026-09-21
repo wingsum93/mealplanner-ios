@@ -40,7 +40,7 @@ private struct SkeletonHeroCard: View {
 }
 
 private struct SkeletonSquareChipSection: View {
-    let title: String
+    let title: LocalizedStringKey
 
     var body: some View {
         SectionHeader(title)

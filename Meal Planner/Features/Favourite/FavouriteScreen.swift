@@ -65,7 +65,7 @@ struct FavouriteScreen :View {
 
             Spacer().frame(height: 50)
 
-            Text("empty_bookmark_message")
+            Text("You have not bookmarked yet.")
                 .font(.headline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

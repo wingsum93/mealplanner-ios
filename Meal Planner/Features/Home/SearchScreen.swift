@@ -8,7 +8,7 @@ import SwiftUI
 
 struct SearchScreen: View {
     @Binding var query: String
-    var placeholder: String
+    var placeholder: LocalizedStringKey
     var searchPhase: LoadPhase
     var searchResults: [UIRecipeItem]
     var onCommit: () -> Void
@@ -18,7 +18,7 @@ struct SearchScreen: View {
 
     init(
         query: Binding<String>,
-        placeholder: String = "Search...",
+        placeholder: LocalizedStringKey = "Search...",
         searchPhase: LoadPhase,
         searchResults: [UIRecipeItem],
         onCommit: @escaping () -> Void = {},

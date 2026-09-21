@@ -40,9 +40,9 @@ struct RootTabs: View {
                 settingsViewModel: settingsViewModel
             )
             .tabItem{
-                Label("Profile", systemImage: "person.circle")
+                Label("Setting", systemImage: "person.circle")
             }
-            .tag(AppTab.profile)
+            .tag(AppTab.setting)
             
         }
         .onChange(of: appRouter.activeSheet) { sheet in

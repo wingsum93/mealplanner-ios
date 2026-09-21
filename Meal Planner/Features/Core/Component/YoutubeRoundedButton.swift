@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct YoutubeRoundedButton: View {
-    var title: String
+    var title: LocalizedStringKey
     var systemImage: String
     var url:URL
     var backgroundColor:Color = .orange
@@ -16,7 +16,7 @@ struct YoutubeRoundedButton: View {
     
     @Environment(\.openURL) private var openURL
     
-    init(title: String, systemImage: String, link:String) {
+    init(title: LocalizedStringKey, systemImage: String, link:String) {
         self.title = title
         self.systemImage = systemImage
         self.url = URL(string:link ) ?? URL(string:"https://www.youtube.com/")!
@@ -30,7 +30,8 @@ struct YoutubeRoundedButton: View {
             HStack {
                 Image(systemName: systemImage)
                     .font(.system(size: 18, weight: .semibold))
-                Text(title.uppercased()) // 全大寫
+                Text(title)
+                    .textCase(.uppercase)
                     .font(.system(size: 16, weight: .semibold))
             }
             .foregroundColor(.white) // icon + text 顏色

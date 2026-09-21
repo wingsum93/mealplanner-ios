@@ -192,7 +192,7 @@ struct SettingScreen: View {
 #endif
 
 private struct SettingsSummaryRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: Int
     let systemImage: String
 
@@ -209,7 +209,7 @@ private struct SettingsSummaryRow: View {
 }
 
 private struct SettingsInfoRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let systemImage: String
 

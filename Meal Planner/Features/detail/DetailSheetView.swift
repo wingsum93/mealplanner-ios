@@ -145,6 +145,15 @@ private enum MealDetailContentTab: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
+    var title: LocalizedStringKey {
+        switch self {
+        case .instructions:
+            return "Instructions"
+        case .ingredients:
+            return "Ingredients"
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .instructions:
@@ -225,7 +234,7 @@ private struct MealDetailTabbedContent: View {
         VStack(spacing: 14) {
             Picker("Recipe detail section", selection: $selectedTab) {
                 ForEach(MealDetailContentTab.allCases) { tab in
-                    Label(tab.rawValue, systemImage: tab.systemImage)
+                    Label(tab.title, systemImage: tab.systemImage)
                         .accessibilityIdentifier(tab.accessibilityIdentifier)
                         .tag(tab)
                 }
@@ -425,8 +434,8 @@ private func buildMetaText(area: String?, category: String?) -> String? {
 
 private struct CardSectionHeader: View {
     let systemImage: String
-    let title: String
-    var subtitle: String? = nil
+    let title: LocalizedStringKey
+    var subtitle: LocalizedStringKey? = nil
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -439,7 +448,7 @@ private struct CardSectionHeader: View {
                 Text(title)
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.primary)
-                if let subtitle, !subtitle.isEmpty {
+                if let subtitle {
                     Text(subtitle)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)

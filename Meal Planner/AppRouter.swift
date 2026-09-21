@@ -54,7 +54,7 @@ final class AppRouter: ObservableObject {
 enum AppTab: Hashable {
     case home
     case favourite
-    case profile
+    case setting
 }
 
 enum AppSheet: Identifiable, Equatable {

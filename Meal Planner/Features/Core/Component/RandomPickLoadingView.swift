@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RandomPickLoadingView: View {
-    var message: String
+    var message: LocalizedStringKey
 
     var body: some View {
         VStack(spacing: 20) {

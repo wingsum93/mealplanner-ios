@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct IngredientListScreen: View {
-    let title: String
+    let title: LocalizedStringKey
     let items: [Ingredient]
     let phase: LoadPhase
     let onTapIngredient: (Ingredient) -> Void
@@ -18,7 +18,7 @@ struct IngredientListScreen: View {
     private let minimumCellWidth: CGFloat = 88
 
     init(
-        title: String = "Ingredients",
+        title: LocalizedStringKey = "Ingredients",
         items: [Ingredient],
         phase: LoadPhase = .content,
         onTapIngredient: @escaping (Ingredient) -> Void = { _ in }
