@@ -18,7 +18,7 @@ struct RecipeApp: App {
     @StateObject private var settingsVM: SettingsViewModel
     init() {
         ImageCacheConfig.configure()
-        LegacyAuthStorageCleanup.removeLegacyAuthData()
+        LegacyAuthMigration.removeLegacyAuthData()
 
         let isUITestingInMemoryStore = CommandLine.arguments.contains("-uiTestingInMemoryStore")
         let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: isUITestingInMemoryStore)

@@ -5,7 +5,6 @@
 //  Created by eric ho on 3/8/2025.
 //
 import SwiftUI
-import SwiftData
 
 struct RootTabs: View {
     @EnvironmentObject private var appRouter: AppRouter
@@ -108,9 +107,3 @@ private extension View {
         }
     }
 }
-
-//#Preview {
-//    HomeScreen(homeViewModel: .preview)
-//        .modelContainer(for: Item.self, inMemory: true)
-//    
-//}

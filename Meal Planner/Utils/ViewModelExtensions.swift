@@ -6,21 +6,6 @@
 //
 import SwiftUI
 
-extension FeatureViewModel {
-    //    static var preview: FeatureViewModel {
-    //        let vm = FeatureViewModel(repository: DummyRecipeRepository())
-    //        vm.state = HomeScreenState(
-    //            isLoading: false,
-    //            errorMessage: nil,
-    //            randomRecipe: .sample,
-    //            areaList: ["American", "British", "Chinese"],
-    //            categoryList: ["Dessert", "Seafood"],
-    //            beefRecipes: [.sample, .sample]
-    //        )
-    //        return vm
-    //    }
-}
-
 public extension View{
     /// 方便呼叫嘅 sugar
     func shimmer(

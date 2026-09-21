@@ -1,5 +1,5 @@
 //
-//  LegacyAuthStorageCleanupTests.swift
+//  LegacyAuthMigrationTests.swift
 //  Meal PlannerTests
 //
 //  Created by Codex on 10/9/2026.
@@ -9,10 +9,10 @@ import Foundation
 import Testing
 @testable import Meal_Planner
 
-struct LegacyAuthStorageCleanupTests {
+struct LegacyAuthMigrationTests {
 
-    @Test func cleanupRemovesLegacyLoginDefaults() throws {
-        let suiteName = "LegacyAuthStorageCleanupTests.\(UUID().uuidString)"
+    @Test func migrationRemovesLegacyLoginDefaults() throws {
+        let suiteName = "LegacyAuthMigrationTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
@@ -21,7 +21,7 @@ struct LegacyAuthStorageCleanupTests {
         defaults.set(true, forKey: "login")
         defaults.set("keep", forKey: "category_cache")
 
-        LegacyAuthStorageCleanup.removeLegacyAuthData(from: defaults)
+        LegacyAuthMigration.removeLegacyAuthData(from: defaults)
 
         #expect(defaults.object(forKey: "stored_username") == nil)
         #expect(defaults.object(forKey: "stored_password") == nil)

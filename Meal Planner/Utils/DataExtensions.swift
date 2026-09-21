@@ -164,13 +164,6 @@ extension RecipeItemDto {
             return nil
         }
     }
-    private func combineIngredient(_ ingredient: String?, _ measure: String?) -> String? {
-        let trimmedIngredient = ingredient?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let i = trimmedIngredient, !i.isEmpty {
-            return "\(i):\(measure ?? "")"
-        }
-        return nil
-    }
 }
 
 extension String {

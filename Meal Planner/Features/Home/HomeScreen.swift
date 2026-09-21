@@ -23,6 +23,9 @@ struct HomeScreen: View {
                 homeContent
             }
         }
+        .refreshable {
+            vm.onIntent(.refreshHome)
+        }
         .navigationTitle("Recipes")
     }
 
