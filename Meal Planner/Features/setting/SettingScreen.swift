@@ -1,12 +1,12 @@
 //
-//  SettingsScreen.swift
+//  SettingScreen.swift
 //  Meal Planner
 //
 //  Created by eric ho on 3/8/2025.
 //
 
 import SwiftUI
-struct SettingsScreen: View {
+struct SettingScreen: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
 
     @State private var pendingAction: SettingsAction?
@@ -185,7 +185,7 @@ struct SettingsScreen: View {
 #if DEBUG
 #Preview {
     let mockLocal = MockRecipeLocalDataSource()
-    SettingsScreen(
+    SettingScreen(
         settingsViewModel: SettingsViewModel(localDataSource: mockLocal)
     )
 }

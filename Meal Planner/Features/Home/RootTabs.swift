@@ -36,7 +36,7 @@ struct RootTabs: View {
                     Label("Favourite", systemImage: "star.fill")
                 }
                 .tag(AppTab.favourite)
-            ProfileScreen(
+            SettingScreen(
                 settingsViewModel: settingsViewModel
             )
             .tabItem{
