@@ -6,7 +6,6 @@
 //
 
 import Foundation
-@testable import Meal_Planner
 
 func waitUntil(
     timeout: Duration = .seconds(1),

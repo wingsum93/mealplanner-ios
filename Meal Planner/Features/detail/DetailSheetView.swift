@@ -93,11 +93,22 @@ struct DetailSheetView: View {
                         title: "Recipe Details"
                     )
                 ) {
-                    MealDetailTabbedContent(
-                        item: displayedItem,
-                        selectedTab: $selectedContentTab,
-                        onTapIngredient: onTapIngredient
-                    )
+                    if vm.state.isLoadingDetail && displayedItem.instructions.isEmpty {
+                        HStack(spacing: 10) {
+                            ProgressView()
+                            Text("Loading recipe…")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 96, alignment: .center)
+                        .accessibilityIdentifier("detail.loading")
+                    } else {
+                        MealDetailTabbedContent(
+                            item: displayedItem,
+                            selectedTab: $selectedContentTab,
+                            onTapIngredient: onTapIngredient
+                        )
+                    }
                 }
                 .padding(.horizontal, 16)
 
@@ -112,6 +123,7 @@ struct DetailSheetView: View {
         .accessibilityIdentifier("detail.sheet")
         .onAppear {
             vm.onIntent(.setItem(item))
+            vm.onIntent(.loadDetail(item))
         }
         .onDisappear {
             vm.onIntent(.dismiss)

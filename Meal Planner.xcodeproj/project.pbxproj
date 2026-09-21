@@ -11,6 +11,43 @@
 		6BAD86B52E4F443A009D3A45 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6BAD86B42E4F443A009D3A45 /* Lottie */; };
 		6BF09EB92E3E9A34001D7E9B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 6BF09EB82E3E9A2D001D7E9B /* README.md */; };
 		6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF09EE82E3E9FD1001D7E9B /* Alamofire */; };
+		6BC0DE00000000000000000B /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000000A /* AppRouter.swift */; };
+		6BC0DE00000000000000000D /* RecipeLocalDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000000C /* RecipeLocalDataSource.swift */; };
+		6BC0DE00000000000000000F /* IngredientDto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000000E /* IngredientDto.swift */; };
+		6BC0DE000000000000000011 /* IngredientEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000010 /* IngredientEntity.swift */; };
+		6BC0DE000000000000000013 /* RecipeItemDto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000012 /* RecipeItemDto.swift */; };
+		6BC0DE000000000000000015 /* Response.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000014 /* Response.swift */; };
+		6BC0DE000000000000000017 /* RecipeRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000016 /* RecipeRepository.swift */; };
+		6BC0DE000000000000000019 /* CardStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000018 /* CardStackView.swift */; };
+		6BC0DE00000000000000001B /* FavouriteIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000001A /* FavouriteIntent.swift */; };
+		6BC0DE00000000000000001D /* FavouriteState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000001C /* FavouriteState.swift */; };
+		6BC0DE00000000000000001F /* FavouriteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000001E /* FavouriteViewModel.swift */; };
+		6BC0DE000000000000000021 /* FeatureViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000020 /* FeatureViewModel.swift */; };
+		6BC0DE000000000000000023 /* HomeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000022 /* HomeIntent.swift */; };
+		6BC0DE000000000000000025 /* HomeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000024 /* HomeState.swift */; };
+		6BC0DE000000000000000027 /* HomeReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000026 /* HomeReducer.swift */; };
+		6BC0DE000000000000000029 /* RandomPickReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000028 /* RandomPickReducer.swift */; };
+		6BC0DE00000000000000002B /* TitleListReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000002A /* TitleListReducer.swift */; };
+		6BC0DE00000000000000002D /* SearchReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000002C /* SearchReducer.swift */; };
+		6BC0DE00000000000000002F /* DetailIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000002E /* DetailIntent.swift */; };
+		6BC0DE000000000000000031 /* DetailState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000030 /* DetailState.swift */; };
+		6BC0DE000000000000000033 /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000032 /* DetailViewModel.swift */; };
+		6BC0DE000000000000000035 /* SettingsState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000034 /* SettingsState.swift */; };
+		6BC0DE000000000000000037 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000036 /* SettingsViewModel.swift */; };
+		6BC0DE000000000000000039 /* Ingredient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000038 /* Ingredient.swift */; };
+		6BC0DE00000000000000003B /* RecipeEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000003A /* RecipeEntity.swift */; };
+		6BC0DE00000000000000003D /* RecipeItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000003C /* RecipeItem.swift */; };
+		6BC0DE00000000000000003F /* UIRecipeItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000003E /* UIRecipeItem.swift */; };
+		6BC0DE000000000000000041 /* DataExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000040 /* DataExtensions.swift */; };
+		6BC0DE000000000000000043 /* UIRecipeItemExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000042 /* UIRecipeItemExtension.swift */; };
+		6BC0DE000000000000000045 /* AppRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000044 /* AppRouterTests.swift */; };
+		6BC0DE000000000000000047 /* CardStackLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000046 /* CardStackLayoutTests.swift */; };
+		6BC0DE000000000000000049 /* DetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000048 /* DetailViewModelTests.swift */; };
+		6BC0DE00000000000000004B /* FavouriteViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000004A /* FavouriteViewModelTests.swift */; };
+		6BC0DE00000000000000004D /* FeatureViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000004C /* FeatureViewModelTests.swift */; };
+		6BC0DE00000000000000004F /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000004E /* SettingsViewModelTests.swift */; };
+		6BC0DE000000000000000051 /* StateModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000050 /* StateModelTests.swift */; };
+		6BC0DE000000000000000053 /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000052 /* TestSupport.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +81,44 @@
 		6B757D452E3E9558008F47F8 /* Meal PlannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Meal PlannerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6BD039BE2E4786D20068938A /* ai-project-overview.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "ai-project-overview.md"; sourceTree = "<group>"; };
 		6BF09EB82E3E9A2D001D7E9B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		6BC0DE000000000000000001 /* MealPlannerCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MealPlannerCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6BC0DE00000000000000000A /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/AppRouter.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000000C /* RecipeLocalDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Core/DataSource/Local/RecipeLocalDataSource.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000000E /* IngredientDto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Core/DataSource/Models/IngredientDto.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000010 /* IngredientEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Core/DataSource/Models/IngredientEntity.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000012 /* RecipeItemDto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Core/DataSource/Models/RecipeItemDto.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000014 /* Response.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Core/DataSource/Models/Response.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000016 /* RecipeRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Core/Repository/RecipeRepository.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000018 /* CardStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Core/Component/CardStackView.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000001A /* FavouriteIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Favourite/FavouriteIntent.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000001C /* FavouriteState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Favourite/FavouriteState.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000001E /* FavouriteViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Favourite/FavouriteViewModel.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000020 /* FeatureViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Home/FeatureViewModel.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000022 /* HomeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Home/HomeIntent.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000024 /* HomeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Home/HomeState.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000026 /* HomeReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Home/Reducers/HomeReducer.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000028 /* RandomPickReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Home/Reducers/RandomPickReducer.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000002A /* TitleListReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Home/Reducers/TitleListReducer.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000002C /* SearchReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Search/SearchReducer.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000002E /* DetailIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/detail/DetailIntent.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000030 /* DetailState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/detail/DetailState.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000032 /* DetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/detail/DetailViewModel.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000034 /* SettingsState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/setting/SettingsState.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000036 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/setting/SettingsViewModel.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000038 /* Ingredient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Models/Ingredient.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000003A /* RecipeEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Models/RecipeEntity.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000003C /* RecipeItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Models/RecipeItem.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000003E /* UIRecipeItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Models/UIRecipeItem.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000040 /* DataExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Utils/DataExtensions.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000042 /* UIRecipeItemExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Utils/UIRecipeItemExtension.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000044 /* AppRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/AppRouterTests.swift; sourceTree = "<group>"; };
+		6BC0DE000000000000000046 /* CardStackLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/CardStackLayoutTests.swift; sourceTree = "<group>"; };
+		6BC0DE000000000000000048 /* DetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/DetailViewModelTests.swift; sourceTree = "<group>"; };
+		6BC0DE00000000000000004A /* FavouriteViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/FavouriteViewModelTests.swift; sourceTree = "<group>"; };
+		6BC0DE00000000000000004C /* FeatureViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/FeatureViewModelTests.swift; sourceTree = "<group>"; };
+		6BC0DE00000000000000004E /* SettingsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/SettingsViewModelTests.swift; sourceTree = "<group>"; };
+		6BC0DE000000000000000050 /* StateModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/StateModelTests.swift; sourceTree = "<group>"; };
+		6BC0DE000000000000000052 /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/TestSupport.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -106,6 +181,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6BC0DE000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -116,6 +198,7 @@
 				6BD039BE2E4786D20068938A /* ai-project-overview.md */,
 				6BF09EB82E3E9A2D001D7E9B /* README.md */,
 				6B757D2E2E3E9556008F47F8 /* Meal Planner */,
+				6BC0DE000000000000000006 /* MealPlannerCoreTests */,
 				6B757D3E2E3E9558008F47F8 /* Meal PlannerTests */,
 				6B757D482E3E9558008F47F8 /* Meal PlannerUITests */,
 				6B6A25E43061CD8400552930 /* SnapshotTest */,
@@ -130,8 +213,53 @@
 				6B757D3B2E3E9558008F47F8 /* Meal PlannerTests.xctest */,
 				6B757D452E3E9558008F47F8 /* Meal PlannerUITests.xctest */,
 				6B6A25E33061CD8400552930 /* SnapshotTest.xctest */,
+				6BC0DE000000000000000001 /* MealPlannerCoreTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		6BC0DE000000000000000006 /* MealPlannerCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				6BC0DE00000000000000000A /* AppRouter.swift */,
+				6BC0DE00000000000000000C /* RecipeLocalDataSource.swift */,
+				6BC0DE00000000000000000E /* IngredientDto.swift */,
+				6BC0DE000000000000000010 /* IngredientEntity.swift */,
+				6BC0DE000000000000000012 /* RecipeItemDto.swift */,
+				6BC0DE000000000000000014 /* Response.swift */,
+				6BC0DE000000000000000016 /* RecipeRepository.swift */,
+				6BC0DE000000000000000018 /* CardStackView.swift */,
+				6BC0DE00000000000000001A /* FavouriteIntent.swift */,
+				6BC0DE00000000000000001C /* FavouriteState.swift */,
+				6BC0DE00000000000000001E /* FavouriteViewModel.swift */,
+				6BC0DE000000000000000020 /* FeatureViewModel.swift */,
+				6BC0DE000000000000000022 /* HomeIntent.swift */,
+				6BC0DE000000000000000024 /* HomeState.swift */,
+				6BC0DE000000000000000026 /* HomeReducer.swift */,
+				6BC0DE000000000000000028 /* RandomPickReducer.swift */,
+				6BC0DE00000000000000002A /* TitleListReducer.swift */,
+				6BC0DE00000000000000002C /* SearchReducer.swift */,
+				6BC0DE00000000000000002E /* DetailIntent.swift */,
+				6BC0DE000000000000000030 /* DetailState.swift */,
+				6BC0DE000000000000000032 /* DetailViewModel.swift */,
+				6BC0DE000000000000000034 /* SettingsState.swift */,
+				6BC0DE000000000000000036 /* SettingsViewModel.swift */,
+				6BC0DE000000000000000038 /* Ingredient.swift */,
+				6BC0DE00000000000000003A /* RecipeEntity.swift */,
+				6BC0DE00000000000000003C /* RecipeItem.swift */,
+				6BC0DE00000000000000003E /* UIRecipeItem.swift */,
+				6BC0DE000000000000000040 /* DataExtensions.swift */,
+				6BC0DE000000000000000042 /* UIRecipeItemExtension.swift */,
+				6BC0DE000000000000000044 /* AppRouterTests.swift */,
+				6BC0DE000000000000000046 /* CardStackLayoutTests.swift */,
+				6BC0DE000000000000000048 /* DetailViewModelTests.swift */,
+				6BC0DE00000000000000004A /* FavouriteViewModelTests.swift */,
+				6BC0DE00000000000000004C /* FeatureViewModelTests.swift */,
+				6BC0DE00000000000000004E /* SettingsViewModelTests.swift */,
+				6BC0DE000000000000000050 /* StateModelTests.swift */,
+				6BC0DE000000000000000052 /* TestSupport.swift */,
+			);
+			name = MealPlannerCoreTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -232,6 +360,25 @@
 			productReference = 6B757D452E3E9558008F47F8 /* Meal PlannerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		6BC0DE000000000000000005 /* MealPlannerCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6BC0DE000000000000000009 /* Build configuration list for PBXNativeTarget "MealPlannerCoreTests" */;
+			buildPhases = (
+				6BC0DE000000000000000002 /* Sources */,
+				6BC0DE000000000000000003 /* Frameworks */,
+				6BC0DE000000000000000004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MealPlannerCoreTests;
+			packageProductDependencies = (
+			);
+			productName = MealPlannerCoreTests;
+			productReference = 6BC0DE000000000000000001 /* MealPlannerCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -281,6 +428,7 @@
 				6B757D3A2E3E9558008F47F8 /* Meal PlannerTests */,
 				6B757D442E3E9558008F47F8 /* Meal PlannerUITests */,
 				6B6A25E23061CD8400552930 /* SnapshotTest */,
+				6BC0DE000000000000000005 /* MealPlannerCoreTests */,
 			);
 		};
 /* End PBXProject section */
@@ -315,6 +463,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6BC0DE000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -343,6 +498,50 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6BC0DE000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6BC0DE00000000000000000B /* AppRouter.swift in Sources */,
+				6BC0DE00000000000000000D /* RecipeLocalDataSource.swift in Sources */,
+				6BC0DE00000000000000000F /* IngredientDto.swift in Sources */,
+				6BC0DE000000000000000011 /* IngredientEntity.swift in Sources */,
+				6BC0DE000000000000000013 /* RecipeItemDto.swift in Sources */,
+				6BC0DE000000000000000015 /* Response.swift in Sources */,
+				6BC0DE000000000000000017 /* RecipeRepository.swift in Sources */,
+				6BC0DE000000000000000019 /* CardStackView.swift in Sources */,
+				6BC0DE00000000000000001B /* FavouriteIntent.swift in Sources */,
+				6BC0DE00000000000000001D /* FavouriteState.swift in Sources */,
+				6BC0DE00000000000000001F /* FavouriteViewModel.swift in Sources */,
+				6BC0DE000000000000000021 /* FeatureViewModel.swift in Sources */,
+				6BC0DE000000000000000023 /* HomeIntent.swift in Sources */,
+				6BC0DE000000000000000025 /* HomeState.swift in Sources */,
+				6BC0DE000000000000000027 /* HomeReducer.swift in Sources */,
+				6BC0DE000000000000000029 /* RandomPickReducer.swift in Sources */,
+				6BC0DE00000000000000002B /* TitleListReducer.swift in Sources */,
+				6BC0DE00000000000000002D /* SearchReducer.swift in Sources */,
+				6BC0DE00000000000000002F /* DetailIntent.swift in Sources */,
+				6BC0DE000000000000000031 /* DetailState.swift in Sources */,
+				6BC0DE000000000000000033 /* DetailViewModel.swift in Sources */,
+				6BC0DE000000000000000035 /* SettingsState.swift in Sources */,
+				6BC0DE000000000000000037 /* SettingsViewModel.swift in Sources */,
+				6BC0DE000000000000000039 /* Ingredient.swift in Sources */,
+				6BC0DE00000000000000003B /* RecipeEntity.swift in Sources */,
+				6BC0DE00000000000000003D /* RecipeItem.swift in Sources */,
+				6BC0DE00000000000000003F /* UIRecipeItem.swift in Sources */,
+				6BC0DE000000000000000041 /* DataExtensions.swift in Sources */,
+				6BC0DE000000000000000043 /* UIRecipeItemExtension.swift in Sources */,
+				6BC0DE000000000000000045 /* AppRouterTests.swift in Sources */,
+				6BC0DE000000000000000047 /* CardStackLayoutTests.swift in Sources */,
+				6BC0DE000000000000000049 /* DetailViewModelTests.swift in Sources */,
+				6BC0DE00000000000000004B /* FavouriteViewModelTests.swift in Sources */,
+				6BC0DE00000000000000004D /* FeatureViewModelTests.swift in Sources */,
+				6BC0DE00000000000000004F /* SettingsViewModelTests.swift in Sources */,
+				6BC0DE000000000000000051 /* StateModelTests.swift in Sources */,
+				6BC0DE000000000000000053 /* TestSupport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -668,6 +867,42 @@
 			};
 			name = Release;
 		};
+		6BC0DE000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7H2U3B75K6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ericho.MealPlannerCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6BC0DE000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7H2U3B75K6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ericho.MealPlannerCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -712,6 +947,15 @@
 			buildConfigurations = (
 				6B757D562E3E9558008F47F8 /* Debug */,
 				6B757D572E3E9558008F47F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6BC0DE000000000000000009 /* Build configuration list for PBXNativeTarget "MealPlannerCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6BC0DE000000000000000007 /* Debug */,
+				6BC0DE000000000000000008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

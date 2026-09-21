@@ -6,7 +6,6 @@
 //
 
 import Testing
-@testable import Meal_Planner
 
 struct FeatureViewModelTests {
 

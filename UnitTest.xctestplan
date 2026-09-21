@@ -1,29 +1,28 @@
 {
-  "configurations" : [
+  "configurations": [
     {
-      "id" : "A1B2C3D4-0001-4000-8000-000000000001",
-      "name" : "Test Scheme Action",
-      "options" : {
-
+      "id": "A1B2C3D4-0001-4000-8000-000000000001",
+      "name": "Test Scheme Action",
+      "options": {
       }
     }
   ],
-  "defaultOptions" : {
-    "targetForVariableExpansion" : {
-      "containerPath" : "container:Meal Planner.xcodeproj",
-      "identifier" : "6B757D2B2E3E9556008F47F8",
-      "name" : "Meal Planner"
+  "defaultOptions": {
+    "targetForVariableExpansion": {
+      "containerPath": "container:Meal Planner.xcodeproj",
+      "identifier": "6B757D2B2E3E9556008F47F8",
+      "name": "Meal Planner"
     }
   },
-  "testTargets" : [
+  "testTargets": [
     {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:Meal Planner.xcodeproj",
-        "identifier" : "6B757D3A2E3E9558008F47F8",
-        "name" : "Meal PlannerTests"
+      "parallelizable": true,
+      "target": {
+        "containerPath": "container:Meal Planner.xcodeproj",
+        "identifier": "6BC0DE000000000000000005",
+        "name": "MealPlannerCoreTests"
       }
     }
   ],
-  "version" : 1
+  "version": 1
 }

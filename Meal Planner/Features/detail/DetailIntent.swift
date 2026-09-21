@@ -11,4 +11,5 @@ enum DetailIntent {
     case clearError
     case dismiss
     case setItem(_ item: UIRecipeItem)
+    case loadDetail(_ item: UIRecipeItem)
 }
