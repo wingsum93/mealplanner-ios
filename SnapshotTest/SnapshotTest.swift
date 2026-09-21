@@ -1,6 +1,6 @@
 //
 //  SnapshotTest.swift
-//  Meal PlannerUITests
+//  SnapshotTest
 //
 //  Generates UI screenshots for the main app screens.
 //

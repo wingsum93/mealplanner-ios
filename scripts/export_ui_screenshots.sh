@@ -20,7 +20,7 @@ xcodebuild test \
   -scheme "$SCHEME" \
   -destination "$DESTINATION" \
   -parallel-testing-enabled NO \
-  -only-testing:"Meal PlannerUITests/SnapshotTest" \
+  -testPlan "SnapshotTest" \
   -resultBundlePath "$RESULT_BUNDLE"
 
 xcrun xcresulttool export attachments \

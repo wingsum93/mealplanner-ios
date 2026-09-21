@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "A1B2C3D4-0001-4000-8000-000000000001",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Meal Planner.xcodeproj",
+      "identifier" : "6B757D2B2E3E9556008F47F8",
+      "name" : "Meal Planner"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Meal Planner.xcodeproj",
+        "identifier" : "6B757D3A2E3E9558008F47F8",
+        "name" : "Meal PlannerTests"
+      }
+    }
+  ],
+  "version" : 1
+}
