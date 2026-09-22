@@ -15,6 +15,7 @@ struct RecipeApp: App {
     @StateObject private var homeVM: FeatureViewModel
     @StateObject private var detailVM: DetailViewModel
     @StateObject private var myListVM: MyListViewModel
+    @StateObject private var planVM: PlanViewModel
     @StateObject private var settingsVM: SettingsViewModel
     init() {
         ImageCacheConfig.configure()
@@ -25,6 +26,9 @@ struct RecipeApp: App {
             for: RecipeEntity.self,
             IngredientEntity.self,
             RecipeListEntry.self,
+            ProcurementPlanEntity.self,
+            PlanSlotEntity.self,
+            PlanIngredientEntity.self,
             configurations: modelConfiguration
         )
         let container = AppDIContainer(modelContext: ModelContext(mc),
@@ -35,6 +39,7 @@ struct RecipeApp: App {
         _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
         let myListViewModel = MyListViewModel(repository: container.recipeRepository)
         _myListVM = StateObject(wrappedValue: myListViewModel)
+        _planVM = StateObject(wrappedValue: container.makePlanViewModel())
         _settingsVM = StateObject(
             wrappedValue: container.makeSettingsViewModel {
                 myListViewModel.onIntent(.loadList(.favourite))
@@ -58,6 +63,7 @@ struct RecipeApp: App {
                 .environmentObject(appRouter)
                 .environmentObject(detailVM)
                 .environmentObject(myListVM)
+                .environmentObject(planVM)
         }
     }
 }

@@ -21,6 +21,7 @@ final class SnapshotTest: XCTestCase {
         app.launchArguments = ["-uiTestingInMemoryStore"]
         app.launch()
 
+        selectTab("Recipe", in: app)
         waitForHomeContent(in: app)
         capture("01-home", in: app)
 
@@ -129,9 +130,7 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func captureDetailSheet(in app: XCUIApplication) {
-        let homeTab = app.tabBars.buttons["Home"]
-        XCTAssertTrue(homeTab.waitForExistence(timeout: defaultTimeout), "Home tab did not appear.")
-        homeTab.tap()
+        selectTab("Recipe", in: app)
 
         waitForHomeContent(in: app)
         tap("home.featuredRecipeButton", in: app)
@@ -149,6 +148,12 @@ final class SnapshotTest: XCTestCase {
     private func waitForHomeContent(in app: XCUIApplication) {
         XCTAssertTrue(waitFor("home.featuredRecipe", in: app), "Home featured recipe did not load.")
         XCTAssertTrue(waitFor("home.randomPickCard", in: app), "Home content did not finish loading.")
+    }
+
+    private func selectTab(_ label: String, in app: XCUIApplication) {
+        let tab = app.tabBars.buttons[label]
+        XCTAssertTrue(tab.waitForExistence(timeout: defaultTimeout), "\(label) tab did not appear.")
+        tab.tap()
     }
 
     private func tap(

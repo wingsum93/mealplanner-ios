@@ -61,6 +61,8 @@ final class Meal_PlannerUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
+        selectRecipeTab(in: app)
+
         let searchEntry = app.buttons["home.searchEntry"]
         XCTAssertTrue(waitAndReveal(element: searchEntry, in: app), "Home search entry was not found.")
         searchEntry.tap()
@@ -78,6 +80,8 @@ final class Meal_PlannerUITests: XCTestCase {
     func testNavigateToRandomPickAndCapture() throws {
         let app = XCUIApplication()
         app.launch()
+
+        selectRecipeTab(in: app)
 
         let randomPickButton = app.buttons["Random Pick"]
         XCTAssertTrue(waitAndReveal(element: randomPickButton, in: app), "Random Pick button was not found on Home screen.")
@@ -104,6 +108,39 @@ final class Meal_PlannerUITests: XCTestCase {
         attachment.name = "random-pick-screen"
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    @MainActor
+    func testMealPlanWizardOpensFromHomeAndAdvancesToMealPicker() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestingInMemoryStore"]
+        app.launch()
+
+        let homeTitle = app.navigationBars.staticTexts["Meal Plans"]
+        XCTAssertTrue(homeTitle.waitForExistence(timeout: 5), "Meal Plans home did not appear.")
+
+        let newPlan = app.buttons["planHome.newPlan"]
+        XCTAssertTrue(newPlan.waitForExistence(timeout: 5), "New Plan button was not found.")
+        newPlan.tap()
+
+        let wizardTitle = app.navigationBars.staticTexts["Plan Period"]
+        XCTAssertTrue(wizardTitle.waitForExistence(timeout: 5), "Meal plan wizard did not open.")
+
+        let caption = app.staticTexts["planWizard.slotCaption"]
+        XCTAssertTrue(caption.waitForExistence(timeout: 5), "Slot caption was not shown on step 1.")
+
+        let next = app.buttons["planWizard.next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 5), "Next button was not found.")
+        next.tap()
+
+        let sourceTab = app.segmentedControls["planWizard.sourceTab"]
+        XCTAssertTrue(sourceTab.waitForExistence(timeout: 5), "Meal picker step did not appear.")
+    }
+
+    private func selectRecipeTab(in app: XCUIApplication) {
+        let recipeTab = app.tabBars.buttons["Recipe"]
+        XCTAssertTrue(recipeTab.waitForExistence(timeout: 5), "Recipe tab was not found.")
+        recipeTab.tap()
     }
 
     private func waitAndReveal(element: XCUIElement, in app: XCUIApplication, maxSwipes: Int = 6) -> Bool {

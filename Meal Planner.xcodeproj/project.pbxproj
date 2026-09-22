@@ -47,6 +47,14 @@
 		6BC0DE000000000000000057 /* Meal Planner/Features/MyList/MyListIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000056 /* Meal Planner/Features/MyList/MyListIntent.swift */; };
 		6BC0DE000000000000000059 /* Meal Planner/Features/MyList/MyListState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000058 /* Meal Planner/Features/MyList/MyListState.swift */; };
 		6BC0DE00000000000000005B /* Meal Planner/Features/MyList/MyListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000005A /* Meal Planner/Features/MyList/MyListViewModel.swift */; };
+		6BC0DE000000000000000061 /* Meal Planner/Models/Plan/PlanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000060 /* Meal Planner/Models/Plan/PlanModels.swift */; };
+		6BC0DE000000000000000063 /* Meal Planner/Features/Plan/Domain/SlotMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000062 /* Meal Planner/Features/Plan/Domain/SlotMath.swift */; };
+		6BC0DE000000000000000065 /* Meal Planner/Features/Plan/Domain/MealScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000064 /* Meal Planner/Features/Plan/Domain/MealScheduler.swift */; };
+		6BC0DE000000000000000067 /* Meal Planner/Features/Plan/Domain/IngredientCategorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000066 /* Meal Planner/Features/Plan/Domain/IngredientCategorizer.swift */; };
+		6BC0DE000000000000000069 /* Meal Planner/Features/Plan/Domain/IngredientAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE000000000000000068 /* Meal Planner/Features/Plan/Domain/IngredientAggregator.swift */; };
+		6BC0DE00000000000000006B /* MealPlannerCoreTests/SlotMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000006A /* MealPlannerCoreTests/SlotMathTests.swift */; };
+		6BC0DE00000000000000006D /* MealPlannerCoreTests/MealSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000006C /* MealPlannerCoreTests/MealSchedulerTests.swift */; };
+		6BC0DE00000000000000006F /* MealPlannerCoreTests/IngredientAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000006E /* MealPlannerCoreTests/IngredientAggregatorTests.swift */; };
 		6BF09EB92E3E9A34001D7E9B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 6BF09EB82E3E9A2D001D7E9B /* README.md */; };
 		6BF09EE92E3E9FD1001D7E9B /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 6BF09EE82E3E9FD1001D7E9B /* Alamofire */; };
 /* End PBXBuildFile section */
@@ -119,6 +127,14 @@
 		6BC0DE000000000000000056 /* Meal Planner/Features/MyList/MyListIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/MyList/MyListIntent.swift"; sourceTree = "<group>"; };
 		6BC0DE000000000000000058 /* Meal Planner/Features/MyList/MyListState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/MyList/MyListState.swift"; sourceTree = "<group>"; };
 		6BC0DE00000000000000005A /* Meal Planner/Features/MyList/MyListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/MyList/MyListViewModel.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000060 /* Meal Planner/Models/Plan/PlanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Models/Plan/PlanModels.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000062 /* Meal Planner/Features/Plan/Domain/SlotMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Plan/Domain/SlotMath.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000064 /* Meal Planner/Features/Plan/Domain/MealScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Plan/Domain/MealScheduler.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000066 /* Meal Planner/Features/Plan/Domain/IngredientCategorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Plan/Domain/IngredientCategorizer.swift"; sourceTree = "<group>"; };
+		6BC0DE000000000000000068 /* Meal Planner/Features/Plan/Domain/IngredientAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Meal Planner/Features/Plan/Domain/IngredientAggregator.swift"; sourceTree = "<group>"; };
+		6BC0DE00000000000000006A /* MealPlannerCoreTests/SlotMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/SlotMathTests.swift; sourceTree = "<group>"; };
+		6BC0DE00000000000000006C /* MealPlannerCoreTests/MealSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/MealSchedulerTests.swift; sourceTree = "<group>"; };
+		6BC0DE00000000000000006E /* MealPlannerCoreTests/IngredientAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlannerCoreTests/IngredientAggregatorTests.swift; sourceTree = "<group>"; };
 		6BD039BE2E4786D20068938A /* ai-project-overview.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "ai-project-overview.md"; sourceTree = "<group>"; };
 		6BF09EB82E3E9A2D001D7E9B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -261,6 +277,14 @@
 				6BC0DE00000000000000004E /* MealPlannerCoreTests/SettingsViewModelTests.swift */,
 				6BC0DE000000000000000050 /* MealPlannerCoreTests/StateModelTests.swift */,
 				6BC0DE000000000000000052 /* MealPlannerCoreTests/TestSupport.swift */,
+				6BC0DE000000000000000060 /* Meal Planner/Models/Plan/PlanModels.swift */,
+				6BC0DE000000000000000062 /* Meal Planner/Features/Plan/Domain/SlotMath.swift */,
+				6BC0DE000000000000000064 /* Meal Planner/Features/Plan/Domain/MealScheduler.swift */,
+				6BC0DE000000000000000066 /* Meal Planner/Features/Plan/Domain/IngredientCategorizer.swift */,
+				6BC0DE000000000000000068 /* Meal Planner/Features/Plan/Domain/IngredientAggregator.swift */,
+				6BC0DE00000000000000006A /* MealPlannerCoreTests/SlotMathTests.swift */,
+				6BC0DE00000000000000006C /* MealPlannerCoreTests/MealSchedulerTests.swift */,
+				6BC0DE00000000000000006E /* MealPlannerCoreTests/IngredientAggregatorTests.swift */,
 			);
 			name = MealPlannerCoreTests;
 			sourceTree = "<group>";
@@ -546,6 +570,14 @@
 				6BC0DE00000000000000004F /* MealPlannerCoreTests/SettingsViewModelTests.swift in Sources */,
 				6BC0DE000000000000000051 /* MealPlannerCoreTests/StateModelTests.swift in Sources */,
 				6BC0DE000000000000000053 /* MealPlannerCoreTests/TestSupport.swift in Sources */,
+				6BC0DE000000000000000061 /* Meal Planner/Models/Plan/PlanModels.swift in Sources */,
+				6BC0DE000000000000000063 /* Meal Planner/Features/Plan/Domain/SlotMath.swift in Sources */,
+				6BC0DE000000000000000065 /* Meal Planner/Features/Plan/Domain/MealScheduler.swift in Sources */,
+				6BC0DE000000000000000067 /* Meal Planner/Features/Plan/Domain/IngredientCategorizer.swift in Sources */,
+				6BC0DE000000000000000069 /* Meal Planner/Features/Plan/Domain/IngredientAggregator.swift in Sources */,
+				6BC0DE00000000000000006B /* MealPlannerCoreTests/SlotMathTests.swift in Sources */,
+				6BC0DE00000000000000006D /* MealPlannerCoreTests/MealSchedulerTests.swift in Sources */,
+				6BC0DE00000000000000006F /* MealPlannerCoreTests/IngredientAggregatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -775,7 +807,7 @@
 				DEVELOPMENT_TEAM = 7H2U3B75K6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Dish Mint";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dish Mint Dev";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

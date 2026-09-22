@@ -25,9 +25,13 @@ struct RootTabs: View {
     var body: some View{
         
         TabView(selection: $appRouter.selectedTab) {
-            RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
-                .tabItem{Label("Home", systemImage: "house")}
+            PlanHomeScreen()
+                .tabItem{Label("Home", systemImage: "calendar")}
                 .tag(AppTab.home)
+
+            RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
+                .tabItem{Label("Recipe", systemImage: "fork.knife")}
+                .tag(AppTab.recipe)
             
             NavigationStack {
                 MyListScreen()

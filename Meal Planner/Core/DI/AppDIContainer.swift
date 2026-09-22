@@ -16,9 +16,11 @@ final class AppDIContainer {
     // MARK: - Data Sources
     private let _recipeRemoteDataSource: RecipeRemoteDataSource
     private let _recipeLocalDataSource: RecipeLocalDataSource
+    private let _planLocalDataSource: PlanLocalDataSource
     
     // MARK: - Repository
     private let _recipeRepository: RecipeRepository
+    private let _planRepository: PlanRepository
     
     // Designated init with full overrides (great for tests/previews)
     init(
@@ -26,7 +28,9 @@ final class AppDIContainer {
         networkClient: NetworkClient = AlamofireNetworkClient(),
         recipeRemoteDataSource: RecipeRemoteDataSource? = nil,
         recipeLocalDataSource: RecipeLocalDataSource? = nil,
-        recipeRepository: RecipeRepository? = nil
+        recipeRepository: RecipeRepository? = nil,
+        planLocalDataSource: PlanLocalDataSource? = nil,
+        planRepository: PlanRepository? = nil
     ) {
         self.modelContext = modelContext
         self.networkClient = networkClient
@@ -35,14 +39,19 @@ final class AppDIContainer {
         let remote = recipeRemoteDataSource ?? RecipeRemoteDataSourceImpl (networkClient)
         let local  = recipeLocalDataSource  ?? RecipeLocalDataSourceImpl(context: modelContext)
         let repo   = recipeRepository       ?? RecipeRepositoryImpl(remote: remote, local: local)
+        let planLocal = planLocalDataSource ?? PlanLocalDataSourceImpl(context: modelContext)
+        let planRepo  = planRepository      ?? PlanRepositoryImpl(local: planLocal)
         
         self._recipeRemoteDataSource = remote
         self._recipeLocalDataSource  = local
         self._recipeRepository       = repo
+        self._planLocalDataSource    = planLocal
+        self._planRepository         = planRepo
     }
     
     // Expose read‑only if you want
     var recipeRepository: RecipeRepository { _recipeRepository }
+    var planRepository: PlanRepository { _planRepository }
     
     // MARK: - ViewModels
     func makeHomeViewModel() -> FeatureViewModel {
@@ -52,6 +61,13 @@ final class AppDIContainer {
 
     func makeMyListViewModel() -> MyListViewModel {
         MyListViewModel(repository: _recipeRepository)
+    }
+
+    func makePlanViewModel() -> PlanViewModel {
+        PlanViewModel(
+            planRepository: _planRepository,
+            recipeRepository: _recipeRepository
+        )
     }
 
     func makeSettingsViewModel(

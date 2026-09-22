@@ -52,7 +52,7 @@ struct AppRouterTests {
     }
 
     @MainActor
-    @Test func showIngredientMealsSelectsHomePushesRouteAndDismissesSheet() {
+    @Test func showIngredientMealsSelectsRecipeTabPushesRouteAndDismissesSheet() {
         let router = AppRouter()
         let item = UIRecipeItem.new(id: "1", name: "One")
         router.selectedTab = .myList
@@ -60,7 +60,7 @@ struct AppRouterTests {
 
         router.showIngredientMeals("Beef")
 
-        #expect(router.selectedTab == .home)
+        #expect(router.selectedTab == .recipe)
         #expect(router.path == [.ingredient("Beef")])
         #expect(router.activeSheet == nil)
     }
