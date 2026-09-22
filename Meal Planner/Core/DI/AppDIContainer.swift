@@ -50,6 +50,10 @@ final class AppDIContainer {
         FeatureViewModel(repository: _recipeRepository)
     }
 
+    func makeMyListViewModel() -> MyListViewModel {
+        MyListViewModel(repository: _recipeRepository)
+    }
+
     func makeSettingsViewModel(
         onFavoritesReset: @escaping @MainActor () -> Void = {}
     ) -> SettingsViewModel {

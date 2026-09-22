@@ -79,9 +79,9 @@ struct SearchScreen: View {
             } else {
                 List {
                     ForEach(Array(searchResults.enumerated()), id: \.element.id) { index, item in
-                        SearchRecipeRow(item: item, showFavorite: true) { isFavorite in
+                        SearchRecipeRow(item: item, showFavorite: true, onFavoriteToggle: { isFavorite in
                             onFavoriteToggle(item, isFavorite)
-                        }
+                        })
                             .accessibilityIdentifier("search.resultRow.\(index)")
                             .contentShape(Rectangle())
                             .onTapGesture {

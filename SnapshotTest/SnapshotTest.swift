@@ -29,7 +29,7 @@ final class SnapshotTest: XCTestCase {
         captureCategoryList(in: app)
         captureIngredientScreens(in: app)
         captureRandomPick(in: app)
-        captureFavourites(in: app)
+        captureMyList(in: app)
         captureProfile(in: app)
         captureDetailSheet(in: app)
     }
@@ -107,14 +107,14 @@ final class SnapshotTest: XCTestCase {
         waitForHomeContent(in: app)
     }
 
-    private func captureFavourites(in app: XCUIApplication) {
-        let favouriteTab = app.tabBars.buttons["Favourite"]
-        XCTAssertTrue(favouriteTab.waitForExistence(timeout: defaultTimeout), "Favourite tab did not appear.")
-        favouriteTab.tap()
+    private func captureMyList(in app: XCUIApplication) {
+        let myListTab = app.tabBars.buttons["My List"]
+        XCTAssertTrue(myListTab.waitForExistence(timeout: defaultTimeout), "My List tab did not appear.")
+        myListTab.tap()
 
         XCTAssertTrue(
-            waitForAny(["favourite.empty", "favourite.list", "favourite.error"], in: app),
-            "Favourite screen did not finish rendering."
+            waitForAny(["myList.empty", "myList.list", "myList.error"], in: app),
+            "My List screen did not finish rendering."
         )
         capture("09-favourites", in: app)
     }

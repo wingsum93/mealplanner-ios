@@ -30,12 +30,12 @@ struct RootTabs: View {
                 .tag(AppTab.home)
             
             NavigationStack {
-                FavouriteScreen()
+                MyListScreen()
             }
                 .tabItem{
-                    Label("Favourite", systemImage: "star.fill")
+                    Label("My List", systemImage: "list.star")
                 }
-                .tag(AppTab.favourite)
+                .tag(AppTab.myList)
             SettingScreen(
                 settingsViewModel: settingsViewModel
             )

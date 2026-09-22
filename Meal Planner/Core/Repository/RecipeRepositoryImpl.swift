@@ -98,5 +98,63 @@ class RecipeRepositoryImpl: RecipeRepository{
         let entities = try local.getAllFavoriteRecipes()
         return entities.map { $0.toDomain() }
     }
-    
+
+    // MARK: - My List
+
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {
+        if isIncluded {
+            // Cache the full payload when available so the list can render
+            // offline; summaries are skipped to avoid poisoning the cache.
+            if !item.ingredients.isEmpty || !item.instructions.isEmpty {
+                try saveRecipe(item)
+            }
+            try local.upsertListEntry(mealId: item.id, type: type, at: Date())
+        } else {
+            try local.removeListEntry(mealId: item.id, type: type)
+        }
+    }
+
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool {
+        local.isInList(mealId: id, type: type)
+    }
+
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] {
+        let entries = try local.getListEntries(type: type)
+        guard !entries.isEmpty else { return [] }
+
+        let favouriteIds = Set((try? local.getListEntries(type: .favourite))?.map(\.mealId) ?? [])
+
+        var items: [RecipeItem] = []
+        for entry in entries {
+            if let entity = try local.getRecipeById(entry.mealId) {
+                items.append(decorate(entity.toDomain(), favouriteIds: favouriteIds))
+                continue
+            }
+            // Fallback: the payload was never cached (e.g. cache cleared).
+            if let detail = try? await getRecipeDetail(id: String(entry.mealId)) {
+                try? local.saveRecipe(detail.toEntity())
+                items.append(decorate(detail, favouriteIds: favouriteIds))
+            }
+        }
+        return items
+    }
+
+    func recordRecipeView(id: Int64) throws {
+        try local.upsertListEntry(mealId: id, type: .viewed, at: Date())
+    }
+
+    func resetList(type: RecipeListType) throws {
+        try local.resetList(type: type)
+    }
+
+    func getListCount(type: RecipeListType) throws -> Int {
+        try local.getListCount(type: type)
+    }
+
+    private func decorate(
+        _ item: RecipeItem,
+        favouriteIds: Set<Int64>
+    ) -> RecipeItem {
+        item.with(isFavorite: favouriteIds.contains(item.id))
+    }
 }

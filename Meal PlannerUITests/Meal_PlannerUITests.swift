@@ -40,20 +40,20 @@ final class Meal_PlannerUITests: XCTestCase {
     }
 
     @MainActor
-    func testFavouriteTabFirstVisitShowsEmptyStateAfterLoading() throws {
+    func testMyListTabFirstVisitShowsEmptyStateAfterLoading() throws {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestingInMemoryStore"]
         app.launch()
 
-        let favouriteTab = app.tabBars.buttons["Favourite"]
-        XCTAssertTrue(favouriteTab.waitForExistence(timeout: 5), "Favourite tab was not found.")
-        favouriteTab.tap()
+        let myListTab = app.tabBars.buttons["My List"]
+        XCTAssertTrue(myListTab.waitForExistence(timeout: 5), "My List tab was not found.")
+        myListTab.tap()
 
-        let favouriteTitle = app.navigationBars.staticTexts["Favourites"]
-        XCTAssertTrue(favouriteTitle.waitForExistence(timeout: 5), "Favourite navigation title did not appear.")
+        let myListTitle = app.navigationBars.staticTexts["My List"]
+        XCTAssertTrue(myListTitle.waitForExistence(timeout: 5), "My List navigation title did not appear.")
 
-        let emptyState = app.otherElements["favourite.empty"]
-        XCTAssertTrue(emptyState.waitForExistence(timeout: 5), "Favourite empty state did not appear after loading.")
+        let emptyState = app.otherElements["myList.empty"]
+        XCTAssertTrue(emptyState.waitForExistence(timeout: 5), "My List empty state did not appear after loading.")
     }
 
     @MainActor

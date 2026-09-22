@@ -8,6 +8,7 @@
 struct SettingsDataSummary: Equatable {
     var savedRecipeCount: Int = 0
     var favoriteRecipeCount: Int = 0
+    var masteredRecipeCount: Int = 0
     var cachedCategoryCount: Int = 0
     var cachedAreaCount: Int = 0
     var cachedIngredientCount: Int = 0

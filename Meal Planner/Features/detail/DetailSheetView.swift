@@ -56,12 +56,19 @@ struct DetailSheetView: View {
                         .padding(.bottom, 12)
                     }
                     .overlay(alignment: .bottomTrailing) {
-                        FavoriteHeaderButton(
-                            isFavorite: displayedItem.isFavorite,
-                            isSaving: vm.state.isSavingFavorite,
-                            scale: favoriteButtonScale,
-                            action: toggleFavorite
-                        )
+                        HStack(spacing: 12) {
+                            MasteredHeaderButton(
+                                isMastered: vm.state.isMastered,
+                                isSaving: vm.state.isSavingMastered,
+                                action: toggleMastered
+                            )
+                            FavoriteHeaderButton(
+                                isFavorite: displayedItem.isFavorite,
+                                isSaving: vm.state.isSavingFavorite,
+                                scale: favoriteButtonScale,
+                                action: toggleFavorite
+                            )
+                        }
                         .padding(.trailing, 16)
                         .padding(.bottom, 16)
                     }
@@ -146,6 +153,11 @@ struct DetailSheetView: View {
         vm.onIntent(.toggleFavorite)
     }
 
+    private func toggleMastered() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        vm.onIntent(.toggleMastered)
+    }
+
     private func closeSheet() {
         appRouter.dismissSheet()
     }
@@ -212,6 +224,34 @@ private struct FavoriteHeaderButton: View {
         .accessibilityIdentifier("detail.favoriteButton")
         .accessibilityLabel(isFavorite ? "Remove from favourites" : "Add to favourites")
         .accessibilityHint("Updates the recipe bookmark")
+    }
+}
+
+private struct MasteredHeaderButton: View {
+    let isMastered: Bool
+    let isSaving: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isMastered ? "checkmark.seal.fill" : "checkmark.seal")
+                .font(.title3.weight(.bold))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(isMastered ? Color.accentColor : .primary)
+                .frame(width: 48, height: 48)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(
+                    Circle()
+                        .stroke(.white.opacity(0.35), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.22), radius: 10, y: 4)
+                .opacity(isSaving ? 0.65 : 1.0)
+        }
+        .buttonStyle(.plain)
+        .disabled(isSaving)
+        .accessibilityIdentifier("detail.masteredButton")
+        .accessibilityLabel(isMastered ? "Remove from mastered" : "Mark as mastered")
+        .accessibilityHint("Updates your mastered list")
     }
 }
 

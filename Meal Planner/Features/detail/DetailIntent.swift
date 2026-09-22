@@ -8,6 +8,7 @@
 // MARK: - Intents (from UI)
 enum DetailIntent {
     case toggleFavorite
+    case toggleMastered
     case clearError
     case dismiss
     case setItem(_ item: UIRecipeItem)

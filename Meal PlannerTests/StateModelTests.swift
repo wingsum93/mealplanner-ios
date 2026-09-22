@@ -6,12 +6,11 @@
 //
 
 import Testing
-@testable import Meal_Planner
 
 struct StateModelTests {
 
-    @Test func favouriteStateDerivesFiltersAndAvailableOptions() {
-        var state = FavouriteState(items: [
+    @Test func myListStateDerivesFiltersAndAvailableOptions() {
+        var state = MyListState(items: [
             UIRecipeItem.new(id: "1", name: "A", area: "Thai", category: "Seafood"),
             UIRecipeItem.new(id: "2", name: "B", area: "Thai", category: "Dessert"),
             UIRecipeItem.new(id: "3", name: "C", area: "Canadian", category: "Seafood")

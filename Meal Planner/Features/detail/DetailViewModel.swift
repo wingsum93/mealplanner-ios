@@ -10,6 +10,8 @@ import Observation
 private enum DetailEvent: Equatable {
     case setItem(UIRecipeItem?)
     case setSavingFavorite(Bool)
+    case setMastered(Bool)
+    case setSavingMastered(Bool)
     case setLoadingDetail(Bool)
     case setError(String?)
 }
@@ -19,6 +21,7 @@ final class DetailViewModel: ObservableObject {
     @Published private(set) var state: DetailState
     private let repo: RecipeRepository
     private var favoriteTask: Task<Void, Never>?
+    private var masteryTask: Task<Void, Never>?
     private var detailTask: Task<Void, Never>?
 
     init( repository: RecipeRepository) {
@@ -28,6 +31,7 @@ final class DetailViewModel: ObservableObject {
 
     deinit {
         favoriteTask?.cancel()
+        masteryTask?.cancel()
         detailTask?.cancel()
     }
 
@@ -39,6 +43,8 @@ final class DetailViewModel: ObservableObject {
             loadDetail(item)
         case .toggleFavorite:
             toggleFavorite()
+        case .toggleMastered:
+            toggleMastered()
         case .clearError:
             reduce(.setError(nil))
         case .dismiss:
@@ -56,7 +62,21 @@ final class DetailViewModel: ObservableObject {
 
         let reconciledItem = item.with(isFavorite: repo.isFavourite(id: id))
         reduce(.setItem(reconciledItem))
+        reduce(.setMastered(repo.isRecipeInList(id: id, type: .mastered)))
         persistIfComplete(reconciledItem)
+        recordView(id: id)
+    }
+
+    /// Records that the user opened this meal's detail page. Upserted per meal
+    /// so the view history stays ordered by the most recent visit.
+    private func recordView(id: Int64) {
+        do {
+            try repo.recordRecipeView(id: id)
+        } catch {
+            #if DEBUG
+            print("❌ recordRecipeView error:", error)
+            #endif
+        }
     }
 
     /// Fetches the full record only when the seeded item is a browse-list summary
@@ -103,7 +123,7 @@ final class DetailViewModel: ObservableObject {
         // 1) Optimistic update
         let old = state.item
         guard let old else { return }
-        guard let id = Int64(old.id) else {
+        guard let id = Int64(old.id), let domainItem = old.togglingFavorite().toDomain() else {
             reduce(.setError("Invalid recipe id. Please try again."))
             return
         }
@@ -116,7 +136,7 @@ final class DetailViewModel: ObservableObject {
         favoriteTask = Task { [weak self] in
             guard let self else { return }
             do {
-                try repo.updateFavorite(id: id, isFavorite: new.isFavorite)
+                try repo.setRecipeInList(domainItem, type: .favourite, isIncluded: new.isFavorite)
                 reduce(.setSavingFavorite(false))
             } catch {
                 // 3) Roll back on failure
@@ -130,12 +150,44 @@ final class DetailViewModel: ObservableObject {
         }
     }
 
+    private func toggleMastered() {
+        let item = state.item
+        guard let item else { return }
+        guard let domainItem = item.toDomain() else {
+            reduce(.setError("Invalid recipe id. Please try again."))
+            return
+        }
+        let new = !state.isMastered
+        reduce(.setMastered(new))
+        reduce(.setSavingMastered(true))
+
+        masteryTask?.cancel()
+        masteryTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try repo.setRecipeInList(domainItem, type: .mastered, isIncluded: new)
+                reduce(.setSavingMastered(false))
+            } catch {
+                reduce(.setMastered(!new))
+                reduce(.setSavingMastered(false))
+                reduce(.setError("Failed to update mastered. Please try again."))
+                #if DEBUG
+                print("❌ toggleMastered error:", error)
+                #endif
+            }
+        }
+    }
+
     private func reduce(_ event: DetailEvent) {
         switch event {
         case .setItem(let item):
             state.item = item
         case .setSavingFavorite(let saving):
             state.isSavingFavorite = saving
+        case .setMastered(let mastered):
+            state.isMastered = mastered
+        case .setSavingMastered(let saving):
+            state.isSavingMastered = saving
         case .setLoadingDetail(let loading):
             state.isLoadingDetail = loading
         case .setError(let msg):

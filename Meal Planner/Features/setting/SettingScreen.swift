@@ -31,6 +31,11 @@ struct SettingScreen: View {
                     systemImage: "star.fill"
                 )
                 SettingsSummaryRow(
+                    title: "Mastered",
+                    value: settingsViewModel.state.summary.masteredRecipeCount,
+                    systemImage: "checkmark.seal.fill"
+                )
+                SettingsSummaryRow(
                     title: "Categories",
                     value: settingsViewModel.state.summary.cachedCategoryCount,
                     systemImage: "square.grid.2x2"

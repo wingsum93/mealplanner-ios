@@ -53,7 +53,7 @@ final class AppRouter: ObservableObject {
 
 enum AppTab: Hashable {
     case home
-    case favourite
+    case myList
     case setting
 }
 

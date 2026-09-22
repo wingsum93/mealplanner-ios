@@ -6,7 +6,6 @@
 //
 
 import Testing
-@testable import Meal_Planner
 
 struct AppRouterTests {
 
@@ -56,7 +55,7 @@ struct AppRouterTests {
     @Test func showIngredientMealsSelectsHomePushesRouteAndDismissesSheet() {
         let router = AppRouter()
         let item = UIRecipeItem.new(id: "1", name: "One")
-        router.selectedTab = .favourite
+        router.selectedTab = .myList
         router.presentRecipeDetail(item)
 
         router.showIngredientMeals("Beef")

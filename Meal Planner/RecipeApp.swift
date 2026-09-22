@@ -14,7 +14,7 @@ struct RecipeApp: App {
     @StateObject private var appRouter: AppRouter
     @StateObject private var homeVM: FeatureViewModel
     @StateObject private var detailVM: DetailViewModel
-    @StateObject private var favVM: FavouriteViewModel
+    @StateObject private var myListVM: MyListViewModel
     @StateObject private var settingsVM: SettingsViewModel
     init() {
         ImageCacheConfig.configure()
@@ -24,6 +24,7 @@ struct RecipeApp: App {
         let mc = try! ModelContainer(
             for: RecipeEntity.self,
             IngredientEntity.self,
+            RecipeListEntry.self,
             configurations: modelConfiguration
         )
         let container = AppDIContainer(modelContext: ModelContext(mc),
@@ -32,11 +33,11 @@ struct RecipeApp: App {
         _appRouter = StateObject(wrappedValue: AppRouter())
         _homeVM = StateObject(wrappedValue: FeatureViewModel(repository: container.recipeRepository))
         _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
-        let favouriteViewModel = FavouriteViewModel(repository: container.recipeRepository)
-        _favVM = StateObject(wrappedValue: favouriteViewModel)
+        let myListViewModel = MyListViewModel(repository: container.recipeRepository)
+        _myListVM = StateObject(wrappedValue: myListViewModel)
         _settingsVM = StateObject(
             wrappedValue: container.makeSettingsViewModel {
-                favouriteViewModel.onIntent(.loadFavorites)
+                myListViewModel.onIntent(.loadList(.favourite))
             }
         )
     }
@@ -56,7 +57,7 @@ struct RecipeApp: App {
                 })
                 .environmentObject(appRouter)
                 .environmentObject(detailVM)
-                .environmentObject(favVM)
+                .environmentObject(myListVM)
         }
     }
 }

@@ -20,6 +20,13 @@ struct MockRecipeLocalDataSource: RecipeLocalDataSource {
     func updateFavorite(id: Int64, isFavorite: Bool) throws { }
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeEntity] { [] }
+    func upsertListEntry(mealId: Int64, type: RecipeListType, at date: Date) throws { }
+    func removeListEntry(mealId: Int64, type: RecipeListType) throws { }
+    func isInList(mealId: Int64, type: RecipeListType) -> Bool { false }
+    func getListEntries(type: RecipeListType) throws -> [RecipeListEntry] { [] }
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
+    func resetList(type: RecipeListType) throws { }
+    func allListMealIds() throws -> Set<Int64> { [] }
     func getSettingsDataSummary() throws -> SettingsDataSummary {
         SettingsDataSummary(
             savedRecipeCount: 12,

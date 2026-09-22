@@ -53,6 +53,12 @@ final class SearchRaceRecipeRepository: RecipeRepository {
     func updateFavorite(id: Int64, isFavorite: Bool) throws {}
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeItem] { [] }
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {}
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool { false }
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] { [] }
+    func recordRecipeView(id: Int64) throws {}
+    func resetList(type: RecipeListType) throws {}
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
 
     private func delayIgnoringCancellation(seconds: TimeInterval) async {
         await withCheckedContinuation { continuation in
@@ -97,10 +103,18 @@ final class DebouncedSearchRecipeRepository: RecipeRepository {
     func updateFavorite(id: Int64, isFavorite: Bool) throws {}
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeItem] { [] }
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {}
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool { false }
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] { [] }
+    func recordRecipeView(id: Int64) throws {}
+    func resetList(type: RecipeListType) throws {}
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
 }
 
 final class FavoriteRecipeRepository: RecipeRepository {
     var favorites: [RecipeItem]
+    var mastered: [RecipeItem] = []
+    var viewed: [RecipeItem] = []
     var shouldFailLoad = false
     var shouldFailUpdate = false
 
@@ -148,6 +162,65 @@ final class FavoriteRecipeRepository: RecipeRepository {
     func getRandomRecipe() async throws -> RecipeItem { makeRecipe(id: 99, title: "random") }
     func getRandom10Recipe() async throws -> [RecipeItem] { [] }
     func isFavourite(id: Int64) -> Bool { favorites.contains { $0.id == id && $0.isFavorite } }
+
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {
+        if shouldFailUpdate { throw TestError.expected }
+        var bucket = list(for: type)
+        if isIncluded {
+            if let index = bucket.firstIndex(where: { $0.id == item.id }) {
+                bucket[index] = item
+            } else {
+                bucket.append(item)
+            }
+        } else {
+            bucket.removeAll { $0.id == item.id }
+        }
+        setList(bucket, for: type)
+    }
+
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool {
+        list(for: type).contains { $0.id == id }
+    }
+
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] {
+        if shouldFailLoad { throw TestError.expected }
+        let favouriteIds = Set(favorites.filter(\.isFavorite).map(\.id))
+        return list(for: type)
+            .filter { type != .favourite || $0.isFavorite }
+            .map { $0.with(isFavorite: favouriteIds.contains($0.id)) }
+    }
+
+    func recordRecipeView(id: Int64) throws {
+        guard !viewed.contains(where: { $0.id == id }) else { return }
+        let payload = list(for: .favourite)
+            .first(where: { $0.id == id })
+            ?? makeRecipe(id: id, title: "Viewed")
+        viewed.insert(payload, at: 0)
+    }
+
+    func resetList(type: RecipeListType) throws {
+        setList([], for: type)
+    }
+
+    func getListCount(type: RecipeListType) throws -> Int {
+        list(for: type).count
+    }
+
+    private func list(for type: RecipeListType) -> [RecipeItem] {
+        switch type {
+        case .favourite: return favorites
+        case .mastered: return mastered
+        case .viewed: return viewed
+        }
+    }
+
+    private func setList(_ items: [RecipeItem], for type: RecipeListType) {
+        switch type {
+        case .favourite: favorites = items
+        case .mastered: mastered = items
+        case .viewed: viewed = items
+        }
+    }
 }
 
 final class SettingsLocalDataSourceSpy: RecipeLocalDataSource {
@@ -201,6 +274,13 @@ final class SettingsLocalDataSourceSpy: RecipeLocalDataSource {
     func updateFavorite(id: Int64, isFavorite: Bool) throws {}
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeEntity] { [] }
+    func upsertListEntry(mealId: Int64, type: RecipeListType, at date: Date) throws {}
+    func removeListEntry(mealId: Int64, type: RecipeListType) throws {}
+    func isInList(mealId: Int64, type: RecipeListType) -> Bool { false }
+    func getListEntries(type: RecipeListType) throws -> [RecipeListEntry] { [] }
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
+    func resetList(type: RecipeListType) throws {}
+    func allListMealIds() throws -> Set<Int64> { [] }
 }
 
 final class DummyRecipeRepository: RecipeRepository {
@@ -259,6 +339,13 @@ final class DummyRecipeRepository: RecipeRepository {
         return [sampleRecipeItem(id: 200, title: "Fav Recipe")]
     }
 
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {}
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool { false }
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] { [] }
+    func recordRecipeView(id: Int64) throws {}
+    func resetList(type: RecipeListType) throws {}
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
+
     private func sampleRecipeItem(id: Int64, title: String) -> RecipeItem {
         RecipeItem(
             id: id,
@@ -287,25 +374,6 @@ enum TestError: LocalizedError {
         case .timedOut:
             return "Timed out waiting for test condition"
         }
-    }
-}
-
-extension RecipeItem {
-    func with(isFavorite: Bool) -> RecipeItem {
-        RecipeItem(
-            id: id,
-            title: title,
-            description: description,
-            category: category,
-            area: area,
-            imageUrl: imageUrl,
-            youtubeLink: youtubeLink,
-            ingredients: ingredients,
-            measures: measures,
-            instructions: instructions,
-            tags: tags,
-            isFavorite: isFavorite
-        )
     }
 }
 
