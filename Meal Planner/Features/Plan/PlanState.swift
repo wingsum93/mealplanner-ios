@@ -53,6 +53,7 @@ struct PlanState: Equatable {
     var planName: String = ""
     var adjustCount: Int = 0
     var isLoadingMeals = false
+    var isLoadingRandom = false
 
     // MARK: Derived
     var dayDates: [Date] {

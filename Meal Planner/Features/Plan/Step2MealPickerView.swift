@@ -26,7 +26,10 @@ struct Step2MealPickerView: View {
 
             header
 
-            if vm.state.isLoadingMeals {
+            if vm.state.selectedTab == .random, vm.state.isLoadingRandom {
+                ProgressView("Loading random meals…")
+                    .frame(maxWidth: .infinity, minHeight: 160)
+            } else if vm.state.isLoadingMeals {
                 ProgressView("Loading your meals…")
                     .frame(maxWidth: .infinity, minHeight: 160)
             } else if vm.state.currentTabMeals.isEmpty {
@@ -58,6 +61,7 @@ struct Step2MealPickerView: View {
                         .font(.subheadline)
                 }
                 .padding(.top, 4)
+                .disabled(vm.state.isLoadingRandom)
                 .accessibilityIdentifier("planWizard.regenerateRandom")
             }
         }

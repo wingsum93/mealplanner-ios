@@ -14,8 +14,8 @@ final class PlanViewModel: ObservableObject {
     private let recipeRepository: RecipeRepository
     private let aggregator = IngredientAggregator()
     private var scheduler: MealScheduler
-    private var generator: any RandomNumberGenerator
     private var task: Task<Void, Never>?
+    private var randomTask: Task<Void, Never>?
 
     init(
         planRepository: PlanRepository,
@@ -24,11 +24,13 @@ final class PlanViewModel: ObservableObject {
     ) {
         self.planRepository = planRepository
         self.recipeRepository = recipeRepository
-        self.generator = generator
         self.scheduler = MealScheduler(generator: generator)
     }
 
-    deinit { task?.cancel() }
+    deinit {
+        task?.cancel()
+        randomTask?.cancel()
+    }
 
     func onIntent(_ intent: PlanIntent) {
         switch intent {
@@ -62,6 +64,9 @@ final class PlanViewModel: ObservableObject {
 
         case .selectTab(let tab):
             state.selectedTab = tab
+            if tab == .random, state.randomPool.isEmpty {
+                loadRandomMeals()
+            }
         case .toggleMeal(let id):
             if state.selectedMealIds.contains(id) {
                 state.selectedMealIds.remove(id)
@@ -69,7 +74,7 @@ final class PlanViewModel: ObservableObject {
                 state.selectedMealIds.insert(id)
             }
         case .regenerateRandom:
-            state.randomPool = Array(shuffled(uniqueMealPool()).prefix(10))
+            loadRandomMeals()
 
         case .nextStep:
             advance()
@@ -210,6 +215,7 @@ final class PlanViewModel: ObservableObject {
         state.endDate = SlotMath.clampedEnd(start: state.startDate, end: Date())
         state.timeboxes = [.lunch, .dinner]
         state.selectedTab = .favourites
+        state.randomPool = []
         state.selectedMealIds = []
         state.schedule = []
         state.ingredients = []
@@ -227,14 +233,22 @@ final class PlanViewModel: ObservableObject {
         state.favourites = favourites.map { $0.toUI() }
         state.mastered = mastered.map { $0.toUI() }
         state.recent = recent.map { $0.toUI() }
-        state.randomPool = Array(shuffled(uniqueMealPool()).prefix(10))
         state.isLoadingMeals = false
     }
 
-    private func uniqueMealPool() -> [UIRecipeItem] {
-        var seen = Set<String>()
-        return (state.favourites + state.mastered + state.recent).filter {
-            seen.insert($0.id).inserted
+    private func loadRandomMeals() {
+        randomTask?.cancel()
+        state.isLoadingRandom = true
+        randomTask = Task { [weak self] in
+            guard let self else { return }
+            let meals = (try? await recipeRepository.getRandom10Recipe())?
+                .map { $0.toUI() }
+                .dedupedByID() ?? []
+            guard !Task.isCancelled else { return }
+            if !meals.isEmpty {
+                state.randomPool = meals
+            }
+            state.isLoadingRandom = false
         }
     }
 
@@ -326,15 +340,5 @@ final class PlanViewModel: ObservableObject {
         } catch {
             state.errorMessage = "Failed to save the plan. Please try again."
         }
-    }
-
-    private func shuffled<T>(_ items: [T]) -> [T] {
-        var result = items
-        guard result.count > 1 else { return result }
-        for index in stride(from: result.count - 1, to: 0, by: -1) {
-            let pick = Int(generator.next() % UInt64(index + 1))
-            result.swapAt(index, pick)
-        }
-        return result
     }
 }
