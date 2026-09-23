@@ -63,7 +63,7 @@ final class Meal_PlannerUITests: XCTestCase {
 
         selectRecipeTab(in: app)
 
-        let searchEntry = app.buttons["home.searchEntry"]
+        let searchEntry = app.buttons["recipe.searchEntry"]
         XCTAssertTrue(waitAndReveal(element: searchEntry, in: app), "Home search entry was not found.")
         searchEntry.tap()
 

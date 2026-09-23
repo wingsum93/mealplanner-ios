@@ -36,7 +36,7 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func captureSearchScreens(in app: XCUIApplication) {
-        tap("home.searchEntry", in: app)
+        tap("recipe.searchEntry", in: app)
         XCTAssertTrue(waitFor("search.container", in: app), "Search screen did not open.")
         XCTAssertTrue(
             app.staticTexts["Search for a recipe..."].waitForExistence(timeout: defaultTimeout),
@@ -61,7 +61,7 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func captureAreaList(in app: XCUIApplication) {
-        tap("home.areaChip.0", in: app)
+        tap("recipe.areaChip.0", in: app)
         XCTAssertTrue(waitFor("titleList.recipeCard.0", in: app), "Area list did not load recipe cards.")
         capture("04-area-list", in: app)
         navigateBack(in: app)
@@ -69,7 +69,7 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func captureCategoryList(in app: XCUIApplication) {
-        tap("home.categoryChip.0", in: app)
+        tap("recipe.categoryChip.0", in: app)
         XCTAssertTrue(waitFor("titleList.recipeCard.0", in: app), "Category list did not load recipe cards.")
         capture("05-category-list", in: app)
         navigateBack(in: app)
@@ -77,7 +77,7 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func captureIngredientScreens(in app: XCUIApplication) {
-        tap("home.ingredientsSeeAll", in: app)
+        tap("recipe.ingredientsSeeAll", in: app)
         XCTAssertTrue(waitFor("ingredientList.card.0", in: app), "Ingredient list did not load cards.")
         capture("06-ingredient-list", in: app)
 
@@ -90,7 +90,7 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func captureRandomPick(in app: XCUIApplication) {
-        tap("home.randomPickCard", in: app)
+        tap("recipe.randomPickCard", in: app)
         XCTAssertTrue(
             app.navigationBars.staticTexts["Random Pick"].waitForExistence(timeout: defaultTimeout),
             "Random Pick screen did not open."
@@ -133,7 +133,7 @@ final class SnapshotTest: XCTestCase {
         selectTab("Recipe", in: app)
 
         waitForHomeContent(in: app)
-        tap("home.featuredRecipeButton", in: app)
+        tap("recipe.featuredRecipeButton", in: app)
         XCTAssertTrue(waitFor("detail.sheet", in: app), "Detail sheet did not render.")
         capture("11-detail-sheet", in: app)
 
@@ -146,8 +146,8 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func waitForHomeContent(in app: XCUIApplication) {
-        XCTAssertTrue(waitFor("home.featuredRecipe", in: app), "Home featured recipe did not load.")
-        XCTAssertTrue(waitFor("home.randomPickCard", in: app), "Home content did not finish loading.")
+        XCTAssertTrue(waitFor("recipe.featuredRecipe", in: app), "Home featured recipe did not load.")
+        XCTAssertTrue(waitFor("recipe.randomPickCard", in: app), "Home content did not finish loading.")
     }
 
     private func selectTab(_ label: String, in app: XCUIApplication) {

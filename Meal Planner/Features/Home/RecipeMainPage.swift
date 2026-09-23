@@ -114,8 +114,8 @@ struct RecipeMainPage: View {
 }
 
 enum HeroSearchTransition {
-    static let searchEntryID = "home.searchEntry.hero"
-    static let coordinateSpace = "home.searchRevealSpace"
+    static let searchEntryID = "recipe.searchEntry.hero"
+    static let coordinateSpace = "recipe.searchRevealSpace"
 }
 
 struct SearchEntryCenterPreferenceKey: PreferenceKey {

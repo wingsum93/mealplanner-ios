@@ -34,7 +34,7 @@ struct HomeScreen: View {
             appRouter.push(.search)
         }
         .searchMatchedTransitionSource(id: HeroSearchTransition.searchEntryID, in: heroNamespace)
-        .accessibilityIdentifier("home.searchEntry")
+        .accessibilityIdentifier("recipe.searchEntry")
         .background {
             GeometryReader { proxy in
                 Color.clear.preference(
@@ -55,10 +55,10 @@ struct HomeScreen: View {
                     appRouter.presentRecipeDetail(featured)
                 } label: {
                     RecipeHeroCard(item: featured)
-                        .accessibilityIdentifier("home.featuredRecipe")
+                        .accessibilityIdentifier("recipe.featuredRecipe")
                 }
                 .buttonStyle(.plain)
-                .accessibilityIdentifier("home.featuredRecipeButton")
+                .accessibilityIdentifier("recipe.featuredRecipeButton")
                 .padding(.horizontal, 16)
             }
 
@@ -75,7 +75,7 @@ struct HomeScreen: View {
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
                         }
                         .buttonStyle(.plain)
-                        .accessibilityIdentifier("home.areaChip.\(index)")
+                        .accessibilityIdentifier("recipe.areaChip.\(index)")
                     }
                 }.padding(.horizontal, 16)
             }
@@ -93,7 +93,7 @@ struct HomeScreen: View {
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
                         }
                         .buttonStyle(.plain)
-                        .accessibilityIdentifier("home.categoryChip.\(index)")
+                        .accessibilityIdentifier("recipe.categoryChip.\(index)")
                     }
                 }.padding(.horizontal, 16)
             }
@@ -118,11 +118,11 @@ struct HomeScreen: View {
                                 IngredientSquareCard(name: ingredient.name)
                             }
                             .buttonStyle(.plain)
-                            .accessibilityIdentifier("home.ingredientChip.\(index)")
+                            .accessibilityIdentifier("recipe.ingredientChip.\(index)")
                         }
                     }.padding(.horizontal, 16)
                 }
-                .accessibilityIdentifier("home.ingredientsScroll")
+                .accessibilityIdentifier("recipe.ingredientsScroll")
             }
 
             // 5) Random 10 horizontal
@@ -134,7 +134,7 @@ struct HomeScreen: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Random Pick")
-            .accessibilityIdentifier("home.randomPickCard")
+            .accessibilityIdentifier("recipe.randomPickCard")
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
 
@@ -142,7 +142,7 @@ struct HomeScreen: View {
                 HStack(spacing: 12) {
                     ForEach(Array(vm.state.home.randomTen.enumerated()), id: \.element.id) { index, item in
                         RecipeCardSmall(item: item, width: 150)
-                            .accessibilityIdentifier("home.randomRecipeCard.\(index)")
+                            .accessibilityIdentifier("recipe.randomRecipeCard.\(index)")
                             .onTapGesture { appRouter.presentRecipeDetail(item) }
                     }
                 }.padding(.horizontal, 16)
@@ -265,7 +265,7 @@ private struct SeeAllIngredientCard: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("See all ingredients")
-        .accessibilityIdentifier("home.ingredientsSeeAll")
+        .accessibilityIdentifier("recipe.ingredientsSeeAll")
     }
 }
 
