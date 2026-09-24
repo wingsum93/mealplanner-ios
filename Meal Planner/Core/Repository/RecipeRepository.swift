@@ -6,6 +6,7 @@
 //
 
 protocol RecipeRepository {
+    func getCachedRecipe(id: Int64) throws -> RecipeItem?
     func getAllIngredients() async throws -> [Ingredient]
     func getAllCategory() async throws -> [String]
     func getAllArea() async throws -> [String]
@@ -29,4 +30,8 @@ protocol RecipeRepository {
     func recordRecipeView(id: Int64) throws
     func resetList(type: RecipeListType) throws
     func getListCount(type: RecipeListType) throws -> Int
+}
+
+extension RecipeRepository {
+    func getCachedRecipe(id: Int64) throws -> RecipeItem? { nil }
 }

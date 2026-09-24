@@ -99,7 +99,7 @@ Today the app lets the user **browse** meals (Home/Search) and **curate** them (
 
 ### 5.5 Step 4 — Ingredients (Procurement List)
 **FR-5.1** All ingredients from all planned meal instances are **aggregated & de-duplicated**: same ingredient appears once with summed quantity where normalizable.
-**FR-5.2** Grouped into **5 categories** — *the exact canonical category set is an open question (see **Q2**)*: user wrote *"meat, vegetable, others, herbs"* (4 items) but said "5 type."
+**FR-5.2** Grouped into **5 canonical categories** — Meat, Seafood, Vegetable, Herbs, Others (resolved by FX-002 Q2).
 **FR-5.3** [Inferred] Whole categories or individual lines are **checkable/uncheckable** for the final shopping trip.
 **FR-5.4** [Open — **Q2b**] Whether quantities can be truly summed depends on per-recipe unit normalization + servings metadata; otherwise fall back to "quantity as listed + total meal count" or name-only grouping.
 
@@ -176,7 +176,7 @@ Today the app lets the user **browse** meals (Home/Search) and **curate** them (
 | # | Question | Why it matters | Proposed default if we must proceed |
 |---|---|---|---|
 | Q1 | **Duration control:** stepper/preset, and do weekends behave differently? | Changes Step-1 UI + slot math | Preset chips (7 / 14 / 21 / 30 days); same rules all days |
-| Q2 | **"5 categories":** you listed 4 (meat, vegetable, others, herbs). What is the **5th** (e.g. fruits / fish-seafood / dairy / grain / spice)? And is quantity-summing required, or is grouping + names enough? | Directly defines Step-4 grouping, data model, and recipe ingredient tagging needs | Categories: Meat, Vegetable, Others, Herbs + one confirmed 5th; quantities best-effort |
+| Q2 | **Resolved by FX-002:** canonical order is Meat, Seafood, Vegetable, Herbs, Others. Quantity handling remains best-effort per Q2b. | Defines Step-4 grouping, data model, and recipe ingredient tagging | Use the confirmed five categories. |
 | Q3 | **Repeat policy:** when selected meals < slots — allow same meal twice in the same week (and same day)? | Defines schedule fill + aggregation behavior | Allowed; avoid same meal in both slots the same day if possible |
 | Q4 | **Random (10) source:** pool of 10 drawn from *which* menu — only favorites, or all of user's meals (incl. recently viewed/mastered)? | Defines Random tab semantics | All user meals, weighted toward favorites |
 | Q5 | **Saved-plan management:** edit an existing plan, duplicate, regenerate, delete, max number stored? | Determines Home list + detail scope | v1: open/view, delete, and "copy as new" (regenerate); no in-place edit |

@@ -33,4 +33,12 @@ final class PlanRepositoryImpl: PlanRepository {
     func setIngredientChecked(planId: UUID, ingredientId: UUID, isChecked: Bool) throws {
         try local.setIngredientChecked(planId: planId, ingredientId: ingredientId, isChecked: isChecked)
     }
+
+    func updateSchedule(planId: UUID, slots: [PlanSlot]) throws {
+        try local.updateSchedule(planId: planId, slots: slots)
+    }
+
+    func updateSnapshots(planId: UUID, snapshots: [PlanMealSnapshot]) throws {
+        try local.updateSnapshots(planId: planId, snapshots: snapshots)
+    }
 }

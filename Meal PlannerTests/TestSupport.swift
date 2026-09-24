@@ -285,6 +285,9 @@ final class SettingsLocalDataSourceSpy: RecipeLocalDataSource {
 }
 
 final class DummyRecipeRepository: RecipeRepository {
+    var cachedRecipes: [Int64: RecipeItem] = [:]
+
+    func getCachedRecipe(id: Int64) throws -> RecipeItem? { cachedRecipes[id] }
     func getByArea(_ area: String) async throws -> [RecipeItem] {
         return [sampleRecipeItem(id: 123, title: "\(area) pizza")]
     }

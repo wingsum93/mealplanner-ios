@@ -33,6 +33,7 @@ struct PlanState: Equatable {
     var phase: LoadPhase = .idle
     var plans: [ProcurementPlan] = []
     var errorMessage: String?
+    var undoPlanId: UUID?
 
     // MARK: Wizard
     var isWizardPresented = false

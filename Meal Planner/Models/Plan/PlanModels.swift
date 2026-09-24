@@ -129,6 +129,36 @@ struct PlanIngredient: Identifiable, Equatable, Hashable {
     }
 }
 
+struct PlanMealIngredient: Codable, Equatable, Hashable {
+    var name: String
+    var measure: String
+}
+
+struct PlanMealSnapshot: Codable, Equatable, Identifiable {
+    var id: Int64
+    var title: String
+    var ingredients: [PlanMealIngredient]
+
+    init(id: Int64, title: String, ingredients: [PlanMealIngredient]) {
+        self.id = id
+        self.title = title
+        self.ingredients = ingredients
+    }
+
+    init(recipe: RecipeItem) {
+        id = recipe.id
+        title = recipe.title
+        ingredients = recipe.ingredients.enumerated().compactMap { index, name in
+            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return nil }
+            return PlanMealIngredient(
+                name: trimmed,
+                measure: recipe.measures.indices.contains(index) ? recipe.measures[index] : ""
+            )
+        }
+    }
+}
+
 struct ProcurementPlan: Identifiable, Equatable {
     let id: UUID
     var name: String
@@ -138,6 +168,16 @@ struct ProcurementPlan: Identifiable, Equatable {
     var adjustCount: Int
     var slots: [PlanSlot]
     var ingredients: [PlanIngredient]
+    var selectedTimeboxes: Set<PlanTimebox> = []
+    var mealSnapshots: [PlanMealSnapshot] = []
+
+    var availableTimeboxes: Set<PlanTimebox> {
+        selectedTimeboxes.isEmpty ? Set(slots.map(\.timebox)) : selectedTimeboxes
+    }
+
+    func snapshot(for mealId: Int64) -> PlanMealSnapshot? {
+        mealSnapshots.first { $0.id == mealId }
+    }
 
     var dayCount: Int {
         SlotMath.dayCount(start: startDate, end: endDate)

@@ -16,6 +16,9 @@ class RecipeRepositoryImpl: RecipeRepository{
     }
 
     // MARK: - Cached Methods
+    func getCachedRecipe(id: Int64) throws -> RecipeItem? {
+        try local.getRecipeById(id)?.toDomain()
+    }
     
     func getAllCategory() async throws -> [String] {
         if let cached = try? local.getAllCategories(), !cached.isEmpty {

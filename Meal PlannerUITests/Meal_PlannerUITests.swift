@@ -137,6 +137,92 @@ final class Meal_PlannerUITests: XCTestCase {
         XCTAssertTrue(sourceTab.waitForExistence(timeout: 5), "Meal picker step did not appear.")
     }
 
+    @MainActor
+    func testSavedPlanCalendarMoveAndUndo() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestingInMemoryStore", "-uiTestingFX002Fixture"]
+        app.launch()
+
+        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "planHome.card.")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        card.tap()
+        XCTAssertTrue(app.buttons["planCalendar.next"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["planCalendar.next"].isEnabled)
+        app.buttons["planCalendar.next"].tap()
+        XCTAssertFalse(app.buttons["planCalendar.next"].isEnabled)
+        app.buttons["planCalendar.previous"].tap()
+        let today = Calendar.current.component(.day, from: Date())
+        app.buttons["planCalendar.day.\(today)"].tap()
+        XCTAssertTrue(app.navigationBars["Day Meals"].waitForExistence(timeout: 5))
+
+        let move = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "planDay.move.")).firstMatch
+        XCTAssertTrue(move.waitForExistence(timeout: 5), app.debugDescription)
+        move.tap()
+        let sameDay = app.buttons["planMove.destination.0"]
+        XCTAssertTrue(sameDay.waitForExistence(timeout: 5))
+        sameDay.tap()
+        XCTAssertTrue(app.buttons["planDay.undo"].waitForExistence(timeout: 5))
+        app.buttons["planDay.undo"].tap()
+        XCTAssertTrue(app.staticTexts["Beef Bowl"].exists)
+
+        move.tap()
+        let crossDay = app.buttons["planMove.destination.2"]
+        XCTAssertTrue(crossDay.waitForExistence(timeout: 5))
+        crossDay.tap()
+        XCTAssertTrue(app.buttons["planDay.undo"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testSavedPlanIngredientTabsAndCheckState() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestingInMemoryStore", "-uiTestingFX002Fixture"]
+        app.launch()
+        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "planHome.card.")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        card.tap()
+        XCTAssertTrue(app.buttons["planDetail.ingredients"].label.contains("2 items"), app.debugDescription)
+        app.buttons["planDetail.ingredients"].tap()
+        XCTAssertTrue(app.staticTexts["Beef"].waitForExistence(timeout: 5), app.debugDescription)
+        let beef = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "planIngredients.item.")).firstMatch
+        beef.tap()
+        let checked = NSPredicate(format: "value == %@", "Checked")
+        expectation(for: checked, evaluatedWith: beef)
+        waitForExpectations(timeout: 5)
+        app.buttons["planIngredients.tab.Seafood"].tap()
+        XCTAssertTrue(app.staticTexts["No seafood ingredients"].waitForExistence(timeout: 5))
+        app.buttons["planIngredients.tab.Vegetable"].tap()
+        XCTAssertTrue(app.staticTexts["Carrot"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testSavedPlanDragTargets() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestingInMemoryStore", "-uiTestingFX002Fixture"]
+        app.launch()
+        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "planHome.card.")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        card.tap()
+        let today = Calendar.current.component(.day, from: Date())
+        app.buttons["planCalendar.day.\(today)"].tap()
+        let meal = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", "planDay.meal.")).firstMatch
+        let emptyDinner = app.descendants(matching: .any)["planDay.empty.dinner"]
+        XCTAssertTrue(meal.waitForExistence(timeout: 5))
+        XCTAssertTrue(emptyDinner.waitForExistence(timeout: 5))
+        meal.press(forDuration: 1, thenDragTo: emptyDinner)
+        XCTAssertTrue(app.buttons["planDay.undo"].waitForExistence(timeout: 5))
+        app.buttons["planDay.undo"].tap()
+
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
+        if !Calendar.current.isDate(tomorrow, equalTo: Date(), toGranularity: .month) {
+            app.buttons["planCalendar.next"].tap()
+        }
+        let tomorrowDay = Calendar.current.component(.day, from: tomorrow)
+        meal.press(forDuration: 1, thenDragTo: app.buttons["planCalendar.day.\(tomorrowDay)"])
+        XCTAssertTrue(app.buttons["Lunch"].waitForExistence(timeout: 5))
+        app.buttons["Lunch"].tap()
+        XCTAssertTrue(app.buttons["planDay.undo"].waitForExistence(timeout: 5))
+    }
+
     private func selectRecipeTab(in app: XCUIApplication) {
         let recipeTab = app.tabBars.buttons["Recipe"]
         XCTAssertTrue(recipeTab.waitForExistence(timeout: 5), "Recipe tab was not found.")

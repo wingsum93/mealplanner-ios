@@ -16,6 +16,8 @@ final class ProcurementPlanEntity {
     var endDate: Date
     var createdAt: Date
     var adjustCount: Int
+    var selectedTimeboxesRaw: String?
+    var mealSnapshotsData: Data?
 
     @Relationship(deleteRule: .cascade, inverse: \PlanSlotEntity.plan)
     var slots: [PlanSlotEntity]
@@ -30,6 +32,8 @@ final class ProcurementPlanEntity {
         endDate: Date,
         createdAt: Date,
         adjustCount: Int,
+        selectedTimeboxesRaw: String? = nil,
+        mealSnapshotsData: Data? = nil,
         slots: [PlanSlotEntity] = [],
         ingredients: [PlanIngredientEntity] = []
     ) {
@@ -39,6 +43,8 @@ final class ProcurementPlanEntity {
         self.endDate = endDate
         self.createdAt = createdAt
         self.adjustCount = adjustCount
+        self.selectedTimeboxesRaw = selectedTimeboxesRaw
+        self.mealSnapshotsData = mealSnapshotsData
         self.slots = slots
         self.ingredients = ingredients
     }

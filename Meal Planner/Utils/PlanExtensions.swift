@@ -19,8 +19,13 @@ extension ProcurementPlanEntity {
             slots: slots
                 .sorted { $0.displayOrder < $1.displayOrder }
                 .map { $0.toDomain() },
-            ingredients: ingredients
-                .map { $0.toDomain() }
+            ingredients: ingredients.map { $0.toDomain() },
+            selectedTimeboxes: Set((selectedTimeboxesRaw ?? "")
+                .split(separator: ",")
+                .compactMap { PlanTimebox(rawValue: String($0)) }),
+            mealSnapshots: (mealSnapshotsData.flatMap {
+                try? JSONDecoder().decode([PlanMealSnapshot].self, from: $0)
+            }) ?? []
         )
     }
 }
@@ -60,6 +65,8 @@ extension ProcurementPlan {
             endDate: endDate,
             createdAt: createdAt,
             adjustCount: adjustCount,
+            selectedTimeboxesRaw: selectedTimeboxes.map(\.rawValue).sorted().joined(separator: ","),
+            mealSnapshotsData: try? JSONEncoder().encode(mealSnapshots),
             slots: slots.map { $0.toEntity() },
             ingredients: ingredients.map { $0.toEntity() }
         )

@@ -12,6 +12,8 @@ enum PlanIntent {
     case copyPlan(UUID)
     case clearError
     case toggleSavedIngredient(planId: UUID, ingredientId: UUID, isChecked: Bool)
+    case moveSavedMeal(planId: UUID, sourceId: UUID, date: Date, timebox: PlanTimebox)
+    case undoSavedReorder(UUID)
 
     // Wizard lifecycle
     case openWizard

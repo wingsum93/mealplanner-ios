@@ -16,20 +16,27 @@ final class PlanViewModel: ObservableObject {
     private var scheduler: MealScheduler
     private var task: Task<Void, Never>?
     private var randomTask: Task<Void, Never>?
+    private var undoTask: Task<Void, Never>?
+    private var undoSnapshot: ProcurementPlan?
+    private var undoExpiresAt: Date?
+    private let now: () -> Date
 
     init(
         planRepository: PlanRepository,
         recipeRepository: RecipeRepository,
-        generator: any RandomNumberGenerator = SystemRandomNumberGenerator()
+        generator: any RandomNumberGenerator = SystemRandomNumberGenerator(),
+        now: @escaping () -> Date = Date.init
     ) {
         self.planRepository = planRepository
         self.recipeRepository = recipeRepository
         self.scheduler = MealScheduler(generator: generator)
+        self.now = now
     }
 
     deinit {
         task?.cancel()
         randomTask?.cancel()
+        undoTask?.cancel()
     }
 
     func onIntent(_ intent: PlanIntent) {
@@ -44,6 +51,10 @@ final class PlanViewModel: ObservableObject {
             state.errorMessage = nil
         case .toggleSavedIngredient(let planId, let ingredientId, let isChecked):
             toggleSavedIngredient(planId: planId, ingredientId: ingredientId, isChecked: isChecked)
+        case .moveSavedMeal(let planId, let sourceId, let date, let timebox):
+            moveSavedMeal(planId: planId, sourceId: sourceId, date: date, timebox: timebox)
+        case .undoSavedReorder(let id):
+            undoSavedReorder(id)
 
         case .openWizard:
             openWizard()
@@ -128,15 +139,13 @@ final class PlanViewModel: ObservableObject {
             do {
                 let plans = try planRepository.getPlans()
                 guard !Task.isCancelled else { return }
-                state.plans = plans
+                state.plans = plans.map { self.backfilled($0) }
                 state.phase = plans.isEmpty ? .empty : .content
             } catch {
                 guard !Task.isCancelled else { return }
                 state.plans = []
                 state.phase = .error("Failed to load your meal plans.")
             }
-            // Resolve meal titles for the detail views.
-            await fetchMealSources()
         }
     }
 
@@ -171,7 +180,9 @@ final class PlanViewModel: ObservableObject {
                     isChecked: false,
                     occurrenceCount: $0.occurrenceCount
                 )
-            }
+            },
+            selectedTimeboxes: original.selectedTimeboxes,
+            mealSnapshots: original.mealSnapshots
         )
         do {
             try planRepository.savePlan(copy)
@@ -196,6 +207,68 @@ final class PlanViewModel: ObservableObject {
         } catch {
             state.errorMessage = "Failed to update the list. Please try again."
         }
+    }
+
+    private func backfilled(_ plan: ProcurementPlan) -> ProcurementPlan {
+        var updated = plan
+        let missingIds = Set(plan.slots.map(\.mealId)).subtracting(plan.mealSnapshots.map(\.id))
+        for id in missingIds {
+            if let recipe = try? recipeRepository.getCachedRecipe(id: id) {
+                updated.mealSnapshots.append(PlanMealSnapshot(recipe: recipe))
+            }
+        }
+        if updated.mealSnapshots != plan.mealSnapshots {
+            try? planRepository.updateSnapshots(planId: plan.id, snapshots: updated.mealSnapshots)
+        }
+        return updated
+    }
+
+    private func moveSavedMeal(planId: UUID, sourceId: UUID, date: Date, timebox: PlanTimebox) {
+        guard let original = plan(id: planId),
+              let changed = PlanScheduleMutation.move(
+                sourceId: sourceId, to: date, timebox: timebox, in: original, now: now()
+              ) else { return }
+        do {
+            try planRepository.updateSchedule(planId: planId, slots: changed.slots)
+            guard let index = state.plans.firstIndex(where: { $0.id == planId }) else { return }
+            state.plans[index] = changed
+            undoSnapshot = original
+            undoExpiresAt = now().addingTimeInterval(5)
+            state.undoPlanId = planId
+            undoTask?.cancel()
+            undoTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(5))
+                guard !Task.isCancelled else { return }
+                self?.clearUndo()
+            }
+        } catch {
+            state.errorMessage = "Failed to move the meal. Please try again."
+        }
+    }
+
+    private func undoSavedReorder(_ planId: UUID) {
+        guard state.undoPlanId == planId, let previous = undoSnapshot,
+              previous.id == planId, let expiry = undoExpiresAt, now() < expiry else {
+            clearUndo()
+            return
+        }
+        do {
+            try planRepository.updateSchedule(planId: planId, slots: previous.slots)
+            if let index = state.plans.firstIndex(where: { $0.id == planId }) {
+                state.plans[index] = previous
+            }
+            clearUndo()
+        } catch {
+            state.errorMessage = "Failed to undo the move. Please try again."
+        }
+    }
+
+    private func clearUndo() {
+        undoTask?.cancel()
+        undoTask = nil
+        undoSnapshot = nil
+        undoExpiresAt = nil
+        state.undoPlanId = nil
     }
 
     // MARK: - Wizard
@@ -329,7 +402,11 @@ final class PlanViewModel: ObservableObject {
             createdAt: Date(),
             adjustCount: state.adjustCount,
             slots: state.schedule,
-            ingredients: state.ingredients
+            ingredients: state.ingredients,
+            selectedTimeboxes: state.timeboxes,
+            mealSnapshots: Set(state.schedule.map(\.mealId)).compactMap { id in
+                state.meal(id: id)?.toDomain().map(PlanMealSnapshot.init(recipe:))
+            }
         )
 
         do {
