@@ -5,7 +5,6 @@
 //  Created by eric ho on 10/8/2025.
 //
 import SwiftUI
-import Kingfisher
 
 struct SearchRecipeRow: View {
     let item: UIRecipeItem
@@ -16,35 +15,7 @@ struct SearchRecipeRow: View {
     var onMasteredToggle: ((Bool) -> Void)? = nil
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Thumbnail
-            KFImage(item.thumbURL)
-                .placeholder {
-                    Color.gray // 載入中顯示
-                }
-                .onFailureView {
-                    ImageLoadFailureView()
-                }
-                .resizable()
-                .frame(width: 120, height: 80)
-                .scaledToFill()
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-            // Text content
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.name)
-                    .font(.headline)
-                    .lineLimit(2)
-
-                if let area = item.area, !area.isEmpty {
-                    Text(area)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // Optional favourite button
+        RecipeListRow(item: item) {
             if showFavorite, let onFavoriteToggle = onFavoriteToggle {
                 Button {
                     onFavoriteToggle(!item.isFavorite)
@@ -56,7 +27,6 @@ struct SearchRecipeRow: View {
                 .padding(.trailing, 8)
             }
 
-            // Optional mastered button
             if showMastered, let onMasteredToggle = onMasteredToggle {
                 Button {
                     onMasteredToggle(!isMastered)
@@ -68,7 +38,6 @@ struct SearchRecipeRow: View {
                 .padding(.trailing, 8)
             }
         }
-        .padding(.vertical, 8)
     }
 }
 

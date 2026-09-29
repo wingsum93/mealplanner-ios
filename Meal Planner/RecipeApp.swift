@@ -38,8 +38,13 @@ struct RecipeApp: App {
         }
         _di = State(initialValue: container)
         _appRouter = StateObject(wrappedValue: AppRouter())
-        _homeVM = StateObject(wrappedValue: FeatureViewModel(repository: container.recipeRepository))
-        _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
+        let homeViewModel = FeatureViewModel(repository: container.recipeRepository)
+        let detailViewModel = DetailViewModel(repository: container.recipeRepository)
+        detailViewModel.onFavoriteChanged = { item in
+            homeViewModel.onIntent(.updateSearchFavorite(id: item.id, isFavorite: item.isFavorite))
+        }
+        _homeVM = StateObject(wrappedValue: homeViewModel)
+        _detailVM = StateObject(wrappedValue: detailViewModel)
         let myListViewModel = MyListViewModel(repository: container.recipeRepository)
         _myListVM = StateObject(wrappedValue: myListViewModel)
         _planVM = StateObject(wrappedValue: container.makePlanViewModel())

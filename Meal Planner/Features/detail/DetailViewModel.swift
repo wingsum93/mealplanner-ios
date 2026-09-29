@@ -19,6 +19,7 @@ private enum DetailEvent: Equatable {
 @MainActor
 final class DetailViewModel: ObservableObject {
     @Published private(set) var state: DetailState
+    var onFavoriteChanged: ((UIRecipeItem) -> Void)?
     private let repo: RecipeRepository
     private var favoriteTask: Task<Void, Never>?
     private var masteryTask: Task<Void, Never>?
@@ -129,6 +130,7 @@ final class DetailViewModel: ObservableObject {
         }
         let new = old.togglingFavorite()
         reduce(.setItem(new))
+        onFavoriteChanged?(new)
         reduce(.setSavingFavorite(true))
 
         // 2) Persist
@@ -141,6 +143,7 @@ final class DetailViewModel: ObservableObject {
             } catch {
                 // 3) Roll back on failure
                 reduce(.setItem(old))
+                onFavoriteChanged?(old)
                 reduce(.setSavingFavorite(false))
                 reduce(.setError("Failed to update favourite. Please try again."))
                 #if DEBUG

@@ -109,6 +109,21 @@ struct FeatureViewModelTests {
     }
 
     @MainActor
+    @Test func updateSearchFavoriteUpdatesMatchingSearchResult() async throws {
+        let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository(), searchDebounceDelay: 0)
+
+        viewModel.onIntent(.updateQuery("meal"))
+        viewModel.onIntent(.performSearch)
+        try await waitUntil {
+            viewModel.state.search.results.map(\.id) == ["2"]
+        }
+
+        viewModel.onIntent(.updateSearchFavorite(id: "2", isFavorite: true))
+
+        #expect(viewModel.state.search.results.first?.isFavorite == true)
+    }
+
+    @MainActor
     @Test func loadIngredientsPopulatesState() async throws {
         let viewModel = FeatureViewModel(repository: DummyRecipeRepository())
 

@@ -127,6 +127,7 @@ struct MyListScreen: View {
             List {
                 ForEach(vm.state.filteredItems, id: \.id) { item in
                     row(for: item)
+                        .contentShape(Rectangle())
                         .onTapGesture {
                             appRouter.presentRecipeDetail(item)
                         }
@@ -140,17 +141,18 @@ struct MyListScreen: View {
 
     @ViewBuilder
     private func row(for item: UIRecipeItem) -> some View {
-        switch vm.state.selectedList {
-        case .favourite:
-            SearchRecipeRow(item: item, showFavorite: true, onFavoriteToggle: { _ in
-                vm.onIntent(.toggleFavorite(item))
-            })
-        case .mastered:
-            SearchRecipeRow(item: item, showMastered: true, isMastered: true, onMasteredToggle: { _ in
-                vm.onIntent(.toggleMastered(item))
-            })
-        case .viewed:
-            SearchRecipeRow(item: item)
+        RecipeListRow(item: item) {
+            Button {
+                appRouter.presentRecipeDetail(item)
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .imageScale(.small)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Open \(item.name)")
         }
     }
 }
