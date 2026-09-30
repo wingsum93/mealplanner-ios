@@ -151,10 +151,7 @@ final class MealPlanSnapshotTest: XCTestCase {
 
     private func capture(_ name: String, in app: XCUIApplication) {
         Thread.sleep(forTimeInterval: renderSettleDelay)
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
+        SnapshotScreenshotWriter.write(app.screenshot(), named: name)
     }
 
     private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {

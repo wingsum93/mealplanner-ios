@@ -197,7 +197,7 @@ Today the app lets the user **browse** meals (Home/Search) and **curate** them (
 6. **Step 5 – Save & Home "Meal Plans" section** (persist, list, open detail, delete).
 7. **Home main-page work** (depends on **Q6** scope decision).
 8. **Polish & edge cases** (E1–E10): empty states, kill-mid-wizard draft, accessibility of toggles.
-9. **Tests:** unit (`UnitTest` plan) — aggregation + random alloc + slot math; **snapshot** (`SnapshotTest`/`scripts/export_ui_screenshots.sh`) for new screens; **UITest** happy-path: create plan → save → open from Home.
+9. **Tests:** unit (`UnitTest` plan) — aggregation + random alloc + slot math; **snapshot** (`SnapshotTest` plan writes PNGs directly to `screenshots/`) for new screens; **UITest** happy-path: create plan → save → open from Home.
 
 ---
 

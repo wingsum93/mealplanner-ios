@@ -19,7 +19,7 @@
 - Build (Simulator): `xcodebuild -project "Meal Planner.xcodeproj" -scheme "Meal Planner" -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' build`
 - Run tests (default `UnitTest` plan): `xcodebuild -project "Meal Planner.xcodeproj" -scheme "Meal Planner" -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' test`
 - Run a specific plan: add `-testPlan UITest` or `-testPlan SnapshotTest` to the command above.
-- Export UI screenshots: `bash scripts/export_ui_screenshots.sh`
+- Regenerate snapshot screenshots: `xcodebuild -project "Meal Planner.xcodeproj" -scheme "Meal Planner" -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -testPlan SnapshotTest test`
 - Target specific tests (example): `xcodebuild ... test -only-testing:"Meal PlannerUITests"`
 
 ## Coding Style & Naming Conventions
@@ -33,7 +33,7 @@
 - Test plans (shared `Meal Planner` scheme):
   - `UnitTest` (default): all unit tests in `Meal PlannerTests`; runs on `Cmd+U` and plain `xcodebuild ... test`.
   - `UITest`: main workflow UI tests in `Meal PlannerUITests`; run with `-testPlan UITest`.
-  - `SnapshotTest`: screenshot capture in `SnapshotTest`; skipped by default, run manually with `-testPlan SnapshotTest` (or `scripts/export_ui_screenshots.sh`).
+  - `SnapshotTest`: screenshot capture in `SnapshotTest`; skipped by default, run manually with `-testPlan SnapshotTest`. The tests write PNGs directly into `screenshots/`.
 - Unit tests use Swift Testing (`import Testing`) with `@Test` and `#expect(...)`.
 - UI tests use XCTest (`XCTestCase`) and should start from a clean app state.
 - Snapshot test verification: run only the newly added snapshot test class, not the whole `SnapshotTest` plan.

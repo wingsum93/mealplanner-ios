@@ -145,7 +145,6 @@ final class SnapshotTest: XCTestCase {
         ingredientsTab.tap()
         tap("detail.ingredientChip.0", in: app)
         XCTAssertTrue(waitFor("titleList.recipeCard.0", in: app), "Ingredient meals list did not load from detail.")
-        capture("12-detail-ingredient-meals", in: app)
     }
 
     private func waitForHomeContent(in app: XCUIApplication) {
@@ -175,10 +174,7 @@ final class SnapshotTest: XCTestCase {
 
     private func capture(_ name: String, in app: XCUIApplication) {
         Thread.sleep(forTimeInterval: renderSettleDelay)
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
+        SnapshotScreenshotWriter.write(app.screenshot(), named: name)
     }
 
     private func element(_ identifier: String, in app: XCUIApplication) -> XCUIElement {
