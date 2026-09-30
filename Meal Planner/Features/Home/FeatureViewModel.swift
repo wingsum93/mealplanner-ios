@@ -85,6 +85,12 @@ final class FeatureViewModel: ObservableObject {
             randomPickReducer.load()
         case .updateRandomPickItems(let items):
             randomPickReducer.updateItems(items)
+        case .saveRandomPickFavorite(let item):
+            randomPickReducer.saveFavorite(item)
+        case .undoRandomPickFavorite(let item):
+            randomPickReducer.undoFavorite(item)
+        case .clearRandomPickActionError:
+            randomPickReducer.clearActionError()
         }
     }
 }

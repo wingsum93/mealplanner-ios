@@ -23,6 +23,23 @@ struct RandomPickScreen: View {
                 vm.onIntent(.loadRandomPick)
             }
         }
+        .alert(
+            "Couldn’t update favourite",
+            isPresented: Binding(
+                get: { vm.state.randomPick.actionErrorMessage != nil },
+                set: { isPresented in
+                    if isPresented == false {
+                        vm.onIntent(.clearRandomPickActionError)
+                    }
+                }
+            )
+        ) {
+            Button("OK", role: .cancel) {
+                vm.onIntent(.clearRandomPickActionError)
+            }
+        } message: {
+            Text(vm.state.randomPick.actionErrorMessage ?? "")
+        }
     }
 
     private var headerView: some View {
@@ -55,7 +72,17 @@ struct RandomPickScreen: View {
                 }
             )
 
-            CardStackView(items: itemsBinding)
+            CardStackView(
+                items: itemsBinding,
+                onSwipe: { item, direction in
+                    guard direction == .right, item.isFavorite == false else { return }
+                    vm.onIntent(.saveRandomPickFavorite(item))
+                },
+                onUndo: { item, direction in
+                    guard direction == .right, item.isFavorite == false else { return }
+                    vm.onIntent(.undoRandomPickFavorite(item))
+                }
+            )
                 .padding(.horizontal, 20)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("randomPick.content")

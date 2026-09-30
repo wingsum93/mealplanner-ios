@@ -108,13 +108,15 @@ struct CardStackMetrics: Equatable {
 struct CardStackView: View {
     @Binding var items: [UIRecipeItem]
     var onSwipe: ((UIRecipeItem, SwipeDirection) -> Void)?
+    var onUndo: ((UIRecipeItem, SwipeDirection) -> Void)?
 
     var body: some View {
         GeometryReader { proxy in
             CardStackContent(
                 items: $items,
                 metrics: CardStackMetrics(size: proxy.size),
-                onSwipe: onSwipe
+                onSwipe: onSwipe,
+                onUndo: onUndo
             )
         }
     }
@@ -124,6 +126,7 @@ private struct CardStackContent: View {
     @Binding var items: [UIRecipeItem]
     let metrics: CardStackMetrics
     let onSwipe: ((UIRecipeItem, SwipeDirection) -> Void)?
+    let onUndo: ((UIRecipeItem, SwipeDirection) -> Void)?
 
     @State private var dragOffset: CGSize = .zero
     @State private var dragTheta: CGFloat = 0
@@ -243,6 +246,7 @@ private struct CardStackContent: View {
             items.insert(last.item, at: 0)
             dragOffset = startOffset
         }
+        onUndo?(last.item, last.direction)
         DispatchQueue.main.async {
             withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
                 dragOffset = .zero

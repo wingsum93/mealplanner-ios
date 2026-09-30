@@ -108,6 +108,76 @@ struct FeatureViewModelTests {
     }
 
     @MainActor
+    @Test func randomPickFavoriteSaveAddsFavorite() async throws {
+        let repository = FavoriteRecipeRepository()
+        let viewModel = FeatureViewModel(repository: repository)
+        let item = UIRecipeItem.new(id: "42", name: "Saved pick")
+
+        viewModel.onIntent(.saveRandomPickFavorite(item))
+
+        try await waitUntil {
+            repository.isFavourite(id: 42)
+        }
+        #expect(repository.favorites.map(\.id) == [42])
+    }
+
+    @MainActor
+    @Test func randomPickFavoriteUndoRemovesSwipeAddedFavorite() async throws {
+        let repository = FavoriteRecipeRepository()
+        let viewModel = FeatureViewModel(repository: repository)
+        let item = UIRecipeItem.new(id: "43", name: "Undo pick")
+
+        viewModel.onIntent(.saveRandomPickFavorite(item))
+        try await waitUntil {
+            repository.isFavourite(id: 43)
+        }
+
+        viewModel.onIntent(.undoRandomPickFavorite(item))
+
+        try await waitUntil {
+            repository.isFavourite(id: 43) == false
+        }
+        #expect(repository.favorites.isEmpty)
+    }
+
+    @MainActor
+    @Test func randomPickFavoriteUndoKeepsPreviouslyFavoriteMeal() async throws {
+        let favorite = makeRecipe(id: 44, title: "Existing favorite", isFavorite: true)
+        let repository = FavoriteRecipeRepository(favorites: [favorite])
+        let viewModel = FeatureViewModel(repository: repository)
+
+        viewModel.onIntent(.undoRandomPickFavorite(favorite.toUI()))
+
+        await Task.yield()
+
+        #expect(repository.isFavourite(id: 44))
+        #expect(repository.favorites.map(\.id) == [44])
+    }
+
+    @MainActor
+    @Test func randomPickFavoriteSaveFailureKeepsDeckAndSetsError() async throws {
+        let repository = FavoriteRecipeRepository()
+        repository.shouldFailUpdate = true
+        let viewModel = FeatureViewModel(repository: repository)
+        let items = [UIRecipeItem.new(id: "45", name: "Failed pick")]
+
+        viewModel.onIntent(.updateRandomPickItems(items))
+        viewModel.onIntent(.saveRandomPickFavorite(items[0]))
+
+        try await waitUntil {
+            viewModel.state.randomPick.actionErrorMessage != nil
+        }
+
+        #expect(viewModel.state.randomPick.items == items)
+        #expect(viewModel.state.randomPick.phase == .content)
+        #expect(viewModel.state.randomPick.actionErrorMessage == "Failed to save favourite. Please try again.")
+
+        viewModel.onIntent(.clearRandomPickActionError)
+
+        #expect(viewModel.state.randomPick.actionErrorMessage == nil)
+    }
+
+    @MainActor
     @Test func updateSearchFavoriteUpdatesMatchingSearchResult() async throws {
         let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository(), searchDebounceDelay: 0)
 

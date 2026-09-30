@@ -11,6 +11,9 @@ enum HomeIntent {
     case refreshHome
     case loadRandomPick
     case updateRandomPickItems([UIRecipeItem])
+    case saveRandomPickFavorite(UIRecipeItem)
+    case undoRandomPickFavorite(UIRecipeItem)
+    case clearRandomPickActionError
     
     // lists
     case loadArea(String)

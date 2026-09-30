@@ -42,6 +42,7 @@ struct SearchState: Equatable {
 struct RandomPickState: Equatable {
   var phase: LoadPhase = .idle
   var items: [UIRecipeItem] = []
+  var actionErrorMessage: String?
 }
 
 struct IngredientListState: Equatable {
