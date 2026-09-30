@@ -164,6 +164,7 @@ private struct CardStackContent: View {
                         finishDrag(value, arc: metrics.arc)
                     }
                 )
+                .id(topItem.id)
             }
         }
         .frame(width: metrics.cardWidth, height: metrics.stackHeight, alignment: .top)
@@ -216,15 +217,18 @@ private struct CardStackContent: View {
             dragOffset = finalOffset
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            guard items.first?.id == item.id else {
+                resetSwipeState(disablesAnimations: true)
+                return
+            }
+
             _ = withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 items.removeFirst()
             }
+
             lastSwiped = (item: item, direction: direction)
             onSwipe?(item, direction)
-            dragOffset = .zero
-            dragTheta = 0
-            swipeDirection = nil
-            isAnimatingOut = false
+            resetSwipeState(disablesAnimations: true)
         }
     }
 
@@ -252,6 +256,26 @@ private struct CardStackContent: View {
     private func swipeProgress(for arc: ArcDragGeometry) -> CGFloat {
         guard arc.thetaMax != 0 else { return 0 }
         return min(dragTheta / arc.thetaMax, 1)
+    }
+
+    private func resetSwipeState(disablesAnimations: Bool = false) {
+        if disablesAnimations {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            transaction.animation = nil
+
+            withTransaction(transaction) {
+                dragOffset = .zero
+                dragTheta = 0
+                swipeDirection = nil
+                isAnimatingOut = false
+            }
+        } else {
+            dragOffset = .zero
+            dragTheta = 0
+            swipeDirection = nil
+            isAnimatingOut = false
+        }
     }
 }
 
@@ -374,6 +398,7 @@ private struct SwipeCardView: View {
             .clipped()
             .accessibilityElement(children: .ignore)
             .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCardImage : "randomPick.card.image")
+            .id(item.thumbURL?.absoluteString ?? item.id)
     }
 }
 
