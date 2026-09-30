@@ -36,6 +36,8 @@
   - `SnapshotTest`: screenshot capture in `SnapshotTest`; skipped by default, run manually with `-testPlan SnapshotTest` (or `scripts/export_ui_screenshots.sh`).
 - Unit tests use Swift Testing (`import Testing`) with `@Test` and `#expect(...)`.
 - UI tests use XCTest (`XCTestCase`) and should start from a clean app state.
+- Snapshot test verification: run only the newly added snapshot test class, not the whole `SnapshotTest` plan.
+- UI test verification: run only the newly added UI test class, not the whole `UITest` plan.
 - Keep tests deterministic (avoid time/network coupling where possible; mock via repositories/data sources when practical).
 
 ## Commit & Pull Request Guidelines

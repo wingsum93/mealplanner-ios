@@ -167,7 +167,8 @@ private struct CardStackContent: View {
             }
         }
         .frame(width: metrics.cardWidth, height: metrics.stackHeight, alignment: .top)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .frame(maxHeight: .infinity, alignment: .top)
         .overlay(alignment: .bottom) {
             if let lastSwiped {
                 CardStackUndoButton(
@@ -303,36 +304,38 @@ private struct SwipeCardView: View {
     @Environment(\.displayScale) private var displayScale
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            cardShape
-                .fill(Color(.systemGray5))
-
-            imageLayer
-
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.65)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(item.name)
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
-                if let area = item.area, let category = item.category {
-                    Text("\(area) • \(category)")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.85))
-                }
+        cardShape
+            .fill(Color(.systemGray5))
+            .overlay {
+                imageLayer
             }
-            .padding(20)
-
-            SwipeCardFeedbackOverlay(
-                direction: swipeDirection,
-                progress: swipeProgress
-            )
-        }
+            .overlay {
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.65)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(item.name)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                    if let area = item.area, let category = item.category {
+                        Text("\(area) • \(category)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                }
+                .padding(20)
+            }
+            .overlay {
+                SwipeCardFeedbackOverlay(
+                    direction: swipeDirection,
+                    progress: swipeProgress
+                )
+            }
         .clipShape(cardShape)
         .contentShape(cardShape)
         .accessibilityElement(children: .contain)

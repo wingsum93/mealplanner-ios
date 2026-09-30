@@ -96,7 +96,21 @@ final class Meal_PlannerUITests: XCTestCase {
 
         let appFrame = app.frame
         XCTAssertGreaterThan(topCard.frame.width, 0, "Top random pick card width should be non-zero.")
+        XCTAssertGreaterThan(topCard.frame.height, 0, "Top random pick card height should be non-zero.")
         XCTAssertLessThan(topCard.frame.width, appFrame.width * 0.95, "Top random pick card should not stretch to full screen width.")
+        XCTAssertEqual(
+            topCard.frame.width / topCard.frame.height,
+            9.0 / 16.0,
+            accuracy: 0.02,
+            "Top random pick card should keep the portrait 9:16 aspect ratio."
+        )
+
+        let minimumHorizontalInset: CGFloat = 20
+        let leftInset = topCard.frame.minX - appFrame.minX
+        let rightInset = appFrame.maxX - topCard.frame.maxX
+        XCTAssertGreaterThanOrEqual(leftInset, minimumHorizontalInset - 1, "Top random pick card should keep left screen padding.")
+        XCTAssertGreaterThanOrEqual(rightInset, minimumHorizontalInset - 1, "Top random pick card should keep right screen padding.")
+        XCTAssertEqual(leftInset, rightInset, accuracy: 2, "Top random pick card should stay horizontally centered.")
 
         let topCardImage = app.otherElements["randomPick.topCard.image"].firstMatch
         XCTAssertTrue(topCardImage.exists, "Top random pick image layer was not found.")
