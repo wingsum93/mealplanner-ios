@@ -34,17 +34,22 @@ struct Step4IngredientsView: View {
                         onToggleCategory: { vm.onIntent(.toggleCategory(group.category)) },
                         onToggleIngredient: { vm.onIntent(.toggleIngredient($0)) }
                     )
+                    .equatable()
                 }
             }
         }
     }
 }
 
-private struct IngredientCategorySection: View {
+private struct IngredientCategorySection: View, Equatable {
     let category: IngredientCategory
     let items: [PlanIngredient]
     let onToggleCategory: () -> Void
     let onToggleIngredient: (UUID) -> Void
+
+    static func == (lhs: IngredientCategorySection, rhs: IngredientCategorySection) -> Bool {
+        lhs.category == rhs.category && lhs.items == rhs.items
+    }
 
     private var checkedCount: Int {
         items.reduce(into: 0) { count, ingredient in
@@ -75,6 +80,7 @@ private struct IngredientCategorySection: View {
                     ingredient: ingredient,
                     onToggle: { onToggleIngredient(ingredient.id) }
                 )
+                .equatable()
             }
         }
         .padding(12)
@@ -85,9 +91,13 @@ private struct IngredientCategorySection: View {
     }
 }
 
-private struct PlanIngredientRow: View {
+private struct PlanIngredientRow: View, Equatable {
     let ingredient: PlanIngredient
     let onToggle: () -> Void
+
+    static func == (lhs: PlanIngredientRow, rhs: PlanIngredientRow) -> Bool {
+        lhs.ingredient == rhs.ingredient
+    }
 
     var body: some View {
         Button(action: onToggle) {

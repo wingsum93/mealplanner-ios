@@ -8,7 +8,8 @@ struct PlanIngredientsView: View {
     var body: some View {
         Group {
             if let plan = vm.plan(id: planId) {
-                let items = visibleIngredients(in: plan)
+                let snapshot = PlanIngredientCategorySnapshot(plan: plan)
+                let items = snapshot.items(for: category)
 
                 VStack(spacing: 0) {
                     ScrollView(.horizontal) {
@@ -36,6 +37,7 @@ struct PlanIngredientsView: View {
                                             isChecked: !ingredient.isChecked
                                         ))
                                     }
+                                    .equatable()
                                 }
                             }
                             .padding()
@@ -50,17 +52,48 @@ struct PlanIngredientsView: View {
         }
         .navigationTitle("Ingredients")
     }
+}
 
-    private func visibleIngredients(in plan: ProcurementPlan) -> [PlanIngredient] {
-        plan.ingredients
-            .filter { $0.category == category }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+struct PlanIngredientCategorySnapshot: Equatable {
+    private let itemsByCategory: [IngredientCategory: [PlanIngredient]]
+    private let checkedCountsByCategory: [IngredientCategory: Int]
+
+    init(plan: ProcurementPlan) {
+        let grouped = Dictionary(grouping: plan.ingredients, by: \.category)
+        itemsByCategory = grouped.mapValues { items in
+            items.sorted {
+                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+        }
+        checkedCountsByCategory = grouped.mapValues { items in
+            items.reduce(into: 0) { count, ingredient in
+                if ingredient.isChecked {
+                    count += 1
+                }
+            }
+        }
+    }
+
+    func items(for category: IngredientCategory) -> [PlanIngredient] {
+        itemsByCategory[category] ?? []
+    }
+
+    func checkedCount(for category: IngredientCategory) -> Int {
+        checkedCountsByCategory[category] ?? 0
+    }
+
+    func totalCount(for category: IngredientCategory) -> Int {
+        items(for: category).count
     }
 }
 
-private struct SavedIngredientRow: View {
+private struct SavedIngredientRow: View, Equatable {
     let ingredient: PlanIngredient
     let onToggle: () -> Void
+
+    static func == (lhs: SavedIngredientRow, rhs: SavedIngredientRow) -> Bool {
+        lhs.ingredient == rhs.ingredient
+    }
 
     var body: some View {
         Button(action: onToggle) {

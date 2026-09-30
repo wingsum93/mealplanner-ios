@@ -152,6 +152,19 @@ struct CardStackLayoutTests {
         #expect(near(CardStackLayout.rotationDegrees(dragX: 0, maxX: 100), 0))
     }
 
+    @Test
+    func metricsCarrySizingAndArcGeometry() {
+        let size = CGSize(width: 390, height: 700)
+        let metrics = CardStackMetrics(size: size)
+        let sizing = CardStackLayout().sizing(in: size)
+
+        #expect(near(metrics.cardWidth, sizing.cardWidth))
+        #expect(near(metrics.cardHeight, sizing.cardHeight))
+        #expect(near(metrics.stackHeight, sizing.stackHeight))
+        #expect(near(metrics.arc.maxX, sizing.cardWidth * 0.55))
+        #expect(metrics == CardStackMetrics(size: size))
+    }
+
     private func near(_ lhs: CGFloat, _ rhs: CGFloat, tolerance: CGFloat = 0.0001) -> Bool {
         abs(lhs - rhs) <= tolerance
     }

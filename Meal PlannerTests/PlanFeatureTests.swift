@@ -36,6 +36,60 @@ struct PlanFeatureTests {
         #expect(PlanScheduleMutation.validDestinations(for: source.id, in: plan, now: date(25), calendar: calendar).isEmpty)
     }
 
+    @Test func calendarSnapshotMarksOnlyPlannedMealDaysEnabled() throws {
+        let snapshot = PlanCalendarSnapshot(plan: plan(), month: date(24), calendar: calendar)
+        let day23 = try #require(snapshot.days.first { $0.dayNumber == 23 })
+        let day24 = try #require(snapshot.days.first { $0.dayNumber == 24 })
+        let day25 = try #require(snapshot.days.first { $0.dayNumber == 25 })
+
+        #expect(day23.isEnabled == false)
+        #expect(day23.timeboxes.isEmpty)
+        #expect(day24.isEnabled)
+        #expect(day24.timeboxes == [.lunch])
+        #expect(day25.isEnabled)
+        #expect(day25.timeboxes == [.dinner])
+        let monthStart = try #require(calendar.date(from: DateComponents(year: 2026, month: 9, day: 1)))
+        #expect(snapshot.firstMonth == monthStart)
+        #expect(snapshot.lastMonth == monthStart)
+    }
+
+    @Test func dayDetailSnapshotMatchesMoveDestinations() throws {
+        let plan = plan()
+        let source = plan.slots[0]
+        let snapshot = PlanDayDetailSnapshot(plan: plan, displayedDate: date(24), now: date(24), calendar: calendar)
+        let expected = PlanScheduleMutation.validDestinations(for: source.id, in: plan, now: date(24), calendar: calendar)
+
+        #expect(snapshot.slots.map(\.slot.id) == [source.id])
+        #expect(snapshot.availableTimeboxes == [.lunch, .dinner])
+        for destination in expected {
+            #expect(snapshot.hasValidDestination(
+                for: source.id,
+                date: destination.date,
+                timebox: destination.timebox,
+                calendar: calendar
+            ))
+        }
+        #expect(snapshot.hasValidDestinationDate(for: source.id, date: date(25), calendar: calendar))
+        #expect(snapshot.hasValidDestination(for: source.id, date: date(26), timebox: .lunch, calendar: calendar) == false)
+    }
+
+    @Test func ingredientCategorySnapshotSortsAndCountsPerCategory() {
+        var fixture = plan()
+        fixture.ingredients = [
+            PlanIngredient(name: "Pork", quantityText: "100 g", unit: "g", category: .meat, isChecked: true, occurrenceCount: 1),
+            PlanIngredient(name: "Apple", quantityText: "2", unit: "", category: .others, occurrenceCount: 1),
+            PlanIngredient(name: "Beef", quantityText: "200 g", unit: "g", category: .meat, occurrenceCount: 2)
+        ]
+
+        let snapshot = PlanIngredientCategorySnapshot(plan: fixture)
+
+        #expect(snapshot.items(for: .meat).map(\.name) == ["Beef", "Pork"])
+        #expect(snapshot.totalCount(for: .meat) == 2)
+        #expect(snapshot.checkedCount(for: .meat) == 1)
+        #expect(snapshot.items(for: .vegetable).isEmpty)
+        #expect(snapshot.checkedCount(for: .vegetable) == 0)
+    }
+
     @Test func moveAndSwapKeepMealIdentityAndSnapshots() throws {
         var plan = plan()
         plan.mealSnapshots = [PlanMealSnapshot(recipe: makeRecipe(id: 1, title: "One"))]

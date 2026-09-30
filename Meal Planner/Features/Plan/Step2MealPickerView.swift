@@ -54,6 +54,7 @@ struct Step2MealPickerView: View {
                                 }
                             }
                         )
+                        .equatable()
                     }
                 }
             }
@@ -90,11 +91,15 @@ private struct MealPickerHeader: View {
     }
 }
 
-private struct MealPickerRow: View {
+private struct MealPickerRow: View, Equatable {
     let item: UIRecipeItem
     let isSelected: Bool
     let onToggle: () -> Void
     @Environment(\.displayScale) private var displayScale
+
+    static func == (lhs: MealPickerRow, rhs: MealPickerRow) -> Bool {
+        lhs.item == rhs.item && lhs.isSelected == rhs.isSelected
+    }
 
     var body: some View {
         Button(action: onToggle) {

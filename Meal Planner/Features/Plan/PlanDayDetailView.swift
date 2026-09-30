@@ -19,27 +19,25 @@ struct PlanDayDetailView: View {
     var body: some View {
         Group {
             if let plan = vm.plan(id: planId) {
-                let slots = plan.slots.filter { Calendar.current.isDate($0.date, inSameDayAs: displayedDate) }
-                let availableTimeboxes = PlanTimebox.allCases.filter { plan.availableTimeboxes.contains($0) }
+                let snapshot = PlanDayDetailSnapshot(plan: plan, displayedDate: displayedDate)
 
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 16) {
-                        Text(displayedDate.formatted(date: .complete, time: .omitted))
+                        Text(snapshot.displayedDateTitle)
                             .font(.title2.bold())
                         PlanMonthCalendar(plan: plan, month: $month, onSelect: { displayedDate = $0 }) { date, sourceId in
-                            let valid = PlanScheduleMutation.validDestinations(for: sourceId, in: plan)
-                                .contains { Calendar.current.isDate($0.date, inSameDayAs: date) }
+                            let valid = snapshot.hasValidDestinationDate(for: sourceId, date: date)
                             if valid { pendingDrop = (sourceId, date) }
                             return valid
                         }
-                        if slots.isEmpty {
+                        if snapshot.slots.isEmpty {
                             ContentUnavailableView("No meals for this day", systemImage: "fork.knife")
                         }
-                        ForEach(availableTimeboxes) { box in
-                            if let slot = slots.first(where: { $0.timebox == box }) {
-                                mealCard(slot, plan: plan)
+                        ForEach(snapshot.availableTimeboxes) { box in
+                            if let slot = snapshot.slot(for: box) {
+                                mealCard(slot, snapshot: snapshot)
                             } else {
-                                emptySlot(box, plan: plan)
+                                emptySlot(box, snapshot: snapshot)
                             }
                         }
                     }
@@ -58,8 +56,7 @@ struct PlanDayDetailView: View {
                 )) {
                     if let pendingDrop {
                         ForEach(PlanTimebox.allCases) { box in
-                            if PlanScheduleMutation.validDestinations(for: pendingDrop.sourceId, in: plan)
-                                .contains(where: { Calendar.current.isDate($0.date, inSameDayAs: pendingDrop.date) && $0.timebox == box }) {
+                            if snapshot.hasValidDestination(for: pendingDrop.sourceId, date: pendingDrop.date, timebox: box) {
                                 Button(box.title) {
                                     vm.onIntent(.moveSavedMeal(planId: planId, sourceId: pendingDrop.sourceId,
                                                                 date: pendingDrop.date, timebox: box))
@@ -93,26 +90,24 @@ struct PlanDayDetailView: View {
         }
     }
 
-    private func mealCard(_ slot: PlanSlot, plan: ProcurementPlan) -> some View {
-        let snapshot = plan.snapshot(for: slot.mealId)
-        let movable = Calendar.current.startOfDay(for: slot.date) >= Calendar.current.startOfDay(for: Date())
+    private func mealCard(_ slot: PlanDaySlotSnapshot, snapshot: PlanDayDetailSnapshot) -> some View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Label(slot.timebox.title, systemImage: slot.timebox.systemImage)
+                Label(slot.slot.timebox.title, systemImage: slot.slot.timebox.systemImage)
                     .font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                if movable {
-                    Button("Move") { movingSlotId = slot.id }
-                        .accessibilityIdentifier("planDay.move.\(slot.id.uuidString)")
+                if slot.isMovable {
+                    Button("Move") { movingSlotId = slot.slot.id }
+                        .accessibilityIdentifier("planDay.move.\(slot.slot.id.uuidString)")
                 } else {
                     Label("Past meal", systemImage: "lock").font(.caption)
                 }
             }
-            Text(snapshot?.title ?? "Meal #\(slot.mealId)")
+            Text(slot.mealTitle)
                 .font(.headline)
-                .accessibilityIdentifier("planDay.meal.\(slot.id.uuidString)")
-            if let snapshot {
-                SavedMealIngredients(ingredients: snapshot.ingredients)
+                .accessibilityIdentifier("planDay.meal.\(slot.slot.id.uuidString)")
+            if let mealSnapshot = slot.mealSnapshot {
+                SavedMealIngredients(ingredients: mealSnapshot.ingredients)
             } else {
                 Text("Ingredient details were not saved with this older plan.")
                     .font(.subheadline).foregroundStyle(.secondary)
@@ -121,30 +116,112 @@ struct PlanDayDetailView: View {
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-        .draggable(slot.id.uuidString)
+        .draggable(slot.slot.id.uuidString)
         .dropDestination(for: String.self) { items, _ in
             guard let raw = items.first, let sourceId = UUID(uuidString: raw) else { return false }
-            let valid = PlanScheduleMutation.validDestinations(for: sourceId, in: plan)
-                .contains { Calendar.current.isDate($0.date, inSameDayAs: slot.date) && $0.timebox == slot.timebox }
+            let valid = snapshot.hasValidDestination(
+                for: sourceId,
+                date: slot.slot.date,
+                timebox: slot.slot.timebox
+            )
             guard valid else { return false }
-            vm.onIntent(.moveSavedMeal(planId: planId, sourceId: sourceId, date: slot.date, timebox: slot.timebox))
+            vm.onIntent(.moveSavedMeal(planId: planId, sourceId: sourceId, date: slot.slot.date, timebox: slot.slot.timebox))
             return true
         }
     }
 
-    private func emptySlot(_ box: PlanTimebox, plan: ProcurementPlan) -> some View {
+    private func emptySlot(_ box: PlanTimebox, snapshot: PlanDayDetailSnapshot) -> some View {
         Text("\(box.title) · Empty")
             .frame(maxWidth: .infinity, minHeight: 60)
             .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
             .accessibilityIdentifier("planDay.empty.\(box.rawValue)")
             .dropDestination(for: String.self) { items, _ in
                 guard let raw = items.first, let sourceId = UUID(uuidString: raw) else { return false }
-                let valid = PlanScheduleMutation.validDestinations(for: sourceId, in: plan)
-                    .contains { Calendar.current.isDate($0.date, inSameDayAs: displayedDate) && $0.timebox == box }
+                let valid = snapshot.hasValidDestination(for: sourceId, date: snapshot.displayedDay, timebox: box)
                 guard valid else { return false }
-                vm.onIntent(.moveSavedMeal(planId: planId, sourceId: sourceId, date: displayedDate, timebox: box))
+                vm.onIntent(.moveSavedMeal(planId: planId, sourceId: sourceId, date: snapshot.displayedDay, timebox: box))
                 return true
             }
+    }
+}
+
+struct PlanMoveDestinationKey: Hashable {
+    let day: Date
+    let timebox: PlanTimebox
+}
+
+struct PlanDaySlotSnapshot: Identifiable, Equatable {
+    let slot: PlanSlot
+    let mealSnapshot: PlanMealSnapshot?
+    let isMovable: Bool
+
+    var id: UUID { slot.id }
+    var mealTitle: String { mealSnapshot?.title ?? "Meal #\(slot.mealId)" }
+}
+
+struct PlanDayDetailSnapshot: Equatable {
+    let displayedDay: Date
+    let displayedDateTitle: String
+    let slots: [PlanDaySlotSnapshot]
+    let availableTimeboxes: [PlanTimebox]
+
+    private let slotsByTimebox: [PlanTimebox: PlanDaySlotSnapshot]
+    private let validDestinationSets: [UUID: Set<PlanMoveDestinationKey>]
+
+    init(plan: ProcurementPlan, displayedDate: Date, now: Date = Date(), calendar: Calendar = .current) {
+        let day = calendar.startOfDay(for: displayedDate)
+        displayedDay = day
+        displayedDateTitle = displayedDate.formatted(date: .complete, time: .omitted)
+        availableTimeboxes = PlanTimebox.allCases.filter { plan.availableTimeboxes.contains($0) }
+
+        let mealSnapshotsByID = Dictionary(uniqueKeysWithValues: plan.mealSnapshots.map { ($0.id, $0) })
+        let today = calendar.startOfDay(for: now)
+        let daySlots = plan.slots
+            .filter { calendar.isDate($0.date, inSameDayAs: day) }
+            .sorted { $0.displayOrder < $1.displayOrder }
+            .map { slot in
+                PlanDaySlotSnapshot(
+                    slot: slot,
+                    mealSnapshot: mealSnapshotsByID[slot.mealId],
+                    isMovable: calendar.startOfDay(for: slot.date) >= today
+                )
+            }
+
+        slots = daySlots
+        slotsByTimebox = Dictionary(uniqueKeysWithValues: daySlots.map { ($0.slot.timebox, $0) })
+        validDestinationSets = Dictionary(uniqueKeysWithValues: daySlots.map { slot in
+            let destinations = PlanScheduleMutation.validDestinations(
+                for: slot.slot.id,
+                in: plan,
+                now: now,
+                calendar: calendar
+            )
+            let keys = Set(destinations.map {
+                PlanMoveDestinationKey(day: calendar.startOfDay(for: $0.date), timebox: $0.timebox)
+            })
+            return (slot.slot.id, keys)
+        })
+    }
+
+    func slot(for timebox: PlanTimebox) -> PlanDaySlotSnapshot? {
+        slotsByTimebox[timebox]
+    }
+
+    func hasValidDestinationDate(for sourceId: UUID, date: Date, calendar: Calendar = .current) -> Bool {
+        guard let destinations = validDestinationSets[sourceId] else { return false }
+        let day = calendar.startOfDay(for: date)
+        return destinations.contains { $0.day == day }
+    }
+
+    func hasValidDestination(
+        for sourceId: UUID,
+        date: Date,
+        timebox: PlanTimebox,
+        calendar: Calendar = .current
+    ) -> Bool {
+        validDestinationSets[sourceId]?.contains(
+            PlanMoveDestinationKey(day: calendar.startOfDay(for: date), timebox: timebox)
+        ) ?? false
     }
 }
 

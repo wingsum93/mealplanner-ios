@@ -55,13 +55,10 @@ struct RandomPickScreen: View {
                 }
             )
 
-            ZStack(alignment: .topLeading) {
-                CardStackView(items: itemsBinding)
-                    .padding(.horizontal, 20)
-
-                RandomPickAccessibilityMarker(identifier: "randomPick.content")
-                    .frame(width: 1, height: 1)
-            }
+            CardStackView(items: itemsBinding)
+                .padding(.horizontal, 20)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("randomPick.content")
         case .empty:
             EmptyStateView(
                 title: "Nothing to pick yet",
@@ -96,22 +93,6 @@ struct RandomPickScreen: View {
         case .idle, .loading, .content:
             return false
         }
-    }
-}
-
-private struct RandomPickAccessibilityMarker: UIViewRepresentable {
-    let identifier: String
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .clear
-        view.isAccessibilityElement = true
-        view.accessibilityIdentifier = identifier
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        uiView.accessibilityIdentifier = identifier
     }
 }
 

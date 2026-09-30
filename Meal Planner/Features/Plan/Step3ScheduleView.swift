@@ -54,19 +54,27 @@ struct Step3ScheduleView: View {
                             vm.onIntent(.replaceSlot(slotId: slotId, mealId: mealId))
                         }
                     )
+                    .equatable()
                 }
             }
         }
     }
 }
 
-private struct ScheduleDaySection: View {
+private struct ScheduleDaySection: View, Equatable {
     let date: Date
     let slots: [PlanSlot]
     let selectedMealIds: [Int64]
     let mealLookup: [Int64: UIRecipeItem]
     let onClearDay: () -> Void
     let onReplaceSlot: (UUID, Int64) -> Void
+
+    static func == (lhs: ScheduleDaySection, rhs: ScheduleDaySection) -> Bool {
+        lhs.date == rhs.date
+            && lhs.slots == rhs.slots
+            && lhs.selectedMealIds == rhs.selectedMealIds
+            && lhs.mealLookup == rhs.mealLookup
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -87,6 +95,7 @@ private struct ScheduleDaySection: View {
                     mealLookup: mealLookup,
                     onReplaceSlot: onReplaceSlot
                 )
+                .equatable()
             }
         }
         .padding(12)
@@ -97,11 +106,17 @@ private struct ScheduleDaySection: View {
     }
 }
 
-private struct ScheduleSlotRow: View {
+private struct ScheduleSlotRow: View, Equatable {
     let slot: PlanSlot
     let selectedMealIds: [Int64]
     let mealLookup: [Int64: UIRecipeItem]
     let onReplaceSlot: (UUID, Int64) -> Void
+
+    static func == (lhs: ScheduleSlotRow, rhs: ScheduleSlotRow) -> Bool {
+        lhs.slot == rhs.slot
+            && lhs.selectedMealIds == rhs.selectedMealIds
+            && lhs.mealLookup == rhs.mealLookup
+    }
 
     var body: some View {
         Menu {
