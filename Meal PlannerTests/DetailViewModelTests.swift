@@ -27,16 +27,41 @@ struct DetailViewModelTests {
         let repository = FavoriteRecipeRepository()
         repository.shouldFailUpdate = true
         let viewModel = DetailViewModel(repository: repository)
+        var emittedFavorites: [Bool] = []
+        viewModel.onFavoriteChanged = { item in
+            emittedFavorites.append(item.isFavorite)
+        }
         let item = makeRecipe(id: 7, title: "Detail", isFavorite: false).toUI()
 
         viewModel.onIntent(.setItem(item))
         viewModel.onIntent(.toggleFavorite)
 
         #expect(viewModel.state.item?.isFavorite == true)
-        try await Task.sleep(nanoseconds: 50_000_000)
+        #expect(emittedFavorites == [true])
+        try await waitUntil {
+            viewModel.state.errorMessage == "Failed to update favourite. Please try again."
+        }
 
         #expect(viewModel.state.item?.isFavorite == false)
+        #expect(emittedFavorites == [true, false])
         #expect(viewModel.state.isSavingFavorite == false)
         #expect(viewModel.state.errorMessage == "Failed to update favourite. Please try again.")
+    }
+
+    @MainActor
+    @Test func detailToggleFavoriteEmitsOptimisticFavoriteState() {
+        let repository = FavoriteRecipeRepository()
+        let viewModel = DetailViewModel(repository: repository)
+        var emittedFavorites: [Bool] = []
+        viewModel.onFavoriteChanged = { item in
+            emittedFavorites.append(item.isFavorite)
+        }
+        let item = makeRecipe(id: 7, title: "Detail", isFavorite: false).toUI()
+
+        viewModel.onIntent(.setItem(item))
+        viewModel.onIntent(.toggleFavorite)
+
+        #expect(viewModel.state.item?.isFavorite == true)
+        #expect(emittedFavorites == [true])
     }
 }

@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct SearchBar: View {
-    var placeholder: String
+    var placeholder: LocalizedStringKey
     var onTap: () -> Void
 
     var body: some View {
@@ -28,7 +28,7 @@ struct SearchBar: View {
         )
         .contentShape(Rectangle()) // ensures full tap area
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(placeholder)
+        .accessibilityLabel(Text(placeholder))
         .accessibilityAddTraits(.isButton)
         .onTapGesture(perform: onTap)
     }

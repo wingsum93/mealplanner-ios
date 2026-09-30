@@ -26,3 +26,11 @@ extension UIRecipeItem {
     }
 }
 
+extension Array where Element == UIRecipeItem {
+    /// Stable de-duplication by id (O(n)) preserving first-seen order.
+    func dedupedByID() -> [UIRecipeItem] {
+        var seen = Set<String>()
+        return filter { seen.insert($0.id).inserted }
+    }
+}
+

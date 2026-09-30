@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct IngredientListScreen: View {
-    let title: String
+    let title: LocalizedStringKey
     let items: [Ingredient]
     let phase: LoadPhase
     let onTapIngredient: (Ingredient) -> Void
@@ -18,7 +18,7 @@ struct IngredientListScreen: View {
     private let minimumCellWidth: CGFloat = 88
 
     init(
-        title: String = "Ingredients",
+        title: LocalizedStringKey = "Ingredients",
         items: [Ingredient],
         phase: LoadPhase = .content,
         onTapIngredient: @escaping (Ingredient) -> Void = { _ in }
@@ -54,10 +54,16 @@ struct IngredientListScreen: View {
                     )
                 } else {
                     LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
-                        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                            IngredientSquareCard(name: item.name, size: metrics.cellWidth)
-                                .accessibilityIdentifier("ingredientList.card.\(index)")
-                                .onTapGesture { onTapIngredient(item) }
+                        ForEach(items.indices, id: \.self) { index in
+                            let item = items[index]
+
+                            Button {
+                                onTapIngredient(item)
+                            } label: {
+                                IngredientSquareCard(name: item.name, size: metrics.cellWidth)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("ingredientList.card.\(index)")
                         }
                     }
                     .accessibilityIdentifier("ingredientList.grid")
@@ -66,13 +72,32 @@ struct IngredientListScreen: View {
                     .padding(.bottom, 24)
                 }
             }
+            .overlay(alignment: .topLeading) {
+                IngredientListAccessibilityMarker(identifier: "ingredientList.screen")
+                    .frame(width: 1, height: 1)
+            }
         }
         .navigationTitle(title)
-        .accessibilityIdentifier("ingredientList.screen")
     }
 
     private var isInitialLoading: Bool {
         phase == .loading && items.isEmpty
+    }
+}
+
+private struct IngredientListAccessibilityMarker: UIViewRepresentable {
+    let identifier: String
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.isAccessibilityElement = true
+        view.accessibilityIdentifier = identifier
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        uiView.accessibilityIdentifier = identifier
     }
 }
 

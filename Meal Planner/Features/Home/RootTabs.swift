@@ -5,7 +5,6 @@
 //  Created by eric ho on 3/8/2025.
 //
 import SwiftUI
-import SwiftData
 
 struct RootTabs: View {
     @EnvironmentObject private var appRouter: AppRouter
@@ -26,24 +25,32 @@ struct RootTabs: View {
     var body: some View{
         
         TabView(selection: $appRouter.selectedTab) {
-            RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
-                .tabItem{Label("Home", systemImage: "house")}
+            PlanHomeScreen()
+                .accessibilityHidden(appRouter.selectedTab != .home)
+                .tabItem{Label("Home", systemImage: "calendar")}
                 .tag(AppTab.home)
+
+            RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
+                .accessibilityHidden(appRouter.selectedTab != .recipe)
+                .tabItem{Label("Recipe", systemImage: "fork.knife")}
+                .tag(AppTab.recipe)
             
             NavigationStack {
-                FavouriteScreen()
+                MyListScreen()
             }
+                .accessibilityHidden(appRouter.selectedTab != .myList)
                 .tabItem{
-                    Label("Favourite", systemImage: "star.fill")
+                    Label("My List", systemImage: "list.star")
                 }
-                .tag(AppTab.favourite)
-            ProfileScreen(
+                .tag(AppTab.myList)
+            SettingScreen(
                 settingsViewModel: settingsViewModel
             )
+            .accessibilityHidden(appRouter.selectedTab != .setting)
             .tabItem{
-                Label("Profile", systemImage: "person.circle")
+                Label("Setting", systemImage: "person.circle")
             }
-            .tag(AppTab.profile)
+            .tag(AppTab.setting)
             
         }
         .onChange(of: appRouter.activeSheet) { sheet in
@@ -108,9 +115,3 @@ private extension View {
         }
     }
 }
-
-//#Preview {
-//    HomeScreen(homeViewModel: .preview)
-//        .modelContainer(for: Item.self, inMemory: true)
-//    
-//}

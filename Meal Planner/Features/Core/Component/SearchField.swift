@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SearchField: View {
     @Binding var text: String
-    var placeholder: String = "Search..."
+    var placeholder: LocalizedStringKey = "Search..."
     var onCommit: () -> Void = {}
     var onClear: () -> Void = {}
 

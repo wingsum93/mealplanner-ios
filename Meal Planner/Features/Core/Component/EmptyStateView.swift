@@ -7,16 +7,16 @@
 import SwiftUI
 
 struct EmptyStateView: View {
-    private let title: String?
-    private let description: String
+    private let title: LocalizedStringKey?
+    private let description: LocalizedStringKey
     var systemImage: String = "magnifyingglass"
-    var actionTitle: String? = nil
+    var actionTitle: LocalizedStringKey? = nil
     var onAction: (() -> Void)? = nil
 
     init(
-        message: String,
+        message: LocalizedStringKey,
         systemImage: String = "magnifyingglass",
-        actionTitle: String? = nil,
+        actionTitle: LocalizedStringKey? = nil,
         onAction: (() -> Void)? = nil
     ) {
         self.title = nil
@@ -27,10 +27,10 @@ struct EmptyStateView: View {
     }
 
     init(
-        title: String,
-        description: String,
+        title: LocalizedStringKey,
+        description: LocalizedStringKey,
         systemImage: String = "magnifyingglass",
-        actionTitle: String? = nil,
+        actionTitle: LocalizedStringKey? = nil,
         onAction: (() -> Void)? = nil
     ) {
         self.title = title

@@ -37,7 +37,7 @@ final class AppRouter: ObservableObject {
     }
 
     func showIngredientMeals(_ ingredient: String) {
-        selectedTab = .home
+        selectedTab = .recipe
         path.append(.ingredient(ingredient))
         activeSheet = nil
     }
@@ -53,8 +53,9 @@ final class AppRouter: ObservableObject {
 
 enum AppTab: Hashable {
     case home
-    case favourite
-    case profile
+    case recipe
+    case myList
+    case setting
 }
 
 enum AppSheet: Identifiable, Equatable {

@@ -26,6 +26,23 @@ extension RecipeEntity {
 }
 
 extension RecipeItem {
+    func with(isFavorite: Bool) -> RecipeItem {
+        RecipeItem(
+            id: id,
+            title: title,
+            description: description,
+            category: category,
+            area: area,
+            imageUrl: imageUrl,
+            youtubeLink: youtubeLink,
+            ingredients: ingredients,
+            measures: measures,
+            instructions: instructions,
+            tags: tags,
+            isFavorite: isFavorite
+        )
+    }
+
     func toEntity() -> RecipeEntity {
         RecipeEntity(
             id: id,
@@ -163,13 +180,6 @@ extension RecipeItemDto {
             }
             return nil
         }
-    }
-    private func combineIngredient(_ ingredient: String?, _ measure: String?) -> String? {
-        let trimmedIngredient = ingredient?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let i = trimmedIngredient, !i.isEmpty {
-            return "\(i):\(measure ?? "")"
-        }
-        return nil
     }
 }
 

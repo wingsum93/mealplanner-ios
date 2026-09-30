@@ -62,43 +62,104 @@ public final class RecipeLocalDataSourceImpl: RecipeLocalDataSource {
     
     
     func updateFavorite(id: Int64, isFavorite: Bool) throws {
-        let descriptor = FetchDescriptor<RecipeEntity>(
-            predicate: #Predicate { $0.id == id }
-        )
-        if let entity = try context.fetch(descriptor).first {
-            entity.isFavorite = isFavorite
-            try context.save()
+        if isFavorite {
+            try upsertListEntry(mealId: id, type: .favourite, at: Date())
+        } else {
+            try removeListEntry(mealId: id, type: .favourite)
         }
     }
     
     func isFavourite(id: Int64) -> Bool {
+        isInList(mealId: id, type: .favourite)
+    }
+
+    func getAllFavoriteRecipes() throws -> [RecipeEntity] {
+        let entries = try getListEntries(type: .favourite)
+        let ids = entries.map(\.mealId)
+        guard !ids.isEmpty else { return [] }
         let descriptor = FetchDescriptor<RecipeEntity>(
-            predicate: #Predicate { $0.id == id }
+            predicate: #Predicate { ids.contains($0.id) }
+        )
+        let entities = try context.fetch(descriptor)
+        let byId = Dictionary(uniqueKeysWithValues: entities.map { ($0.id, $0) })
+        return ids.compactMap { byId[$0] }
+    }
+
+    // MARK: - My List Entries
+
+    func upsertListEntry(mealId: Int64, type: RecipeListType, at date: Date) throws {
+        let raw = type.rawValue
+        let descriptor = FetchDescriptor<RecipeListEntry>(
+            predicate: #Predicate { $0.mealId == mealId && $0.typeRaw == raw }
+        )
+        if let existing = try context.fetch(descriptor).first {
+            existing.updatedAt = date
+        } else {
+            context.insert(RecipeListEntry(mealId: mealId, type: type, updatedAt: date))
+        }
+        try context.save()
+    }
+
+    func removeListEntry(mealId: Int64, type: RecipeListType) throws {
+        let raw = type.rawValue
+        let descriptor = FetchDescriptor<RecipeListEntry>(
+            predicate: #Predicate { $0.mealId == mealId && $0.typeRaw == raw }
+        )
+        try context.fetch(descriptor).forEach { context.delete($0) }
+        try context.save()
+    }
+
+    func isInList(mealId: Int64, type: RecipeListType) -> Bool {
+        let raw = type.rawValue
+        let descriptor = FetchDescriptor<RecipeListEntry>(
+            predicate: #Predicate { $0.mealId == mealId && $0.typeRaw == raw }
         )
         do {
-            return try context.fetch(descriptor).first?.isFavorite ?? false
+            return try context.fetchCount(descriptor) > 0
         } catch {
             return false
         }
     }
 
-    func getAllFavoriteRecipes() throws -> [RecipeEntity] {
-        let descriptor = FetchDescriptor<RecipeEntity>(
-            predicate: #Predicate { $0.isFavorite == true }
+    func getListEntries(type: RecipeListType) throws -> [RecipeListEntry] {
+        let raw = type.rawValue
+        let descriptor = FetchDescriptor<RecipeListEntry>(
+            predicate: #Predicate { $0.typeRaw == raw },
+            sortBy: [SortDescriptor(\RecipeListEntry.updatedAt, order: .reverse)]
         )
         return try context.fetch(descriptor)
     }
 
+    func getListCount(type: RecipeListType) throws -> Int {
+        let raw = type.rawValue
+        let descriptor = FetchDescriptor<RecipeListEntry>(
+            predicate: #Predicate { $0.typeRaw == raw }
+        )
+        return try context.fetchCount(descriptor)
+    }
+
+    func resetList(type: RecipeListType) throws {
+        let raw = type.rawValue
+        let descriptor = FetchDescriptor<RecipeListEntry>(
+            predicate: #Predicate { $0.typeRaw == raw }
+        )
+        try context.fetch(descriptor).forEach { context.delete($0) }
+        try context.save()
+    }
+
+    func allListMealIds() throws -> Set<Int64> {
+        let entries = try context.fetch(FetchDescriptor<RecipeListEntry>())
+        return Set(entries.map(\.mealId))
+    }
+
     func getSettingsDataSummary() throws -> SettingsDataSummary {
         let descriptor = FetchDescriptor<RecipeEntity>()
-        let favoriteDescriptor = FetchDescriptor<RecipeEntity>(
-            predicate: #Predicate { $0.isFavorite == true }
-        )
         let ingredientDescriptor = FetchDescriptor<IngredientEntity>()
 
         return SettingsDataSummary(
             savedRecipeCount: try context.fetchCount(descriptor),
-            favoriteRecipeCount: try context.fetchCount(favoriteDescriptor),
+            favoriteRecipeCount: try getListCount(type: .favourite),
+            masteredRecipeCount: try getListCount(type: .mastered),
             cachedCategoryCount: (try getAllCategories()).count,
             cachedAreaCount: (try getAllAreas()).count,
             cachedIngredientCount: try context.fetchCount(ingredientDescriptor)
@@ -106,11 +167,11 @@ public final class RecipeLocalDataSourceImpl: RecipeLocalDataSource {
     }
 
     func clearBrowseCachePreservingFavorites() throws {
-        let descriptor = FetchDescriptor<RecipeEntity>(
-            predicate: #Predicate { $0.isFavorite == false }
-        )
-        let recipes = try context.fetch(descriptor)
-        recipes.forEach { context.delete($0) }
+        let keepIds = try allListMealIds()
+        let recipes = try context.fetch(FetchDescriptor<RecipeEntity>())
+        recipes
+            .filter { !keepIds.contains($0.id) }
+            .forEach { context.delete($0) }
         try context.save()
     }
 
@@ -125,11 +186,6 @@ public final class RecipeLocalDataSourceImpl: RecipeLocalDataSource {
     }
 
     func resetFavorites() throws {
-        let descriptor = FetchDescriptor<RecipeEntity>(
-            predicate: #Predicate { $0.isFavorite == true }
-        )
-        let recipes = try context.fetch(descriptor)
-        recipes.forEach { $0.isFavorite = false }
-        try context.save()
+        try resetList(type: .favourite)
     }
 }

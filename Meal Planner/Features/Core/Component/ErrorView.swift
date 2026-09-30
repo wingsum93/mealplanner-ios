@@ -9,7 +9,7 @@ import SwiftUI
 struct ErrorView: View {
     var message: String
     var systemImage: String = "exclamationmark.triangle.fill"
-    var actionTitle: String? = "Retry"
+    var actionTitle: LocalizedStringKey? = "Retry"
     var onAction: (() -> Void)? = nil
 
     var body: some View {

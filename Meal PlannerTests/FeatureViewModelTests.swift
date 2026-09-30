@@ -12,18 +12,22 @@ struct FeatureViewModelTests {
 
     @MainActor
     @Test func staleSearchCompletionDoesNotOverwriteCurrentQuery() async throws {
-        let repository = SearchRaceRecipeRepository()
-        let viewModel = FeatureViewModel(repository: repository)
+        let repository = SearchRaceRecipeRepository(delayedSlowSearch: true)
+        let viewModel = FeatureViewModel(repository: repository, searchDebounceDelay: 0)
 
         viewModel.onIntent(.updateQuery("slow"))
         viewModel.onIntent(.performSearch)
 
-        try await Task.sleep(nanoseconds: 550_000_000)
+        try await waitUntil {
+            viewModel.state.search.phase == .loading
+        }
 
         viewModel.onIntent(.updateQuery("fast"))
         viewModel.onIntent(.performSearch)
 
-        try await Task.sleep(nanoseconds: 700_000_000)
+        try await waitUntil {
+            viewModel.state.search.results.map(\.name) == ["fast result"]
+        }
 
         #expect(viewModel.state.search.query == "fast")
         #expect(viewModel.state.search.results.map(\.name) == ["fast result"])
@@ -31,11 +35,13 @@ struct FeatureViewModelTests {
 
     @MainActor
     @Test func emptySearchQueryResetsSearchState() async throws {
-        let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository())
+        let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository(), searchDebounceDelay: 0)
 
         viewModel.onIntent(.updateQuery("chicken"))
         viewModel.onIntent(.performSearch)
-        try await Task.sleep(nanoseconds: 600_000_000)
+        try await waitUntil {
+            viewModel.state.search.results.map(\.name) == ["chicken result"]
+        }
 
         viewModel.onIntent(.updateQuery(""))
         viewModel.onIntent(.performSearch)
@@ -48,11 +54,11 @@ struct FeatureViewModelTests {
     @MainActor
     @Test func oneCharacterSearchQueryDoesNotCallRepository() async throws {
         let repository = DebouncedSearchRecipeRepository()
-        let viewModel = FeatureViewModel(repository: repository)
+        let viewModel = FeatureViewModel(repository: repository, searchDebounceDelay: 0)
 
         viewModel.onIntent(.updateQuery("c"))
 
-        try await Task.sleep(nanoseconds: 600_000_000)
+        await Task.yield()
 
         #expect(repository.searchedKeywords.isEmpty)
         #expect(viewModel.state.search.query == "c")
@@ -61,16 +67,15 @@ struct FeatureViewModelTests {
     }
 
     @MainActor
-    @Test func twoCharacterSearchQueryWaitsForDebounceBeforeCallingRepository() async throws {
+    @Test func twoCharacterSearchQueryCallsRepositoryAfterDebounce() async throws {
         let repository = DebouncedSearchRecipeRepository()
-        let viewModel = FeatureViewModel(repository: repository)
+        let viewModel = FeatureViewModel(repository: repository, searchDebounceDelay: 0)
 
         viewModel.onIntent(.updateQuery("ch"))
-        try await Task.sleep(nanoseconds: 300_000_000)
 
-        #expect(repository.searchedKeywords.isEmpty)
-
-        try await Task.sleep(nanoseconds: 300_000_000)
+        try await waitUntil {
+            repository.searchedKeywords == ["ch"]
+        }
 
         #expect(repository.searchedKeywords == ["ch"])
         #expect(viewModel.state.search.results.map(\.name) == ["ch result"])
@@ -79,13 +84,14 @@ struct FeatureViewModelTests {
     @MainActor
     @Test func newSearchInputCancelsPendingDebouncedQuery() async throws {
         let repository = DebouncedSearchRecipeRepository()
-        let viewModel = FeatureViewModel(repository: repository)
+        let viewModel = FeatureViewModel(repository: repository, searchDebounceDelay: 50_000_000)
 
         viewModel.onIntent(.updateQuery("ch"))
-        try await Task.sleep(nanoseconds: 250_000_000)
         viewModel.onIntent(.updateQuery("chi"))
 
-        try await Task.sleep(nanoseconds: 650_000_000)
+        try await waitUntil {
+            repository.searchedKeywords == ["chi"]
+        }
 
         #expect(repository.searchedKeywords == ["chi"])
         #expect(viewModel.state.search.results.map(\.name) == ["chi result"])
@@ -103,11 +109,98 @@ struct FeatureViewModelTests {
     }
 
     @MainActor
+    @Test func randomPickFavoriteSaveAddsFavorite() async throws {
+        let repository = FavoriteRecipeRepository()
+        let viewModel = FeatureViewModel(repository: repository)
+        let item = UIRecipeItem.new(id: "42", name: "Saved pick")
+
+        viewModel.onIntent(.saveRandomPickFavorite(item))
+
+        try await waitUntil {
+            repository.isFavourite(id: 42)
+        }
+        #expect(repository.favorites.map(\.id) == [42])
+    }
+
+    @MainActor
+    @Test func randomPickFavoriteUndoRemovesSwipeAddedFavorite() async throws {
+        let repository = FavoriteRecipeRepository()
+        let viewModel = FeatureViewModel(repository: repository)
+        let item = UIRecipeItem.new(id: "43", name: "Undo pick")
+
+        viewModel.onIntent(.saveRandomPickFavorite(item))
+        try await waitUntil {
+            repository.isFavourite(id: 43)
+        }
+
+        viewModel.onIntent(.undoRandomPickFavorite(item))
+
+        try await waitUntil {
+            repository.isFavourite(id: 43) == false
+        }
+        #expect(repository.favorites.isEmpty)
+    }
+
+    @MainActor
+    @Test func randomPickFavoriteUndoKeepsPreviouslyFavoriteMeal() async throws {
+        let favorite = makeRecipe(id: 44, title: "Existing favorite", isFavorite: true)
+        let repository = FavoriteRecipeRepository(favorites: [favorite])
+        let viewModel = FeatureViewModel(repository: repository)
+
+        viewModel.onIntent(.undoRandomPickFavorite(favorite.toUI()))
+
+        await Task.yield()
+
+        #expect(repository.isFavourite(id: 44))
+        #expect(repository.favorites.map(\.id) == [44])
+    }
+
+    @MainActor
+    @Test func randomPickFavoriteSaveFailureKeepsDeckAndSetsError() async throws {
+        let repository = FavoriteRecipeRepository()
+        repository.shouldFailUpdate = true
+        let viewModel = FeatureViewModel(repository: repository)
+        let items = [UIRecipeItem.new(id: "45", name: "Failed pick")]
+
+        viewModel.onIntent(.updateRandomPickItems(items))
+        viewModel.onIntent(.saveRandomPickFavorite(items[0]))
+
+        try await waitUntil {
+            viewModel.state.randomPick.actionErrorMessage != nil
+        }
+
+        #expect(viewModel.state.randomPick.items == items)
+        #expect(viewModel.state.randomPick.phase == .content)
+        #expect(viewModel.state.randomPick.actionErrorMessage == "Failed to save favourite. Please try again.")
+
+        viewModel.onIntent(.clearRandomPickActionError)
+
+        #expect(viewModel.state.randomPick.actionErrorMessage == nil)
+    }
+
+    @MainActor
+    @Test func updateSearchFavoriteUpdatesMatchingSearchResult() async throws {
+        let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository(), searchDebounceDelay: 0)
+
+        viewModel.onIntent(.updateQuery("meal"))
+        viewModel.onIntent(.performSearch)
+        try await waitUntil {
+            viewModel.state.search.results.map(\.id) == ["2"]
+        }
+
+        viewModel.onIntent(.updateSearchFavorite(id: "2", isFavorite: true))
+
+        #expect(viewModel.state.search.results.first?.isFavorite == true)
+    }
+
+    @MainActor
     @Test func loadIngredientsPopulatesState() async throws {
         let viewModel = FeatureViewModel(repository: DummyRecipeRepository())
 
         viewModel.onIntent(.loadIngredients)
-        try await Task.sleep(nanoseconds: 200_000_000)
+        try await waitUntil {
+            viewModel.state.ingredients.phase == .content
+        }
 
         #expect(viewModel.state.ingredients.items.map(\.name) == ["Beef", "Garlic"])
         #expect(viewModel.state.ingredients.phase == .content)
@@ -118,7 +211,9 @@ struct FeatureViewModelTests {
         let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository())
 
         viewModel.onIntent(.loadIngredients)
-        try await Task.sleep(nanoseconds: 200_000_000)
+        try await waitUntil {
+            viewModel.state.ingredients.phase == .empty
+        }
 
         #expect(viewModel.state.ingredients.items.isEmpty)
         #expect(viewModel.state.ingredients.phase == .empty)
@@ -129,7 +224,9 @@ struct FeatureViewModelTests {
         let viewModel = FeatureViewModel(repository: DummyRecipeRepository())
 
         viewModel.onIntent(.loadIngredientMeals("Beef"))
-        try await Task.sleep(nanoseconds: 300_000_000)
+        try await waitUntil {
+            viewModel.state.ingredientMeals.phase == .content
+        }
 
         #expect(viewModel.state.ingredientMeals.ingredient == "Beef")
         #expect(viewModel.state.ingredientMeals.phase == .content)
@@ -141,7 +238,9 @@ struct FeatureViewModelTests {
         let viewModel = FeatureViewModel(repository: SearchRaceRecipeRepository())
 
         viewModel.onIntent(.loadIngredientMeals("Beef"))
-        try await Task.sleep(nanoseconds: 200_000_000)
+        try await waitUntil {
+            viewModel.state.ingredientMeals.phase == .empty
+        }
 
         #expect(viewModel.state.ingredientMeals.ingredient == "Beef")
         #expect(viewModel.state.ingredientMeals.items.isEmpty)

@@ -6,6 +6,7 @@
 //
 
 protocol RecipeRepository {
+    func getCachedRecipe(id: Int64) throws -> RecipeItem?
     func getAllIngredients() async throws -> [Ingredient]
     func getAllCategory() async throws -> [String]
     func getAllArea() async throws -> [String]
@@ -21,4 +22,16 @@ protocol RecipeRepository {
     func updateFavorite(id: Int64, isFavorite: Bool) throws
     func isFavourite(id:Int64)-> Bool
     func getAllFavoriteRecipes() throws -> [RecipeItem]
+
+    // MARK: - My List
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem]
+    func recordRecipeView(id: Int64) throws
+    func resetList(type: RecipeListType) throws
+    func getListCount(type: RecipeListType) throws -> Int
+}
+
+extension RecipeRepository {
+    func getCachedRecipe(id: Int64) throws -> RecipeItem? { nil }
 }

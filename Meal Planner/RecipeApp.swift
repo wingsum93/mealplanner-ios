@@ -14,31 +14,69 @@ struct RecipeApp: App {
     @StateObject private var appRouter: AppRouter
     @StateObject private var homeVM: FeatureViewModel
     @StateObject private var detailVM: DetailViewModel
-    @StateObject private var favVM: FavouriteViewModel
+    @StateObject private var myListVM: MyListViewModel
+    @StateObject private var planVM: PlanViewModel
     @StateObject private var settingsVM: SettingsViewModel
     init() {
         ImageCacheConfig.configure()
-        LegacyAuthStorageCleanup.removeLegacyAuthData()
 
         let isUITestingInMemoryStore = CommandLine.arguments.contains("-uiTestingInMemoryStore")
         let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: isUITestingInMemoryStore)
         let mc = try! ModelContainer(
             for: RecipeEntity.self,
             IngredientEntity.self,
+            RecipeListEntry.self,
+            ProcurementPlanEntity.self,
+            PlanSlotEntity.self,
+            PlanIngredientEntity.self,
             configurations: modelConfiguration
         )
         let container = AppDIContainer(modelContext: ModelContext(mc),
                                        networkClient: AlamofireNetworkClient())
+        if isUITestingInMemoryStore && CommandLine.arguments.contains("-uiTestingFX002Fixture") {
+            try? container.planRepository.savePlan(Self.fx002Fixture())
+        }
         _di = State(initialValue: container)
         _appRouter = StateObject(wrappedValue: AppRouter())
-        _homeVM = StateObject(wrappedValue: FeatureViewModel(repository: container.recipeRepository))
-        _detailVM = StateObject(wrappedValue: DetailViewModel(repository: container.recipeRepository))
-        let favouriteViewModel = FavouriteViewModel(repository: container.recipeRepository)
-        _favVM = StateObject(wrappedValue: favouriteViewModel)
+        let homeViewModel = FeatureViewModel(repository: container.recipeRepository)
+        let detailViewModel = DetailViewModel(repository: container.recipeRepository)
+        detailViewModel.onFavoriteChanged = { item in
+            homeViewModel.onIntent(.updateSearchFavorite(id: item.id, isFavorite: item.isFavorite))
+        }
+        _homeVM = StateObject(wrappedValue: homeViewModel)
+        _detailVM = StateObject(wrappedValue: detailViewModel)
+        let myListViewModel = MyListViewModel(repository: container.recipeRepository)
+        _myListVM = StateObject(wrappedValue: myListViewModel)
+        _planVM = StateObject(wrappedValue: container.makePlanViewModel())
         _settingsVM = StateObject(
             wrappedValue: container.makeSettingsViewModel {
-                favouriteViewModel.onIntent(.loadFavorites)
+                myListViewModel.onIntent(.loadList(.favourite))
             }
+        )
+    }
+
+    private static func fx002Fixture() -> ProcurementPlan {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) ?? today
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today
+        let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart) ?? tomorrow
+        return ProcurementPlan(
+            id: UUID(), name: "FX-002 Sample Plan", startDate: today,
+            endDate: max(nextMonth, tomorrow), createdAt: today, adjustCount: 0,
+            slots: [
+                PlanSlot(date: today, timebox: .lunch, mealId: 1001, displayOrder: 0),
+                PlanSlot(date: tomorrow, timebox: .dinner, mealId: 1002, displayOrder: 1)
+            ],
+            ingredients: [
+                PlanIngredient(name: "Beef", quantityText: "200 g", unit: "g", category: .meat, occurrenceCount: 1),
+                PlanIngredient(name: "Carrot", quantityText: "2", unit: "", category: .vegetable, occurrenceCount: 1)
+            ],
+            selectedTimeboxes: [.lunch, .dinner],
+            mealSnapshots: [
+                PlanMealSnapshot(id: 1001, title: "Beef Bowl", ingredients: [PlanMealIngredient(name: "Beef", measure: "200 g")]),
+                PlanMealSnapshot(id: 1002, title: "Carrot Soup", ingredients: [PlanMealIngredient(name: "Carrot", measure: "2")])
+            ]
         )
     }
     
@@ -57,7 +95,8 @@ struct RecipeApp: App {
                 })
                 .environmentObject(appRouter)
                 .environmentObject(detailVM)
-                .environmentObject(favVM)
+                .environmentObject(myListVM)
+                .environmentObject(planVM)
         }
     }
 }

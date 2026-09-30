@@ -8,7 +8,7 @@ import SwiftUI
 
 struct SearchScreen: View {
     @Binding var query: String
-    var placeholder: String
+    var placeholder: LocalizedStringKey
     var searchPhase: LoadPhase
     var searchResults: [UIRecipeItem]
     var onCommit: () -> Void
@@ -18,7 +18,7 @@ struct SearchScreen: View {
 
     init(
         query: Binding<String>,
-        placeholder: String = "Search...",
+        placeholder: LocalizedStringKey = "Search...",
         searchPhase: LoadPhase,
         searchResults: [UIRecipeItem],
         onCommit: @escaping () -> Void = {},
@@ -54,59 +54,83 @@ struct SearchScreen: View {
 
     @ViewBuilder
     private var content: some View {
+        SearchContentView(
+            searchPhase: searchPhase,
+            searchResults: searchResults,
+            onCommit: onCommit,
+            onItemTap: onItemTap,
+            onFavoriteToggle: onFavoriteToggle
+        )
+    }
+}
+
+private struct SearchContentView: View {
+    let searchPhase: LoadPhase
+    let searchResults: [UIRecipeItem]
+    let onCommit: () -> Void
+    let onItemTap: (UIRecipeItem) -> Void
+    let onFavoriteToggle: (UIRecipeItem, Bool) -> Void
+
+    var body: some View {
         switch searchPhase {
         case .idle:
-            ZStack {
-                EmptySearchPlaceholder()
-            }
+            EmptySearchPlaceholder()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .accessibilityIdentifier("search.idle")
+            .accessibilityIdentifier("search.idle")
 
         case .loading:
-            ZStack {
-                SpiningCatLoadingView()
-            }
+            SpiningCatLoadingView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .scaleEffect(x:0.7, y:0.7, anchor: .center)
-                .accessibilityIdentifier("search.loading")
+            .scaleEffect(x: 0.7, y: 0.7, anchor: .center)
+            .accessibilityIdentifier("search.loading")
+
         case .content:
             if searchResults.isEmpty {
-                ZStack {
-                    EmptyStateView(message: "No results")
-                }
+                EmptyStateView(message: "No results")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .accessibilityIdentifier("search.empty")
+                .accessibilityIdentifier("search.empty")
             } else {
-                List {
-                    ForEach(Array(searchResults.enumerated()), id: \.element.id) { index, item in
-                        SearchRecipeRow(item: item, showFavorite: true) { isFavorite in
-                            onFavoriteToggle(item, isFavorite)
-                        }
-                            .accessibilityIdentifier("search.resultRow.\(index)")
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                onItemTap(item)
-                            }
-                    }
-                }
-                .listStyle(.plain)
-                .accessibilityIdentifier("search.results")
+                SearchResultsList(
+                    searchResults: searchResults,
+                    onItemTap: onItemTap,
+                    onFavoriteToggle: onFavoriteToggle
+                )
             }
 
         case .empty:
-            ZStack {
-                EmptyStateView(message: "No results")
-            }
+            EmptyStateView(message: "No results")
             .frame(maxWidth: .infinity)
-                .accessibilityIdentifier("search.empty")
+            .accessibilityIdentifier("search.empty")
 
         case .error(let msg):
-            ZStack {
-                ErrorView(message: msg, onAction: onCommit)
-            }
+            ErrorView(message: msg, onAction: onCommit)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .accessibilityIdentifier("search.error")
+            .accessibilityIdentifier("search.error")
         }
+    }
+}
+
+private struct SearchResultsList: View {
+    let searchResults: [UIRecipeItem]
+    let onItemTap: (UIRecipeItem) -> Void
+    let onFavoriteToggle: (UIRecipeItem, Bool) -> Void
+
+    var body: some View {
+        List {
+            ForEach(searchResults.indices, id: \.self) { index in
+                let item = searchResults[index]
+                SearchRecipeRow(item: item, showFavorite: true, onFavoriteToggle: { isFavorite in
+                    onFavoriteToggle(item, isFavorite)
+                })
+                .accessibilityIdentifier("search.resultRow.\(index)")
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onItemTap(item)
+                }
+            }
+        }
+        .listStyle(.plain)
+        .accessibilityIdentifier("search.results")
     }
 }
 

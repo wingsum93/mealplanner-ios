@@ -1,0 +1,231 @@
+//
+//  SettingScreen.swift
+//  Meal Planner
+//
+//  Created by eric ho on 3/8/2025.
+//
+
+import SwiftUI
+struct SettingScreen: View {
+    @ObservedObject var settingsViewModel: SettingsViewModel
+
+    @State private var pendingAction: SettingsAction?
+
+    init(
+        settingsViewModel: SettingsViewModel
+    ) {
+        self.settingsViewModel = settingsViewModel
+    }
+    
+    var body: some View {
+        List {
+            Section("Storage Overview") {
+                SettingsSummaryRow(
+                    title: "Saved recipes",
+                    value: settingsViewModel.state.summary.savedRecipeCount,
+                    systemImage: "fork.knife"
+                )
+                SettingsSummaryRow(
+                    title: "Favorites",
+                    value: settingsViewModel.state.summary.favoriteRecipeCount,
+                    systemImage: "star.fill"
+                )
+                SettingsSummaryRow(
+                    title: "Mastered",
+                    value: settingsViewModel.state.summary.masteredRecipeCount,
+                    systemImage: "checkmark.seal.fill"
+                )
+                SettingsSummaryRow(
+                    title: "Categories",
+                    value: settingsViewModel.state.summary.cachedCategoryCount,
+                    systemImage: "square.grid.2x2"
+                )
+                SettingsSummaryRow(
+                    title: "Areas",
+                    value: settingsViewModel.state.summary.cachedAreaCount,
+                    systemImage: "map"
+                )
+                SettingsSummaryRow(
+                    title: "Ingredients",
+                    value: settingsViewModel.state.summary.cachedIngredientCount,
+                    systemImage: "leaf"
+                )
+            }
+
+            if settingsViewModel.state.statusMessage != nil || settingsViewModel.state.errorMessage != nil {
+                Section("Status") {
+                    if let statusMessage = settingsViewModel.state.statusMessage {
+                        Label(statusMessage, systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+                    if let errorMessage = settingsViewModel.state.errorMessage {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+
+            Section("Display") {
+                Toggle(
+                    isOn: Binding(
+                        get: { settingsViewModel.state.showLargeMealPage },
+                        set: { settingsViewModel.onIntent(.setShowLargeMealPage($0)) }
+                    )
+                ) {
+                    Label("Show large Meal Page", systemImage: "rectangle.expand.vertical")
+                }
+            }
+
+            Section("Data Tools") {
+                Button {
+                    settingsViewModel.onIntent(.loadSummary)
+                } label: {
+                    Label("Reload storage overview", systemImage: "arrow.clockwise")
+                }
+
+                Button {
+                    pendingAction = .clearBrowseCache
+                } label: {
+                    Label("Clear browse cache", systemImage: "trash")
+                }
+
+                Button {
+                    pendingAction = .clearLookupCaches
+                } label: {
+                    Label("Clear lookup caches", systemImage: "tray")
+                }
+
+                Button(role: .destructive) {
+                    pendingAction = .resetFavorites
+                } label: {
+                    Label("Reset favorites", systemImage: "star.slash")
+                }
+            }
+
+            Section("About") {
+                SettingsInfoRow(
+                    title: "Version Name",
+                    value: appVersionName,
+                    systemImage: "tag"
+                )
+
+                SettingsInfoRow(
+                    title: "Build Number",
+                    value: appBuildNumber,
+                    systemImage: "number"
+                )
+
+                HStack(spacing: 4) {
+                    Text("Data courtesy of")
+                    Link("TheMealDB", destination: theMealDBURL)
+                }
+                .font(.subheadline)
+
+                if let feedbackURL {
+                    Link("Feedback & Support", destination: feedbackURL)
+                }
+                if let privacyPolicyURL {
+                    Link("Privacy Policy", destination: privacyPolicyURL)
+                }
+            }
+
+            Section("Open Source") {
+                Link("Lottie", destination: lottieURL)
+                Link("Kingfisher", destination: kingfisherURL)
+            }
+        }
+        .listStyle(.insetGrouped)
+        .accessibilityIdentifier("settings.screen")
+        .task {
+            settingsViewModel.onIntent(.loadSummary)
+        }
+        .confirmationDialog(
+            "Confirm action",
+            isPresented: Binding(get: { pendingAction != nil }, set: { if !$0 { pendingAction = nil } })
+        ) {
+            Button("Cancel", role: .cancel) { }
+            if let action = pendingAction {
+                Button(action.confirmButtonTitle, role: .destructive) {
+                    settingsViewModel.onIntent(.perform(action))
+                    pendingAction = nil
+                }
+            }
+        } message: {
+            Text(pendingAction?.confirmMessage ?? "")
+        }
+        .onDisappear {
+            settingsViewModel.onIntent(.clearStatus)
+        }
+    }
+
+    private var appVersionName: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
+    }
+
+    private var appBuildNumber: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "Unknown"
+    }
+
+    private var theMealDBURL: URL {
+        URL(string: "https://www.themealdb.com") ?? URL(fileURLWithPath: "/")
+    }
+
+    private var feedbackURL: URL? {
+        URL(string: "mailto:support@mealplanner.app")
+    }
+
+    private var privacyPolicyURL: URL? {
+        URL(string: "https://www.fatboytech.org/app-dish-mint/privacy")
+    }
+
+    private var lottieURL: URL {
+        URL(string: "https://github.com/airbnb/lottie-ios") ?? URL(fileURLWithPath: "/")
+    }
+
+    private var kingfisherURL: URL {
+        URL(string: "https://github.com/onevcat/Kingfisher") ?? URL(fileURLWithPath: "/")
+    }
+}
+
+#if DEBUG
+#Preview {
+    let mockLocal = MockRecipeLocalDataSource()
+    SettingScreen(
+        settingsViewModel: SettingsViewModel(localDataSource: mockLocal)
+    )
+}
+#endif
+
+private struct SettingsSummaryRow: View {
+    let title: LocalizedStringKey
+    let value: Int
+    let systemImage: String
+
+    var body: some View {
+        HStack {
+            Label(title, systemImage: systemImage)
+            Spacer()
+            Text(value.formatted())
+                .font(.headline)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+    }
+}
+
+private struct SettingsInfoRow: View {
+    let title: LocalizedStringKey
+    let value: String
+    let systemImage: String
+
+    var body: some View {
+        HStack {
+            Label(title, systemImage: systemImage)
+            Spacer()
+            Text(value)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+        .font(.subheadline)
+    }
+}

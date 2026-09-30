@@ -8,12 +8,34 @@
 import Foundation
 @testable import Meal_Planner
 
+func waitUntil(
+    timeout: Duration = .seconds(1),
+    pollingInterval: Duration = .milliseconds(1),
+    condition: @MainActor @escaping () -> Bool
+) async throws {
+    let deadline = ContinuousClock.now + timeout
+    while ContinuousClock.now < deadline {
+        if await condition() {
+            return
+        }
+        try await Task.sleep(for: pollingInterval)
+    }
+    if await condition() {
+        return
+    }
+    throw TestError.timedOut
+}
+
 final class SearchRaceRecipeRepository: RecipeRepository {
+    private let delayedSlowSearch: Bool
+
+    init(delayedSlowSearch: Bool = false) {
+        self.delayedSlowSearch = delayedSlowSearch
+    }
+
     func searchByName(_ keyword: String) async throws -> [RecipeItem] {
-        if keyword == "slow" {
+        if delayedSlowSearch && keyword == "slow" {
             await delayIgnoringCancellation(seconds: 0.35)
-        } else {
-            await delayIgnoringCancellation(seconds: 0.01)
         }
 
         return [recipe(id: keyword == "slow" ? 1 : 2, title: "\(keyword) result")]
@@ -32,6 +54,12 @@ final class SearchRaceRecipeRepository: RecipeRepository {
     func updateFavorite(id: Int64, isFavorite: Bool) throws {}
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeItem] { [] }
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {}
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool { false }
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] { [] }
+    func recordRecipeView(id: Int64) throws {}
+    func resetList(type: RecipeListType) throws {}
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
 
     private func delayIgnoringCancellation(seconds: TimeInterval) async {
         await withCheckedContinuation { continuation in
@@ -76,10 +104,18 @@ final class DebouncedSearchRecipeRepository: RecipeRepository {
     func updateFavorite(id: Int64, isFavorite: Bool) throws {}
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeItem] { [] }
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {}
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool { false }
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] { [] }
+    func recordRecipeView(id: Int64) throws {}
+    func resetList(type: RecipeListType) throws {}
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
 }
 
 final class FavoriteRecipeRepository: RecipeRepository {
     var favorites: [RecipeItem]
+    var mastered: [RecipeItem] = []
+    var viewed: [RecipeItem] = []
     var shouldFailLoad = false
     var shouldFailUpdate = false
 
@@ -127,6 +163,65 @@ final class FavoriteRecipeRepository: RecipeRepository {
     func getRandomRecipe() async throws -> RecipeItem { makeRecipe(id: 99, title: "random") }
     func getRandom10Recipe() async throws -> [RecipeItem] { [] }
     func isFavourite(id: Int64) -> Bool { favorites.contains { $0.id == id && $0.isFavorite } }
+
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {
+        if shouldFailUpdate { throw TestError.expected }
+        var bucket = list(for: type)
+        if isIncluded {
+            if let index = bucket.firstIndex(where: { $0.id == item.id }) {
+                bucket[index] = item
+            } else {
+                bucket.append(item)
+            }
+        } else {
+            bucket.removeAll { $0.id == item.id }
+        }
+        setList(bucket, for: type)
+    }
+
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool {
+        list(for: type).contains { $0.id == id }
+    }
+
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] {
+        if shouldFailLoad { throw TestError.expected }
+        let favouriteIds = Set(favorites.filter(\.isFavorite).map(\.id))
+        return list(for: type)
+            .filter { type != .favourite || $0.isFavorite }
+            .map { $0.with(isFavorite: favouriteIds.contains($0.id)) }
+    }
+
+    func recordRecipeView(id: Int64) throws {
+        guard !viewed.contains(where: { $0.id == id }) else { return }
+        let payload = list(for: .favourite)
+            .first(where: { $0.id == id })
+            ?? makeRecipe(id: id, title: "Viewed")
+        viewed.insert(payload, at: 0)
+    }
+
+    func resetList(type: RecipeListType) throws {
+        setList([], for: type)
+    }
+
+    func getListCount(type: RecipeListType) throws -> Int {
+        list(for: type).count
+    }
+
+    private func list(for type: RecipeListType) -> [RecipeItem] {
+        switch type {
+        case .favourite: return favorites
+        case .mastered: return mastered
+        case .viewed: return viewed
+        }
+    }
+
+    private func setList(_ items: [RecipeItem], for type: RecipeListType) {
+        switch type {
+        case .favourite: favorites = items
+        case .mastered: mastered = items
+        case .viewed: viewed = items
+        }
+    }
 }
 
 final class SettingsLocalDataSourceSpy: RecipeLocalDataSource {
@@ -180,35 +275,109 @@ final class SettingsLocalDataSourceSpy: RecipeLocalDataSource {
     func updateFavorite(id: Int64, isFavorite: Bool) throws {}
     func isFavourite(id: Int64) -> Bool { false }
     func getAllFavoriteRecipes() throws -> [RecipeEntity] { [] }
+    func upsertListEntry(mealId: Int64, type: RecipeListType, at date: Date) throws {}
+    func removeListEntry(mealId: Int64, type: RecipeListType) throws {}
+    func isInList(mealId: Int64, type: RecipeListType) -> Bool { false }
+    func getListEntries(type: RecipeListType) throws -> [RecipeListEntry] { [] }
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
+    func resetList(type: RecipeListType) throws {}
+    func allListMealIds() throws -> Set<Int64> { [] }
+}
+
+final class DummyRecipeRepository: RecipeRepository {
+    var cachedRecipes: [Int64: RecipeItem] = [:]
+
+    func getCachedRecipe(id: Int64) throws -> RecipeItem? { cachedRecipes[id] }
+    func getByArea(_ area: String) async throws -> [RecipeItem] {
+        return [sampleRecipeItem(id: 123, title: "\(area) pizza")]
+    }
+
+    func getRandom10Recipe() async throws -> [RecipeItem] {
+        return []
+    }
+
+    func getAllIngredients() async throws -> [Ingredient] {
+        return [
+            Ingredient(id: 1, name: "Beef", descriptionText: "Rich red meat", type: "Meat"),
+            Ingredient(id: 2, name: "Garlic", descriptionText: "Flavor enhancer", type: "Vegetable")
+        ]
+    }
+
+    func getAllCategory() async throws -> [String] {
+        return ["Beef", "Dessert", "Seafood"]
+    }
+
+    func getAllArea() async throws -> [String] {
+        return ["American", "British", "Japanese"]
+    }
+
+    func getBySingleIngredient(_ name: String) async throws -> [RecipeItem] {
+        return [sampleRecipeItem(id: 101, title: "\(name) Stew")]
+    }
+
+    func getByCategory(_ category: String) async throws -> [RecipeItem] {
+        return [sampleRecipeItem(id: 102, title: "\(category) Delight")]
+    }
+
+    func searchByName(_ keyword: String) async throws -> [RecipeItem] {
+        return [sampleRecipeItem(id: 103, title: "Search: \(keyword)")]
+    }
+
+    func getRecipeDetail(id: String) async throws -> RecipeItem {
+        return sampleRecipeItem(id: Int64(id) ?? 999, title: "Detailed Recipe")
+    }
+
+    func getRandomRecipe() async throws -> RecipeItem {
+        return sampleRecipeItem(id: 100, title: "Random Pick")
+    }
+
+    func saveRecipe(_ item: RecipeItem) throws {}
+
+    func updateFavorite(id: Int64, isFavorite: Bool) throws {}
+
+    func isFavourite(id: Int64) -> Bool {
+        return false
+    }
+
+    func getAllFavoriteRecipes() throws -> [RecipeItem] {
+        return [sampleRecipeItem(id: 200, title: "Fav Recipe")]
+    }
+
+    func setRecipeInList(_ item: RecipeItem, type: RecipeListType, isIncluded: Bool) throws {}
+    func isRecipeInList(id: Int64, type: RecipeListType) -> Bool { false }
+    func getRecipesInList(type: RecipeListType) async throws -> [RecipeItem] { [] }
+    func recordRecipeView(id: Int64) throws {}
+    func resetList(type: RecipeListType) throws {}
+    func getListCount(type: RecipeListType) throws -> Int { 0 }
+
+    private func sampleRecipeItem(id: Int64, title: String) -> RecipeItem {
+        RecipeItem(
+            id: id,
+            title: title,
+            description: "A delicious mock recipe.",
+            category: "MockCategory",
+            area: "MockArea",
+            imageUrl: "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg",
+            youtubeLink: "https://youtube.com/mockvideo",
+            ingredients: ["MockIngredient: 1 cup", "Salt: 1 tsp"],
+            measures: [],
+            instructions: ["Step 1", "Step 2"],
+            tags: [],
+            isFavorite: false)
+    }
 }
 
 enum TestError: LocalizedError {
     case expected
+    case timedOut
 
     var errorDescription: String? {
         switch self {
         case .expected:
             return "Expected failure"
+        case .timedOut:
+            return "Timed out waiting for test condition"
         }
-    }
-}
-
-extension RecipeItem {
-    func with(isFavorite: Bool) -> RecipeItem {
-        RecipeItem(
-            id: id,
-            title: title,
-            description: description,
-            category: category,
-            area: area,
-            imageUrl: imageUrl,
-            youtubeLink: youtubeLink,
-            ingredients: ingredients,
-            measures: measures,
-            instructions: instructions,
-            tags: tags,
-            isFavorite: isFavorite
-        )
     }
 }
 

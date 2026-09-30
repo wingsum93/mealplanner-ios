@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SpiningCatLoadingView: View {
-    var message: String? = nil
+    var message: LocalizedStringKey? = nil
     var animationName: String = "spining-cat-loading" // 你的 JSON 檔案名（不含 .json）
 
     var body: some View {

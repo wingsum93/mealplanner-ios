@@ -10,7 +10,7 @@ import SwiftUI
 struct RecipeMainPage: View {
     @StateObject var viewModel: FeatureViewModel
     @EnvironmentObject private var appRouter: AppRouter
-    @EnvironmentObject private var favVM: FavouriteViewModel
+    @EnvironmentObject private var myListVM: MyListViewModel
     let heroNamespace: Namespace.ID
     @State private var searchRevealOrigin: CGPoint?
     
@@ -66,7 +66,7 @@ struct RecipeMainPage: View {
                             },
                             onFavoriteToggle: { item, isFavorite in
                                 viewModel.onIntent(.updateSearchFavorite(id: item.id, isFavorite: isFavorite))
-                                favVM.onIntent(.toggleFavorite(item))
+                                myListVM.onIntent(.toggleFavorite(item))
                             }
                         )
                         .searchNavigationTransition(sourceID: HeroSearchTransition.searchEntryID, in: heroNamespace)
@@ -114,8 +114,8 @@ struct RecipeMainPage: View {
 }
 
 enum HeroSearchTransition {
-    static let searchEntryID = "home.searchEntry.hero"
-    static let coordinateSpace = "home.searchRevealSpace"
+    static let searchEntryID = "recipe.searchEntry.hero"
+    static let coordinateSpace = "recipe.searchRevealSpace"
 }
 
 struct SearchEntryCenterPreferenceKey: PreferenceKey {
