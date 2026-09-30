@@ -43,18 +43,37 @@ struct PlanState: Equatable {
     var timeboxes: Set<PlanTimebox> = [.lunch, .dinner]
 
     var selectedTab: PlanSourceTab = .favourites
-    var favourites: [UIRecipeItem] = []
-    var mastered: [UIRecipeItem] = []
-    var recent: [UIRecipeItem] = []
-    var randomPool: [UIRecipeItem] = []
+    var favourites: [UIRecipeItem] = [] {
+        didSet { refreshMealsById() }
+    }
+    var mastered: [UIRecipeItem] = [] {
+        didSet { refreshMealsById() }
+    }
+    var recent: [UIRecipeItem] = [] {
+        didSet { refreshMealsById() }
+    }
+    var randomPool: [UIRecipeItem] = [] {
+        didSet { refreshMealsById() }
+    }
 
-    var selectedMealIds: Set<Int64> = []
-    var schedule: [PlanSlot] = []
-    var ingredients: [PlanIngredient] = []
+    var selectedMealIds: Set<Int64> = [] {
+        didSet { selectedMealIdsSorted = selectedMealIds.sorted() }
+    }
+    var schedule: [PlanSlot] = [] {
+        didSet { refreshMealSlotsByDay() }
+    }
+    var ingredients: [PlanIngredient] = [] {
+        didSet { refreshIngredientDerivedData() }
+    }
     var planName: String = ""
     var adjustCount: Int = 0
     var isLoadingMeals = false
     var isLoadingRandom = false
+    private(set) var selectedMealIdsSorted: [Int64] = []
+    private(set) var mealSlotsByDay: [(date: Date, slots: [PlanSlot])] = []
+    private(set) var ingredientGroups: [(category: IngredientCategory, items: [PlanIngredient])] = []
+    private(set) var checkedIngredientCount: Int = 0
+    private(set) var mealsById: [Int64: UIRecipeItem] = [:]
 
     // MARK: Derived
     var dayDates: [Date] {
@@ -75,10 +94,6 @@ struct PlanState: Equatable {
 
     var selectedMealCount: Int { selectedMealIds.count }
 
-    var selectedMealIdsSorted: [Int64] {
-        selectedMealIds.sorted()
-    }
-
     var currentTabMeals: [UIRecipeItem] {
         switch selectedTab {
         case .favourites: return favourites
@@ -88,37 +103,34 @@ struct PlanState: Equatable {
         }
     }
 
-    var mealSlotsByDay: [(date: Date, slots: [PlanSlot])] {
+    mutating func refreshMealSlotsByDay() {
         let grouped = Dictionary(grouping: schedule, by: { Calendar.current.startOfDay(for: $0.date) })
-        return grouped
+        mealSlotsByDay = grouped
             .map { (date: $0.key, slots: $0.value.sorted { $0.displayOrder < $1.displayOrder }) }
             .sorted { $0.date < $1.date }
     }
 
-    var ingredientGroups: [(category: IngredientCategory, items: [PlanIngredient])] {
+    mutating func refreshIngredientDerivedData() {
         let grouped = Dictionary(grouping: ingredients, by: \.category)
-        return IngredientCategory.allCases.compactMap { category in
+        ingredientGroups = IngredientCategory.allCases.compactMap { category in
             let items = grouped[category] ?? []
             return items.isEmpty ? nil : (category, items)
         }
-    }
-
-    var checkedIngredientCount: Int {
-        ingredients.reduce(into: 0) { count, ingredient in
+        checkedIngredientCount = ingredients.reduce(into: 0) { count, ingredient in
             if ingredient.isChecked {
                 count += 1
             }
         }
     }
 
-    var mealsById: [Int64: UIRecipeItem] {
+    mutating func refreshMealsById() {
         var lookup: [Int64: UIRecipeItem] = [:]
         for item in favourites + mastered + recent + randomPool {
             if let id = Int64(item.id) {
                 lookup[id] = item
             }
         }
-        return lookup
+        mealsById = lookup
     }
 
     func meal(id: Int64) -> UIRecipeItem? {
@@ -140,5 +152,29 @@ struct PlanState: Equatable {
         case .ingredients, .save:
             return true
         }
+    }
+
+    static func == (lhs: PlanState, rhs: PlanState) -> Bool {
+        lhs.phase == rhs.phase
+            && lhs.plans == rhs.plans
+            && lhs.errorMessage == rhs.errorMessage
+            && lhs.undoPlanId == rhs.undoPlanId
+            && lhs.isWizardPresented == rhs.isWizardPresented
+            && lhs.step == rhs.step
+            && lhs.startDate == rhs.startDate
+            && lhs.endDate == rhs.endDate
+            && lhs.timeboxes == rhs.timeboxes
+            && lhs.selectedTab == rhs.selectedTab
+            && lhs.favourites == rhs.favourites
+            && lhs.mastered == rhs.mastered
+            && lhs.recent == rhs.recent
+            && lhs.randomPool == rhs.randomPool
+            && lhs.selectedMealIds == rhs.selectedMealIds
+            && lhs.schedule == rhs.schedule
+            && lhs.ingredients == rhs.ingredients
+            && lhs.planName == rhs.planName
+            && lhs.adjustCount == rhs.adjustCount
+            && lhs.isLoadingMeals == rhs.isLoadingMeals
+            && lhs.isLoadingRandom == rhs.isLoadingRandom
     }
 }

@@ -10,6 +10,7 @@ import Kingfisher
 struct RecipeCardSmall: View {
     let item: UIRecipeItem
     var width: CGFloat
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -20,6 +21,13 @@ struct RecipeCardSmall: View {
                 .onFailureView {
                     ImageLoadFailureView()
                 }
+                .setProcessor(
+                    DownsamplingImageProcessor(
+                        size: CGSize(width: width * displayScale, height: width * displayScale)
+                    )
+                )
+                .scaleFactor(displayScale)
+                .cancelOnDisappear(true)
                 .resizable()
                 .scaledToFill()
                 .frame(width: width, height: width) // square image
@@ -29,9 +37,8 @@ struct RecipeCardSmall: View {
                 .font(.subheadline)
                 .lineLimit(1)
 
-            let sortedTags = item.ingredients.sorted { $0.count < $1.count }
             TagChipsRow(
-                tags: sortedTags,
+                tags: item.displayTags,
                 availableWidth: width,
                 spacing: 6
             )

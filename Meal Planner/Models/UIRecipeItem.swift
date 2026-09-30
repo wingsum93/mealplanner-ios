@@ -17,11 +17,41 @@ struct UIRecipeItem: Identifiable, Equatable,Hashable {
     let measures: [String]
     let instructions: [String]
     let tags: [String] // can be empty
+    let displayTags: [String]
     let youtubeLink: String
     var stepCount:Int  {
         self.instructions.count
     }
     var isFavorite: Bool = false
+
+    init(
+        id: String,
+        name: String,
+        description: String,
+        area: String?,
+        category: String?,
+        thumbURL: URL?,
+        ingredients: [String],
+        measures: [String],
+        instructions: [String],
+        tags: [String],
+        youtubeLink: String,
+        isFavorite: Bool = false
+    ) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.area = area
+        self.category = category
+        self.thumbURL = thumbURL
+        self.ingredients = ingredients
+        self.measures = measures
+        self.instructions = instructions
+        self.tags = tags
+        self.displayTags = (tags.isEmpty ? ingredients : tags).sorted { $0.count < $1.count }
+        self.youtubeLink = youtubeLink
+        self.isFavorite = isFavorite
+    }
 }
 
 extension UIRecipeItem {

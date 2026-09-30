@@ -53,7 +53,8 @@ struct TitleListScreen: View {
                     )
                 } else {
                     LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
-                        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        ForEach(items.indices, id: \.self) { index in
+                            let item = items[index]
                             RecipeCardSmall(item: item, width: metrics.cellWidth)
                                 .accessibilityIdentifier("titleList.recipeCard.\(index)")
                                 .onTapGesture { onTapItem(item) }

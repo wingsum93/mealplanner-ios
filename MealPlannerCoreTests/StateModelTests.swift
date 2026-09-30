@@ -26,6 +26,24 @@ struct StateModelTests {
         #expect(state.filteredItems.map(\.id) == ["1"])
     }
 
+    @Test func uiRecipeItemPrecomputesDisplayTags() {
+        let item = UIRecipeItem(
+            id: "1",
+            name: "Recipe",
+            description: "",
+            area: nil,
+            category: nil,
+            thumbURL: nil,
+            ingredients: ["long ingredient", "egg", "rice"],
+            measures: [],
+            instructions: [],
+            tags: [],
+            youtubeLink: ""
+        )
+
+        #expect(item.displayTags == ["egg", "rice", "long ingredient"])
+    }
+
     @Test func detailStatePresentationFollowsSelectedItem() {
         #expect(DetailState().isPresented == false)
         #expect(DetailState(item: UIRecipeItem.new(id: "1", name: "Recipe")).isPresented)

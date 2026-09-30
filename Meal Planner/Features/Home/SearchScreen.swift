@@ -117,7 +117,8 @@ private struct SearchResultsList: View {
 
     var body: some View {
         List {
-            ForEach(Array(searchResults.enumerated()), id: \.element.id) { index, item in
+            ForEach(searchResults.indices, id: \.self) { index in
+                let item = searchResults[index]
                 SearchRecipeRow(item: item, showFavorite: true, onFavoriteToggle: { isFavorite in
                     onFavoriteToggle(item, isFavorite)
                 })

@@ -134,6 +134,73 @@ struct PlanFeatureTests {
         #expect(vm.plan(id: old.id)?.snapshot(for: 2) == nil)
         #expect(repository.plan.mealSnapshots.count == 1)
     }
+
+    @Test @MainActor func wizardDerivedStateRefreshesAfterScheduleAndIngredientIntents() async throws {
+        let first = RecipeItem(
+            id: 1,
+            title: "Beef Bowl",
+            description: "",
+            category: "Main",
+            area: "JP",
+            imageUrl: "",
+            youtubeLink: "",
+            ingredients: ["Beef", "Rice"],
+            measures: ["200 g", "1 cup"],
+            instructions: [],
+            tags: [],
+            isFavorite: true
+        )
+        let second = RecipeItem(
+            id: 2,
+            title: "Chicken Bowl",
+            description: "",
+            category: "Main",
+            area: "JP",
+            imageUrl: "",
+            youtubeLink: "",
+            ingredients: ["Chicken"],
+            measures: ["150 g"],
+            instructions: [],
+            tags: [],
+            isFavorite: true
+        )
+        let recipeRepository = FavoriteRecipeRepository(favorites: [first, second])
+        let vm = PlanViewModel(planRepository: PlanFeatureRepository(plan: plan()), recipeRepository: recipeRepository)
+
+        vm.onIntent(.openWizard)
+        try await waitUntil {
+            !vm.state.isLoadingMeals && vm.state.favourites.map(\.id) == ["1", "2"]
+        }
+        vm.onIntent(.setStartDate(date(24)))
+        vm.onIntent(.setEndDate(date(24)))
+        vm.onIntent(.toggleMeal(1))
+        vm.onIntent(.toggleMeal(2))
+        #expect(vm.state.selectedMealIdsSorted == [1, 2])
+        #expect(vm.state.mealsById[1]?.name == "Beef Bowl")
+
+        vm.onIntent(.generateSchedule)
+        #expect(vm.state.mealSlotsByDay.count == SlotMath.minDays)
+        #expect(vm.state.schedule.count == SlotMath.minDays * 2)
+
+        let firstSlot = try #require(vm.state.schedule.first)
+        vm.onIntent(.replaceSlot(slotId: firstSlot.id, mealId: 2))
+        let replacedSlotIsCached = vm.state.mealSlotsByDay
+            .flatMap(\.slots)
+            .contains { $0.id == firstSlot.id && $0.mealId == 2 }
+        #expect(replacedSlotIsCached)
+
+        vm.onIntent(.goToStep(.schedule))
+        vm.onIntent(.nextStep)
+        #expect(vm.state.ingredientGroups.isEmpty == false)
+        #expect(vm.state.checkedIngredientCount == 0)
+
+        let firstIngredient = try #require(vm.state.ingredients.first)
+        vm.onIntent(.toggleIngredient(firstIngredient.id))
+        #expect(vm.state.checkedIngredientCount == 1)
+
+        vm.onIntent(.clearDay(date(24)))
+        #expect(vm.state.mealSlotsByDay.count == SlotMath.minDays - 1)
+    }
 }
 
 private final class PlanTestClock {

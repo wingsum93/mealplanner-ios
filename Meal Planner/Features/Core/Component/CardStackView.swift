@@ -5,6 +5,7 @@
 //  Created by eric ho on 29/8/2025.
 //
 import SwiftUI
+import Kingfisher
 
 enum SwipeDirection {
     case left
@@ -112,41 +113,36 @@ struct CardStackView: View {
             let rotation = CardStackLayout.rotationDegrees(dragX: dragOffset.width, maxX: arc.maxX)
             let swipeProgress = swipeProgress(for: arc)
 
-            ZStack(alignment: .top) {
-                CardStackCardsLayer(
-                    visibleItems: visibleItems,
-                    layout: layout,
-                    cardWidth: cardWidth,
-                    cardHeight: cardHeight,
-                    stackHeight: stackHeight,
-                    dragOffset: dragOffset,
-                    rotationDegrees: rotation,
-                    swipeDirection: swipeDirection,
-                    swipeProgress: swipeProgress,
-                    onDragChanged: { value in
-                        updateDrag(value, arc: arc)
-                    },
-                    onDragEnded: { value in
-                        finishDrag(value, arc: arc)
-                    }
-                )
-                .frame(width: cardWidth, height: stackHeight, alignment: .top)
-                .frame(maxWidth: .infinity, alignment: .center)
-
+            CardStackCardsLayer(
+                visibleItems: visibleItems,
+                layout: layout,
+                cardWidth: cardWidth,
+                cardHeight: cardHeight,
+                stackHeight: stackHeight,
+                dragOffset: dragOffset,
+                rotationDegrees: rotation,
+                swipeDirection: swipeDirection,
+                swipeProgress: swipeProgress,
+                onDragChanged: { value in
+                    updateDrag(value, arc: arc)
+                },
+                onDragEnded: { value in
+                    finishDrag(value, arc: arc)
+                }
+            )
+            .frame(width: cardWidth, height: stackHeight, alignment: .top)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .overlay(alignment: .bottom) {
                 if let lastSwiped {
-                    VStack {
-                        Spacer()
                         CardStackUndoButton(
                             isDisabled: isAnimatingOut,
                             action: {
                                 undoSwipe(last: lastSwiped, arc: arc)
                             }
                         )
-                    }
                     .transition(.opacity)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
 
@@ -268,40 +264,39 @@ private struct SwipeCardView: View {
     let swipeDirection: SwipeDirection?
     let swipeProgress: CGFloat
     private let cardShape = RoundedRectangle(cornerRadius: 28, style: .continuous)
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
-        cardShape
-            .fill(Color(.systemGray5))
-            .overlay {
-                imageLayer
-            }
-            .overlay {
-                LinearGradient(
+        ZStack(alignment: .bottomLeading) {
+            cardShape
+                .fill(Color(.systemGray5))
+
+            imageLayer
+
+            LinearGradient(
                 colors: [.clear, .black.opacity(0.65)],
                 startPoint: .top,
                 endPoint: .bottom
             )
-            }
-            .overlay(alignment: .bottomLeading) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(item.name)
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(.white)
-                        .lineLimit(2)
-                    if let area = item.area, let category = item.category {
-                        Text("\(area) • \(category)")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white.opacity(0.85))
-                    }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(item.name)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
+                if let area = item.area, let category = item.category {
+                    Text("\(area) • \(category)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.85))
                 }
-                .padding(20)
             }
-            .overlay {
-                SwipeCardFeedbackOverlay(
-                    direction: swipeDirection,
-                    progress: swipeProgress
-                )
-            }
+            .padding(20)
+
+            SwipeCardFeedbackOverlay(
+                direction: swipeDirection,
+                progress: swipeProgress
+            )
+        }
         .clipShape(cardShape)
         .contentShape(cardShape)
         .accessibilityElement(children: .contain)
@@ -310,23 +305,36 @@ private struct SwipeCardView: View {
     }
 
     private var imageLayer: some View {
-        AsyncImage(url: item.thumbURL) { phase in
-            if let image = phase.image {
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } else {
+        KFImage(item.thumbURL)
+            .placeholder {
                 Rectangle()
                     .fill(Color(.systemGray5))
                     .overlay(
                         ProgressView()
                     )
             }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped()
-        .accessibilityElement(children: .ignore)
-        .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCardImage : "randomPick.card.image")
+            .onFailureView {
+                Rectangle()
+                    .fill(Color(.systemGray5))
+                    .overlay {
+                        Image(systemName: "photo")
+                            .font(.system(size: 48, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+            }
+            .setProcessor(
+                DownsamplingImageProcessor(
+                    size: CGSize(width: 340 * displayScale, height: 604 * displayScale)
+                )
+            )
+            .scaleFactor(displayScale)
+            .cancelOnDisappear(true)
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .accessibilityElement(children: .ignore)
+            .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCardImage : "randomPick.card.image")
     }
 }
 

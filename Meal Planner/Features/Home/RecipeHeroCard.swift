@@ -9,6 +9,7 @@ import Kingfisher
 
 struct RecipeHeroCard: View {
     let item: UIRecipeItem
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -20,6 +21,13 @@ struct RecipeHeroCard: View {
                 .onFailureView {
                     ImageLoadFailureView()
                 }
+                .setProcessor(
+                    DownsamplingImageProcessor(
+                        size: CGSize(width: 430 * displayScale, height: 200 * displayScale)
+                    )
+                )
+                .scaleFactor(displayScale)
+                .cancelOnDisappear(true)
                 .resizable()
                 .scaledToFill()
                 .frame(height: 200)

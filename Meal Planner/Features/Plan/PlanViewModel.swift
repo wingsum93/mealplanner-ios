@@ -102,6 +102,7 @@ final class PlanViewModel: ObservableObject {
         case .replaceSlot(let slotId, let mealId):
             if let index = state.schedule.firstIndex(where: { $0.id == slotId }) {
                 state.schedule[index].mealId = mealId
+                state.refreshMealSlotsByDay()
                 state.adjustCount += 1
             }
         case .swapSlots(let first, let second):
@@ -114,6 +115,7 @@ final class PlanViewModel: ObservableObject {
         case .toggleIngredient(let id):
             if let index = state.ingredients.firstIndex(where: { $0.id == id }) {
                 state.ingredients[index].isChecked.toggle()
+                state.refreshIngredientDerivedData()
             }
         case .toggleCategory(let category):
             toggleCategory(category)
@@ -361,6 +363,7 @@ final class PlanViewModel: ObservableObject {
         let mealId = state.schedule[firstIndex].mealId
         state.schedule[firstIndex].mealId = state.schedule[secondIndex].mealId
         state.schedule[secondIndex].mealId = mealId
+        state.refreshMealSlotsByDay()
         state.adjustCount += 1
     }
 
@@ -380,6 +383,7 @@ final class PlanViewModel: ObservableObject {
         for index in indices {
             state.ingredients[index].isChecked = !allChecked
         }
+        state.refreshIngredientDerivedData()
     }
 
     private func suggestedPlanName() -> String {

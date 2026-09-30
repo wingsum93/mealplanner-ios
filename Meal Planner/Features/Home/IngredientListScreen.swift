@@ -44,36 +44,35 @@ struct IngredientListScreen: View {
         GeometryReader { proxy in
             let metrics = gridMetrics(for: proxy.size.width)
 
-            ZStack(alignment: .topLeading) {
-                ScrollView {
-                    if isInitialLoading {
-                        IngredientListSkeletonGrid(
-                            columns: metrics.columns,
-                            cellWidth: metrics.cellWidth,
-                            spacing: interItemSpacing,
-                            hPadding: hPadding
-                        )
-                    } else {
-                        LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
-                            ForEach(items.indices, id: \.self) { index in
-                                let item = items[index]
+            ScrollView {
+                if isInitialLoading {
+                    IngredientListSkeletonGrid(
+                        columns: metrics.columns,
+                        cellWidth: metrics.cellWidth,
+                        spacing: interItemSpacing,
+                        hPadding: hPadding
+                    )
+                } else {
+                    LazyVGrid(columns: metrics.columns, spacing: interItemSpacing) {
+                        ForEach(items.indices, id: \.self) { index in
+                            let item = items[index]
 
-                                Button {
-                                    onTapIngredient(item)
-                                } label: {
-                                    IngredientSquareCard(name: item.name, size: metrics.cellWidth)
-                                }
-                                .buttonStyle(.plain)
-                                    .accessibilityIdentifier("ingredientList.card.\(index)")
+                            Button {
+                                onTapIngredient(item)
+                            } label: {
+                                IngredientSquareCard(name: item.name, size: metrics.cellWidth)
                             }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("ingredientList.card.\(index)")
                         }
-                        .accessibilityIdentifier("ingredientList.grid")
-                        .padding(.horizontal, hPadding)
-                        .padding(.top, 12)
-                        .padding(.bottom, 24)
                     }
+                    .accessibilityIdentifier("ingredientList.grid")
+                    .padding(.horizontal, hPadding)
+                    .padding(.top, 12)
+                    .padding(.bottom, 24)
                 }
-
+            }
+            .overlay(alignment: .topLeading) {
                 IngredientListAccessibilityMarker(identifier: "ingredientList.screen")
                     .frame(width: 1, height: 1)
             }

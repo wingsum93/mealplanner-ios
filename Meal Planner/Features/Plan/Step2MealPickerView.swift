@@ -94,12 +94,20 @@ private struct MealPickerRow: View {
     let item: UIRecipeItem
     let isSelected: Bool
     let onToggle: () -> Void
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         Button(action: onToggle) {
             HStack(spacing: 12) {
                 KFImage(item.thumbURL)
                     .placeholder { Color.gray.opacity(0.3) }
+                    .setProcessor(
+                        DownsamplingImageProcessor(
+                            size: CGSize(width: 52 * displayScale, height: 52 * displayScale)
+                        )
+                    )
+                    .scaleFactor(displayScale)
+                    .cancelOnDisappear(true)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 52, height: 52)

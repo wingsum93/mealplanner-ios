@@ -95,7 +95,7 @@ private struct HomeContent: View {
 
     var body: some View {
         let previewItems = Array(home.randomTen.prefix(3))
-        let visibleIngredients = Array(ingredients.prefix(20))
+        let visibleIngredientCount = min(ingredients.count, 20)
 
         Group {
             // 1) Featured random recipe
@@ -114,8 +114,9 @@ private struct HomeContent: View {
             // 2) Areas horizontal
             SectionHeader("Areas")
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(Array(home.areas.enumerated()), id: \.element) { index, area in
+                LazyHStack(spacing: 12) {
+                    ForEach(home.areas.indices, id: \.self) { index in
+                        let area = home.areas[index]
                         Button {
                             onAreaTap(area)
                         } label: {
@@ -131,8 +132,9 @@ private struct HomeContent: View {
             // 3) Categories horizontal
             SectionHeader("Categories")
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(Array(home.categories.enumerated()), id: \.element) { index, cat in
+                LazyHStack(spacing: 12) {
+                    ForEach(home.categories.indices, id: \.self) { index in
+                        let cat = home.categories[index]
                         Button {
                             onCategoryTap(cat)
                         } label: {
@@ -146,10 +148,10 @@ private struct HomeContent: View {
             }
 
             // 4) Ingredients horizontal
-            if !visibleIngredients.isEmpty {
+            if visibleIngredientCount > 0 {
                 SectionHeader("Ingredients")
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                    LazyHStack(spacing: 12) {
                         Button {
                             onIngredientListTap()
                         } label: {
@@ -162,7 +164,8 @@ private struct HomeContent: View {
                         .accessibilityLabel("See all ingredients")
                         .accessibilityIdentifier("recipe.ingredientsSeeAll")
 
-                        ForEach(Array(visibleIngredients.enumerated()), id: \.element.id) { index, ingredient in
+                        ForEach(0..<visibleIngredientCount, id: \.self) { index in
+                            let ingredient = ingredients[index]
                             Button {
                                 onIngredientTap(ingredient.name)
                             } label: {
@@ -190,8 +193,9 @@ private struct HomeContent: View {
             .padding(.bottom, 8)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(Array(home.randomTen.enumerated()), id: \.element.id) { index, item in
+                LazyHStack(spacing: 12) {
+                    ForEach(home.randomTen.indices, id: \.self) { index in
+                        let item = home.randomTen[index]
                         RecipeCardSmall(item: item, width: 150)
                             .accessibilityIdentifier("recipe.randomRecipeCard.\(index)")
                             .onTapGesture { onRecipeTap(item) }
@@ -204,6 +208,7 @@ private struct HomeContent: View {
 
 private struct RandomPickFeatureCard: View {
     let items: [UIRecipeItem]
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         HStack(spacing: 14) {
@@ -270,6 +275,13 @@ private struct RandomPickFeatureCard: View {
                     .onFailureView {
                         ImageLoadFailureView(iconSize: 16)
                     }
+                    .setProcessor(
+                        DownsamplingImageProcessor(
+                            size: CGSize(width: 42 * displayScale, height: 42 * displayScale)
+                        )
+                    )
+                    .scaleFactor(displayScale)
+                    .cancelOnDisappear(true)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 42, height: 42)

@@ -96,6 +96,7 @@ private struct DetailHeaderImage: View {
     let onToggleMastered: () -> Void
     let onToggleFavorite: () -> Void
     let onClose: () -> Void
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         KFImage(item.thumbURL)
@@ -105,6 +106,13 @@ private struct DetailHeaderImage: View {
             .onFailureView {
                 ImageLoadFailureView(iconSize: 48)
             }
+            .setProcessor(
+                DownsamplingImageProcessor(
+                    size: CGSize(width: 430 * displayScale, height: 280 * displayScale)
+                )
+            )
+            .scaleFactor(displayScale)
+            .cancelOnDisappear(true)
             .resizable()
             .scaledToFill()
             .frame(height: 280)
@@ -411,6 +419,7 @@ private struct IngredientsTab: View {
 private struct IngredientRow: View {
     let ingredient: String
     let measure: String
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         HStack(spacing: 12) {
@@ -428,6 +437,13 @@ private struct IngredientRow: View {
                     ImageLoadFailureView(iconSize: 18)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
+                .setProcessor(
+                    DownsamplingImageProcessor(
+                        size: CGSize(width: 48 * displayScale, height: 48 * displayScale)
+                    )
+                )
+                .scaleFactor(displayScale)
+                .cancelOnDisappear(true)
                 .resizable()
                 .scaledToFill()
                 .frame(width: 48, height: 48)

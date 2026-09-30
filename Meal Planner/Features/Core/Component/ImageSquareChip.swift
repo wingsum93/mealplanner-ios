@@ -11,6 +11,7 @@ struct ImageSquareChip: View {
     var text: String
     var imageURL: URL? = nil
     var size: CGFloat = 88
+    @Environment(\.displayScale) private var displayScale
     
     init(text: String,imageLink:String ,size: CGFloat=88) {
         self.text = text
@@ -29,6 +30,13 @@ struct ImageSquareChip: View {
                 .onFailureView {
                     ImageLoadFailureView()
                 }
+                .setProcessor(
+                    DownsamplingImageProcessor(
+                        size: CGSize(width: size * displayScale, height: size * displayScale)
+                    )
+                )
+                .scaleFactor(displayScale)
+                .cancelOnDisappear(true)
                 .scaledToFill()
                 .frame(width: size, height: size)
                 .clipped()

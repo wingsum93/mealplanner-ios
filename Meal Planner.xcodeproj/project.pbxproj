@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6BAD860B2E4E80DC009D3A45 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6BAD860A2E4E80DC009D3A45 /* Kingfisher */; };
+		6BAD860C2E4E80DC009D3A45 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6BAD860A2E4E80DC009D3A45 /* Kingfisher */; };
 		6BAD86B52E4F443A009D3A45 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 6BAD86B42E4F443A009D3A45 /* Lottie */; };
 		6BC0DE00000000000000000B /* Meal Planner/AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000000A /* Meal Planner/AppRouter.swift */; };
 		6BC0DE00000000000000000D /* Meal Planner/Core/DataSource/Local/RecipeLocalDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC0DE00000000000000000C /* Meal Planner/Core/DataSource/Local/RecipeLocalDataSource.swift */; };
@@ -203,6 +204,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6BAD860C2E4E80DC009D3A45 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -401,6 +403,7 @@
 			);
 			name = MealPlannerCoreTests;
 			packageProductDependencies = (
+				6BAD860A2E4E80DC009D3A45 /* Kingfisher */,
 			);
 			productName = MealPlannerCoreTests;
 			productReference = 6BC0DE000000000000000001 /* MealPlannerCoreTests.xctest */;
