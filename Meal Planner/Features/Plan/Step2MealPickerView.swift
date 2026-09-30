@@ -12,6 +12,8 @@ struct Step2MealPickerView: View {
     @ObservedObject var vm: PlanViewModel
 
     var body: some View {
+        let selectedMealIds = vm.state.selectedMealIds
+
         VStack(alignment: .leading, spacing: 16) {
             Picker("Source", selection: Binding(
                 get: { vm.state.selectedTab },
@@ -24,7 +26,13 @@ struct Step2MealPickerView: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("planWizard.sourceTab")
 
-            header
+            MealPickerHeader(
+                selectedMealCount: vm.state.selectedMealCount,
+                slotCount: vm.state.slotCount,
+                selectedTab: vm.state.selectedTab,
+                isLoadingRandom: vm.state.isLoadingRandom,
+                onRegenerateRandom: { vm.onIntent(.regenerateRandom) }
+            )
 
             if vm.state.selectedTab == .random, vm.state.isLoadingRandom {
                 ProgressView("Loading random meals…")
@@ -37,55 +45,58 @@ struct Step2MealPickerView: View {
             } else {
                 LazyVStack(spacing: 8) {
                     ForEach(vm.state.currentTabMeals) { item in
-                        mealRow(item)
+                        MealPickerRow(
+                            item: item,
+                            isSelected: selectedMealIds.contains(Int64(item.id) ?? -1),
+                            onToggle: {
+                                if let id = Int64(item.id) {
+                                    vm.onIntent(.toggleMeal(id))
+                                }
+                            }
+                        )
                     }
                 }
             }
         }
     }
+}
 
-    private var header: some View {
+private struct MealPickerHeader: View {
+    let selectedMealCount: Int
+    let slotCount: Int
+    let selectedTab: PlanSourceTab
+    let isLoadingRandom: Bool
+    let onRegenerateRandom: () -> Void
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("\(vm.state.selectedMealCount) of \(vm.state.slotCount) slots filled")
+            Text("\(selectedMealCount) of \(slotCount) slots filled")
                 .font(.subheadline.weight(.semibold))
                 .accessibilityIdentifier("planWizard.slotsFilled")
             Text("Pick the meals you want. Repeats fill any remaining slots.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            if vm.state.selectedTab == .random {
-                Button {
-                    vm.onIntent(.regenerateRandom)
-                } label: {
+            if selectedTab == .random {
+                Button(action: onRegenerateRandom) {
                     Label("Surprise me again", systemImage: "arrow.clockwise")
                         .font(.subheadline)
                 }
                 .padding(.top, 4)
-                .disabled(vm.state.isLoadingRandom)
+                .disabled(isLoadingRandom)
                 .accessibilityIdentifier("planWizard.regenerateRandom")
             }
         }
     }
+}
 
-    private var emptyTab: some View {
-        EmptyStateView(
-            title: "Nothing here yet",
-            description: "This list is empty. Try another tab or add meals from the Recipe tab.",
-            systemImage: "fork.knife",
-            actionTitle: "Try Random",
-            onAction: { vm.onIntent(.selectTab(.random)) }
-        )
-        .frame(minHeight: 220)
-        .accessibilityIdentifier("planWizard.emptyTab")
-    }
+private struct MealPickerRow: View {
+    let item: UIRecipeItem
+    let isSelected: Bool
+    let onToggle: () -> Void
 
-    private func mealRow(_ item: UIRecipeItem) -> some View {
-        let selected = vm.state.isSelected(Int64(item.id) ?? -1)
-        return Button {
-            if let id = Int64(item.id) {
-                vm.onIntent(.toggleMeal(id))
-            }
-        } label: {
+    var body: some View {
+        Button(action: onToggle) {
             HStack(spacing: 12) {
                 KFImage(item.thumbURL)
                     .placeholder { Color.gray.opacity(0.3) }
@@ -108,9 +119,9 @@ struct Step2MealPickerView: View {
 
                 Spacer()
 
-                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
             }
             .padding(10)
             .background(
@@ -121,5 +132,19 @@ struct Step2MealPickerView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("planWizard.mealRow.\(item.id)")
+    }
+}
+
+private extension Step2MealPickerView {
+    var emptyTab: some View {
+        EmptyStateView(
+            title: "Nothing here yet",
+            description: "This list is empty. Try another tab or add meals from the Recipe tab.",
+            systemImage: "fork.knife",
+            actionTitle: "Try Random",
+            onAction: { vm.onIntent(.selectTab(.random)) }
+        )
+        .frame(minHeight: 220)
+        .accessibilityIdentifier("planWizard.emptyTab")
     }
 }

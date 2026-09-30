@@ -109,39 +109,39 @@ struct CardStackView: View {
                 maxX: cardWidth * 0.55,
                 centerY: size.height * 1.5
             )
+            let rotation = CardStackLayout.rotationDegrees(dragX: dragOffset.width, maxX: arc.maxX)
+            let swipeProgress = swipeProgress(for: arc)
 
             ZStack(alignment: .top) {
-                ZStack(alignment: .top) {
-                    ForEach(visibleItems) { visibleItem in
-                        let index = visibleItem.offset
-                        let item = visibleItem.element
-                        let isTopCard = index == 0
-                        SwipeCardView(
-                            item: item,
-                            isTopCard: isTopCard,
-                            swipeDirection: isTopCard ? swipeDirection : nil,
-                            swipeProgress: isTopCard ? swipeProgress(for: arc) : 0
-                        )
-                            .frame(width: cardWidth, height: cardHeight)
-                            .scaleEffect(layout.scale(for: index), anchor: .top)
-                            .opacity(layout.opacity(for: index))
-                            .offset(layout.offset(for: index))
-                            .offset(index == 0 ? dragOffset : .zero)
-                            .rotationEffect(index == 0 ? Angle(degrees: rotation(for: arc)) : .zero)
-                            .zIndex(Double(visibleItems.count - index))
-                            .allowsHitTesting(index == 0)
-                            .gesture(index == 0 ? dragGesture(arc: arc) : nil)
-                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: dragOffset)
-                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: items)
+                CardStackCardsLayer(
+                    visibleItems: visibleItems,
+                    layout: layout,
+                    cardWidth: cardWidth,
+                    cardHeight: cardHeight,
+                    stackHeight: stackHeight,
+                    dragOffset: dragOffset,
+                    rotationDegrees: rotation,
+                    swipeDirection: swipeDirection,
+                    swipeProgress: swipeProgress,
+                    onDragChanged: { value in
+                        updateDrag(value, arc: arc)
+                    },
+                    onDragEnded: { value in
+                        finishDrag(value, arc: arc)
                     }
-                }
+                )
                 .frame(width: cardWidth, height: stackHeight, alignment: .top)
                 .frame(maxWidth: .infinity, alignment: .center)
 
                 if let lastSwiped {
                     VStack {
                         Spacer()
-                        undoButton(for: lastSwiped, arc: arc)
+                        CardStackUndoButton(
+                            isDisabled: isAnimatingOut,
+                            action: {
+                                undoSwipe(last: lastSwiped, arc: arc)
+                            }
+                        )
                     }
                     .transition(.opacity)
                 }
@@ -150,28 +150,26 @@ struct CardStackView: View {
         }
     }
 
-    private func dragGesture(arc: ArcDragGeometry) -> some Gesture {
-        DragGesture()
-            .onChanged { value in
-                guard items.first != nil, !isAnimatingOut else { return }
-                let result = arc.offset(for: value.translation.width)
-                dragOffset = result.offset
-                dragTheta = result.theta
-                swipeDirection = result.offset.width > 0 ? .right : result.offset.width < 0 ? .left : nil
+    private func updateDrag(_ value: DragGesture.Value, arc: ArcDragGeometry) {
+        guard items.first != nil, !isAnimatingOut else { return }
+        let result = arc.offset(for: value.translation.width)
+        dragOffset = result.offset
+        dragTheta = result.theta
+        swipeDirection = result.offset.width > 0 ? .right : result.offset.width < 0 ? .left : nil
+    }
+
+    private func finishDrag(_ value: DragGesture.Value, arc: ArcDragGeometry) {
+        guard items.first != nil, !isAnimatingOut else { return }
+        let result = arc.offset(for: value.translation.width)
+        if arc.isBeyondThreshold(theta: result.theta) {
+            performSwipe(direction: result.offset.width >= 0 ? .right : .left, arc: arc)
+        } else {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                dragOffset = .zero
+                dragTheta = 0
+                swipeDirection = nil
             }
-            .onEnded { value in
-                guard items.first != nil, !isAnimatingOut else { return }
-                let result = arc.offset(for: value.translation.width)
-                if arc.isBeyondThreshold(theta: result.theta) {
-                    performSwipe(direction: result.offset.width >= 0 ? .right : .left, arc: arc)
-                } else {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        dragOffset = .zero
-                        dragTheta = 0
-                        swipeDirection = nil
-                    }
-                }
-            }
+        }
     }
 
     private func performSwipe(direction: SwipeDirection, arc: ArcDragGeometry) {
@@ -197,20 +195,6 @@ struct CardStackView: View {
         }
     }
 
-    private func undoButton(for last: (item: UIRecipeItem, direction: SwipeDirection), arc: ArcDragGeometry) -> some View {
-        Button {
-            undoSwipe(last: last, arc: arc)
-        } label: {
-            Label("Undo", systemImage: "arrow.uturn.backward")
-                .font(.subheadline.weight(.semibold))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial, in: Capsule())
-        }
-        .padding(.bottom, 8)
-        .disabled(isAnimatingOut)
-    }
-
     private func undoSwipe(last: (item: UIRecipeItem, direction: SwipeDirection), arc: ArcDragGeometry) {
         guard !isAnimatingOut else { return }
         let sign: CGFloat = last.direction == .right ? 1 : -1
@@ -230,10 +214,6 @@ struct CardStackView: View {
             swipeDirection = nil
             isAnimatingOut = false
         }
-    }
-
-    private func rotation(for arc: ArcDragGeometry) -> Double {
-        CardStackLayout.rotationDegrees(dragX: dragOffset.width, maxX: arc.maxX)
     }
 
     private func swipeProgress(for arc: ArcDragGeometry) -> CGFloat {
@@ -347,6 +327,70 @@ private struct SwipeCardView: View {
         .clipped()
         .accessibilityElement(children: .ignore)
         .accessibilityIdentifier(isTopCard ? RandomPickAccessibilityID.topCardImage : "randomPick.card.image")
+    }
+}
+
+private struct CardStackCardsLayer: View {
+    let visibleItems: [CardStackVisibleItem]
+    let layout: CardStackLayout
+    let cardWidth: CGFloat
+    let cardHeight: CGFloat
+    let stackHeight: CGFloat
+    let dragOffset: CGSize
+    let rotationDegrees: Double
+    let swipeDirection: SwipeDirection?
+    let swipeProgress: CGFloat
+    let onDragChanged: (DragGesture.Value) -> Void
+    let onDragEnded: (DragGesture.Value) -> Void
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            ForEach(visibleItems) { visibleItem in
+                let index = visibleItem.offset
+                let isTopCard = index == 0
+
+                SwipeCardView(
+                    item: visibleItem.element,
+                    isTopCard: isTopCard,
+                    swipeDirection: isTopCard ? swipeDirection : nil,
+                    swipeProgress: isTopCard ? swipeProgress : 0
+                )
+                .frame(width: cardWidth, height: cardHeight)
+                .scaleEffect(layout.scale(for: index), anchor: .top)
+                .opacity(layout.opacity(for: index))
+                .offset(layout.offset(for: index))
+                .offset(isTopCard ? dragOffset : .zero)
+                .rotationEffect(isTopCard ? Angle(degrees: rotationDegrees) : .zero)
+                .zIndex(Double(visibleItems.count - index))
+                .allowsHitTesting(isTopCard)
+                .gesture(isTopCard ? dragGesture : nil)
+            }
+        }
+        .frame(width: cardWidth, height: stackHeight, alignment: .top)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: visibleItems)
+    }
+
+    private var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged(onDragChanged)
+            .onEnded(onDragEnded)
+    }
+}
+
+private struct CardStackUndoButton: View {
+    let isDisabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label("Undo", systemImage: "arrow.uturn.backward")
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial, in: Capsule())
+        }
+        .padding(.bottom, 8)
+        .disabled(isDisabled)
     }
 }
 

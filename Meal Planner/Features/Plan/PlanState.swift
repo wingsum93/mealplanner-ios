@@ -75,6 +75,10 @@ struct PlanState: Equatable {
 
     var selectedMealCount: Int { selectedMealIds.count }
 
+    var selectedMealIdsSorted: [Int64] {
+        selectedMealIds.sorted()
+    }
+
     var currentTabMeals: [UIRecipeItem] {
         switch selectedTab {
         case .favourites: return favourites
@@ -92,19 +96,33 @@ struct PlanState: Equatable {
     }
 
     var ingredientGroups: [(category: IngredientCategory, items: [PlanIngredient])] {
-        IngredientCategory.allCases.compactMap { category in
-            let items = ingredients.filter { $0.category == category }
+        let grouped = Dictionary(grouping: ingredients, by: \.category)
+        return IngredientCategory.allCases.compactMap { category in
+            let items = grouped[category] ?? []
             return items.isEmpty ? nil : (category, items)
         }
     }
 
     var checkedIngredientCount: Int {
-        ingredients.filter(\.isChecked).count
+        ingredients.reduce(into: 0) { count, ingredient in
+            if ingredient.isChecked {
+                count += 1
+            }
+        }
+    }
+
+    var mealsById: [Int64: UIRecipeItem] {
+        var lookup: [Int64: UIRecipeItem] = [:]
+        for item in favourites + mastered + recent + randomPool {
+            if let id = Int64(item.id) {
+                lookup[id] = item
+            }
+        }
+        return lookup
     }
 
     func meal(id: Int64) -> UIRecipeItem? {
-        let key = String(id)
-        return (favourites + mastered + recent + randomPool).first { $0.id == key }
+        mealsById[id]
     }
 
     func isSelected(_ id: Int64) -> Bool {

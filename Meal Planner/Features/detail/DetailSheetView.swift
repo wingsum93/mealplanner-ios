@@ -20,103 +20,27 @@ struct DetailSheetView: View {
         let displayedItem = vm.state.item ?? item
 
         ScrollView {
-            VStack(spacing: 16) {
-                // Header image
-                KFImage(displayedItem.thumbURL)
-                    .placeholder {
-                        Rectangle().fill(Color(.systemGray5))
-                    }
-                    .onFailureView {
-                        ImageLoadFailureView(iconSize: 48)
-                    }
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 280)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-                    .overlay(
-                        LinearGradient(
-                            colors: [.clear, .black.opacity(0.45)],
-                            startPoint: .center, endPoint: .bottom
-                        )
-                    )
-                    .overlay(alignment: .bottomLeading) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(displayedItem.name)
-                                .font(.title2.bold())
-                                .foregroundStyle(.white)
-                                .lineLimit(2)
-                                .shadow(radius: 4)
+            LazyVStack(spacing: 16) {
+                DetailHeaderImage(
+                    item: displayedItem,
+                    isMastered: vm.state.isMastered,
+                    isSavingMastered: vm.state.isSavingMastered,
+                    isSavingFavorite: vm.state.isSavingFavorite,
+                    favoriteButtonScale: favoriteButtonScale,
+                    onToggleMastered: toggleMastered,
+                    onToggleFavorite: toggleFavorite,
+                    onClose: closeSheet
+                )
 
-                            if let metaText = buildMetaText(area: displayedItem.area, category: displayedItem.category) {
-                                MetaChip(text: metaText)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 12)
-                    }
-                    .overlay(alignment: .bottomTrailing) {
-                        HStack(spacing: 12) {
-                            MasteredHeaderButton(
-                                isMastered: vm.state.isMastered,
-                                isSaving: vm.state.isSavingMastered,
-                                action: toggleMastered
-                            )
-                            FavoriteHeaderButton(
-                                isFavorite: displayedItem.isFavorite,
-                                isSaving: vm.state.isSavingFavorite,
-                                scale: favoriteButtonScale,
-                                action: toggleFavorite
-                            )
-                        }
-                        .padding(.trailing, 16)
-                        .padding(.bottom, 16)
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        CloseSheetButton(action: closeSheet)
-                            .padding(.top, 14)
-                            .padding(.trailing, 16)
-                    }
-                    .onLongPressGesture {
-                        print("my id is = " + displayedItem.id)
-                    }
+                DetailDescriptionSection(description: displayedItem.description)
+                    .padding(.horizontal, 16)
 
-                SectionCard(
-                    header: CardSectionHeader(
-                        systemImage: "doc.text",
-                        title: "Description"
-                    )
-                ) {
-                    Text(displayedItem.description)
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .padding(.horizontal, 16)
-
-                SectionCard(
-                    header: CardSectionHeader(
-                        systemImage: selectedContentTab.systemImage,
-                        title: "Recipe Details"
-                    )
-                ) {
-                    if vm.state.isLoadingDetail && displayedItem.instructions.isEmpty {
-                        HStack(spacing: 10) {
-                            ProgressView()
-                            Text("Loading recipe…")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 96, alignment: .center)
-                        .accessibilityIdentifier("detail.loading")
-                    } else {
-                        MealDetailTabbedContent(
-                            item: displayedItem,
-                            selectedTab: $selectedContentTab,
-                            onTapIngredient: onTapIngredient
-                        )
-                    }
-                }
+                DetailRecipeSection(
+                    item: displayedItem,
+                    isLoadingDetail: vm.state.isLoadingDetail,
+                    selectedContentTab: $selectedContentTab,
+                    onTapIngredient: onTapIngredient
+                )
                 .padding(.horizontal, 16)
 
                 // Watch Button
@@ -160,6 +84,129 @@ struct DetailSheetView: View {
 
     private func closeSheet() {
         appRouter.dismissSheet()
+    }
+}
+
+private struct DetailHeaderImage: View {
+    let item: UIRecipeItem
+    let isMastered: Bool
+    let isSavingMastered: Bool
+    let isSavingFavorite: Bool
+    let favoriteButtonScale: Double
+    let onToggleMastered: () -> Void
+    let onToggleFavorite: () -> Void
+    let onClose: () -> Void
+
+    var body: some View {
+        KFImage(item.thumbURL)
+            .placeholder {
+                Rectangle().fill(Color(.systemGray5))
+            }
+            .onFailureView {
+                ImageLoadFailureView(iconSize: 48)
+            }
+            .resizable()
+            .scaledToFill()
+            .frame(height: 280)
+            .frame(maxWidth: .infinity)
+            .clipped()
+            .overlay(
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.45)],
+                    startPoint: .center, endPoint: .bottom
+                )
+            )
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(item.name)
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                        .shadow(radius: 4)
+
+                    if let metaText = buildMetaText(area: item.area, category: item.category) {
+                        MetaChip(text: metaText)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                HStack(spacing: 12) {
+                    MasteredHeaderButton(
+                        isMastered: isMastered,
+                        isSaving: isSavingMastered,
+                        action: onToggleMastered
+                    )
+                    FavoriteHeaderButton(
+                        isFavorite: item.isFavorite,
+                        isSaving: isSavingFavorite,
+                        scale: favoriteButtonScale,
+                        action: onToggleFavorite
+                    )
+                }
+                .padding(.trailing, 16)
+                .padding(.bottom, 16)
+            }
+            .overlay(alignment: .topTrailing) {
+                CloseSheetButton(action: onClose)
+                    .padding(.top, 14)
+                    .padding(.trailing, 16)
+            }
+            .onLongPressGesture {
+                print("my id is = " + item.id)
+            }
+    }
+}
+
+private struct DetailDescriptionSection: View {
+    let description: String
+
+    var body: some View {
+        SectionCard(
+            header: CardSectionHeader(
+                systemImage: "doc.text",
+                title: "Description"
+            )
+        ) {
+            Text(description)
+                .font(.body)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+private struct DetailRecipeSection: View {
+    let item: UIRecipeItem
+    let isLoadingDetail: Bool
+    @Binding var selectedContentTab: MealDetailContentTab
+    let onTapIngredient: (String) -> Void
+
+    var body: some View {
+        SectionCard(
+            header: CardSectionHeader(
+                systemImage: selectedContentTab.systemImage,
+                title: "Recipe Details"
+            )
+        ) {
+            if isLoadingDetail && item.instructions.isEmpty {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Loading recipe…")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 96, alignment: .center)
+                .accessibilityIdentifier("detail.loading")
+            } else {
+                MealDetailTabbedContent(
+                    item: item,
+                    selectedTab: $selectedContentTab,
+                    onTapIngredient: onTapIngredient
+                )
+            }
+        }
     }
 }
 
@@ -314,7 +361,7 @@ private struct InstructionsTab: View {
     let instructions: [String]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        LazyVStack(alignment: .leading, spacing: 8) {
             ForEach(instructions.indices, id: \.self) { num in
                 HStack(alignment: .top, spacing: 8) {
                     Text("\(num + 1).")
@@ -342,7 +389,7 @@ private struct IngredientsTab: View {
     let onTapIngredient: (String) -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
+        LazyVStack(spacing: 8) {
             ForEach(ingredients.indices, id: \.self) { index in
                 Button {
                     onTapIngredient(ingredients[index])

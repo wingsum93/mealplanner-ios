@@ -17,7 +17,6 @@ struct RandomPickScreen: View {
                 .frame(maxHeight: .infinity, alignment: .top)
             reloadButton
         }
-        .accessibilityIdentifier("randomPick.screen")
         .navigationTitle("Random Pick")
         .task {
             if vm.state.randomPick.phase == .idle {
@@ -33,6 +32,7 @@ struct RandomPickScreen: View {
             .multilineTextAlignment(.center)
             .padding(.horizontal, 24)
             .padding(.top, 12)
+            .accessibilityIdentifier("randomPick.screen")
     }
 
     @ViewBuilder
@@ -55,9 +55,13 @@ struct RandomPickScreen: View {
                 }
             )
 
-            CardStackView(items: itemsBinding)
-                .padding(.horizontal, 20)
-                .accessibilityIdentifier("randomPick.content")
+            ZStack(alignment: .topLeading) {
+                CardStackView(items: itemsBinding)
+                    .padding(.horizontal, 20)
+
+                RandomPickAccessibilityMarker(identifier: "randomPick.content")
+                    .frame(width: 1, height: 1)
+            }
         case .empty:
             EmptyStateView(
                 title: "Nothing to pick yet",
@@ -92,6 +96,22 @@ struct RandomPickScreen: View {
         case .idle, .loading, .content:
             return false
         }
+    }
+}
+
+private struct RandomPickAccessibilityMarker: UIViewRepresentable {
+    let identifier: String
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.isAccessibilityElement = true
+        view.accessibilityIdentifier = identifier
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        uiView.accessibilityIdentifier = identifier
     }
 }
 

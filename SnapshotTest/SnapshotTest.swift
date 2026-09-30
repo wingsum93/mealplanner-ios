@@ -77,6 +77,9 @@ final class SnapshotTest: XCTestCase {
     }
 
     private func captureIngredientScreens(in app: XCUIApplication) {
+        selectTab("Recipe", in: app)
+        waitForHomeContent(in: app)
+
         tap("recipe.ingredientsSeeAll", in: app)
         XCTAssertTrue(waitFor("ingredientList.card.0", in: app), "Ingredient list did not load cards.")
         capture("06-ingredient-list", in: app)

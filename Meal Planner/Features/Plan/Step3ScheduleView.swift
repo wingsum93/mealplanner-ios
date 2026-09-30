@@ -11,6 +11,9 @@ struct Step3ScheduleView: View {
     @ObservedObject var vm: PlanViewModel
 
     var body: some View {
+        let mealLookup = vm.state.mealsById
+        let selectedMealIds = vm.state.selectedMealIdsSorted
+
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
                 Button {
@@ -41,28 +44,49 @@ struct Step3ScheduleView: View {
                 .frame(minHeight: 220)
             } else {
                 ForEach(vm.state.mealSlotsByDay, id: \.date) { group in
-                    daySection(date: group.date, slots: group.slots)
+                    ScheduleDaySection(
+                        date: group.date,
+                        slots: group.slots,
+                        selectedMealIds: selectedMealIds,
+                        mealLookup: mealLookup,
+                        onClearDay: { vm.onIntent(.clearDay(group.date)) },
+                        onReplaceSlot: { slotId, mealId in
+                            vm.onIntent(.replaceSlot(slotId: slotId, mealId: mealId))
+                        }
+                    )
                 }
             }
         }
     }
+}
 
-    private func daySection(date: Date, slots: [PlanSlot]) -> some View {
+private struct ScheduleDaySection: View {
+    let date: Date
+    let slots: [PlanSlot]
+    let selectedMealIds: [Int64]
+    let mealLookup: [Int64: UIRecipeItem]
+    let onClearDay: () -> Void
+    let onReplaceSlot: (UUID, Int64) -> Void
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(Self.dayText(date))
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                Button(role: .destructive) {
-                    vm.onIntent(.clearDay(date))
-                } label: {
+                Button(role: .destructive, action: onClearDay) {
                     Text("Clear day")
                         .font(.caption)
                 }
             }
 
             ForEach(slots) { slot in
-                slotRow(slot)
+                ScheduleSlotRow(
+                    slot: slot,
+                    selectedMealIds: selectedMealIds,
+                    mealLookup: mealLookup,
+                    onReplaceSlot: onReplaceSlot
+                )
             }
         }
         .padding(12)
@@ -71,14 +95,21 @@ struct Step3ScheduleView: View {
                 .fill(Color(.secondarySystemGroupedBackground))
         )
     }
+}
 
-    private func slotRow(_ slot: PlanSlot) -> some View {
+private struct ScheduleSlotRow: View {
+    let slot: PlanSlot
+    let selectedMealIds: [Int64]
+    let mealLookup: [Int64: UIRecipeItem]
+    let onReplaceSlot: (UUID, Int64) -> Void
+
+    var body: some View {
         Menu {
-            ForEach(vm.state.selectedMealIds.sorted(), id: \.self) { mealId in
+            ForEach(selectedMealIds, id: \.self) { mealId in
                 Button {
-                    vm.onIntent(.replaceSlot(slotId: slot.id, mealId: mealId))
+                    onReplaceSlot(slot.id, mealId)
                 } label: {
-                    Text(vm.state.meal(id: mealId)?.name ?? "Meal #\(mealId)")
+                    Text(mealLookup[mealId]?.name ?? "Meal #\(mealId)")
                 }
             }
         } label: {
@@ -91,7 +122,7 @@ struct Step3ScheduleView: View {
                     Text(slot.timebox.title)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text(vm.state.meal(id: slot.mealId)?.name ?? "Meal #\(slot.mealId)")
+                    Text(mealLookup[slot.mealId]?.name ?? "Meal #\(slot.mealId)")
                         .font(.body)
                         .foregroundStyle(.primary)
                 }
@@ -106,10 +137,10 @@ struct Step3ScheduleView: View {
         }
         .accessibilityIdentifier("planWizard.slot.\(slot.id.uuidString)")
     }
+}
 
+private extension ScheduleDaySection {
     private static func dayText(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMM d"
-        return formatter.string(from: date)
+        date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
     }
 }

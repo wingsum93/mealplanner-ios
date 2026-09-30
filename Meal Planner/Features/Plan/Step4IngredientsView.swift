@@ -11,6 +11,8 @@ struct Step4IngredientsView: View {
     @ObservedObject var vm: PlanViewModel
 
     var body: some View {
+        let ingredientGroups = vm.state.ingredientGroups
+
         VStack(alignment: .leading, spacing: 16) {
             Text("\(vm.state.ingredients.count) items · \(vm.state.checkedIngredientCount) checked")
                 .font(.subheadline.weight(.semibold))
@@ -25,23 +27,41 @@ struct Step4IngredientsView: View {
                 .frame(minHeight: 220)
                 .accessibilityIdentifier("planWizard.ingredientsEmpty")
             } else {
-                ForEach(vm.state.ingredientGroups, id: \.category) { group in
-                    categorySection(group.category, items: group.items)
+                ForEach(ingredientGroups, id: \.category) { group in
+                    IngredientCategorySection(
+                        category: group.category,
+                        items: group.items,
+                        onToggleCategory: { vm.onIntent(.toggleCategory(group.category)) },
+                        onToggleIngredient: { vm.onIntent(.toggleIngredient($0)) }
+                    )
                 }
             }
         }
     }
+}
 
-    private func categorySection(_ category: IngredientCategory, items: [PlanIngredient]) -> some View {
+private struct IngredientCategorySection: View {
+    let category: IngredientCategory
+    let items: [PlanIngredient]
+    let onToggleCategory: () -> Void
+    let onToggleIngredient: (UUID) -> Void
+
+    private var checkedCount: Int {
+        items.reduce(into: 0) { count, ingredient in
+            if ingredient.isChecked {
+                count += 1
+            }
+        }
+    }
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button {
-                vm.onIntent(.toggleCategory(category))
-            } label: {
+            Button(action: onToggleCategory) {
                 HStack {
                     Label(category.title, systemImage: category.systemImage)
                         .font(.subheadline.weight(.semibold))
                     Spacer()
-                    Text("\(items.filter(\.isChecked).count)/\(items.count)")
+                    Text("\(checkedCount)/\(items.count)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -51,7 +71,10 @@ struct Step4IngredientsView: View {
             .accessibilityIdentifier("planWizard.category.\(category.rawValue)")
 
             ForEach(items) { ingredient in
-                ingredientRow(ingredient)
+                PlanIngredientRow(
+                    ingredient: ingredient,
+                    onToggle: { onToggleIngredient(ingredient.id) }
+                )
             }
         }
         .padding(12)
@@ -60,11 +83,14 @@ struct Step4IngredientsView: View {
                 .fill(Color(.secondarySystemGroupedBackground))
         )
     }
+}
 
-    private func ingredientRow(_ ingredient: PlanIngredient) -> some View {
-        Button {
-            vm.onIntent(.toggleIngredient(ingredient.id))
-        } label: {
+private struct PlanIngredientRow: View {
+    let ingredient: PlanIngredient
+    let onToggle: () -> Void
+
+    var body: some View {
+        Button(action: onToggle) {
             HStack(spacing: 12) {
                 Image(systemName: ingredient.isChecked ? "checkmark.circle.fill" : "circle")
                     .foregroundStyle(ingredient.isChecked ? Color.accentColor : Color.secondary)

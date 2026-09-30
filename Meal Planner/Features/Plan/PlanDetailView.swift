@@ -14,22 +14,9 @@ struct PlanDetailView: View {
         Group {
             if let plan {
                 ScrollView {
-                    VStack(spacing: 16) {
+                    LazyVStack(spacing: 16) {
                         PlanMonthCalendar(plan: plan, month: $month) { selectedDate = $0 }
-                        NavigationLink {
-                            PlanIngredientsView(planId: planId)
-                        } label: {
-                            HStack {
-                                Label("Ingredients", systemImage: "basket")
-                                Spacer()
-                                Text("\(plan.ingredients.count) items · \(plan.checkedIngredientCount) checked")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(16)
-                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("planDetail.ingredients")
+                        PlanIngredientsNavigationLink(planId: planId, plan: plan)
                     }
                     .padding()
                 }
@@ -71,5 +58,27 @@ struct PlanDetailView: View {
             }
             Button("Cancel", role: .cancel) { }
         }
+    }
+}
+
+private struct PlanIngredientsNavigationLink: View {
+    let planId: UUID
+    let plan: ProcurementPlan
+
+    var body: some View {
+        NavigationLink {
+            PlanIngredientsView(planId: planId)
+        } label: {
+            HStack {
+                Label("Ingredients", systemImage: "basket")
+                Spacer()
+                Text("\(plan.ingredients.count) items · \(plan.checkedIngredientCount) checked")
+                    .foregroundStyle(.secondary)
+            }
+            .padding(16)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("planDetail.ingredients")
     }
 }

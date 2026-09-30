@@ -16,7 +16,9 @@ struct MealPlanWizardView: View {
                 progressHeader
 
                 ScrollView {
-                    stepContent
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        stepContent
+                    }
                         .padding(16)
                 }
 

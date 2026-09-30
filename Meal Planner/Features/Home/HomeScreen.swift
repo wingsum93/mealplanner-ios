@@ -20,7 +20,32 @@ struct HomeScreen: View {
             if isInitialHomeLoading {
                 SkeletonHomePageView()
             } else {
-                homeContent
+                HomeContent(
+                    home: vm.state.home,
+                    ingredients: vm.state.ingredients.items,
+                    onFeaturedTap: { appRouter.presentRecipeDetail($0) },
+                    onAreaTap: { area in
+                        appRouter.selectedTab = .recipe
+                        vm.onIntent(.loadArea(area))
+                        appRouter.push(.area(area))
+                    },
+                    onCategoryTap: { category in
+                        appRouter.selectedTab = .recipe
+                        vm.onIntent(.loadCategory(category))
+                        appRouter.push(.category(category))
+                    },
+                    onIngredientListTap: {
+                        appRouter.selectedTab = .recipe
+                        appRouter.push(.ingredientList)
+                    },
+                    onIngredientTap: { ingredientName in
+                        appRouter.selectedTab = .recipe
+                        vm.onIntent(.loadIngredientMeals(ingredientName))
+                        appRouter.push(.ingredient(ingredientName))
+                    },
+                    onRandomPickTap: { appRouter.presentRandomPick() },
+                    onRecipeTap: { appRouter.presentRecipeDetail($0) }
+                )
             }
         }
         .refreshable {
@@ -47,12 +72,36 @@ struct HomeScreen: View {
         .padding(.vertical, 8)
     }
 
-    private var homeContent: some View {
+    private var isInitialHomeLoading: Bool {
+        vm.state.home.phase == .loading
+        && vm.state.home.featured == nil
+        && vm.state.home.areas.isEmpty
+        && vm.state.home.categories.isEmpty
+        && vm.state.home.randomTen.isEmpty
+        && vm.state.ingredients.items.isEmpty
+    }
+}
+
+private struct HomeContent: View {
+    let home: HomeState
+    let ingredients: [Ingredient]
+    let onFeaturedTap: (UIRecipeItem) -> Void
+    let onAreaTap: (String) -> Void
+    let onCategoryTap: (String) -> Void
+    let onIngredientListTap: () -> Void
+    let onIngredientTap: (String) -> Void
+    let onRandomPickTap: () -> Void
+    let onRecipeTap: (UIRecipeItem) -> Void
+
+    var body: some View {
+        let previewItems = Array(home.randomTen.prefix(3))
+        let visibleIngredients = Array(ingredients.prefix(20))
+
         Group {
             // 1) Featured random recipe
-            if let featured = vm.state.home.featured {
+            if let featured = home.featured {
                 Button {
-                    appRouter.presentRecipeDetail(featured)
+                    onFeaturedTap(featured)
                 } label: {
                     RecipeHeroCard(item: featured)
                         .accessibilityIdentifier("recipe.featuredRecipe")
@@ -66,10 +115,9 @@ struct HomeScreen: View {
             SectionHeader("Areas")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(Array(vm.state.home.areas.enumerated()), id: \.element) { index, area in
+                    ForEach(Array(home.areas.enumerated()), id: \.element) { index, area in
                         Button {
-                            vm.onIntent(.loadArea(area))
-                            appRouter.push(.area(area))
+                            onAreaTap(area)
                         } label: {
                             ImageSquareChip(text: area, imageLink: area.getAreaImageURL())
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
@@ -84,10 +132,9 @@ struct HomeScreen: View {
             SectionHeader("Categories")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(Array(vm.state.home.categories.enumerated()), id: \.element) { index, cat in
+                    ForEach(Array(home.categories.enumerated()), id: \.element) { index, cat in
                         Button {
-                            vm.onIntent(.loadCategory(cat))
-                            appRouter.push(.category(cat))
+                            onCategoryTap(cat)
                         } label: {
                             ImageSquareChip(text: cat, imageLink: cat.mealCategoryImageLink)
                                 .contentShape(Rectangle())  // 明確 hit 區 = 整個 chip
@@ -99,21 +146,25 @@ struct HomeScreen: View {
             }
 
             // 4) Ingredients horizontal
-            if !vm.state.ingredients.items.isEmpty {
+            if !visibleIngredients.isEmpty {
                 SectionHeader("Ingredients")
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         Button {
-                            appRouter.push(.ingredientList)
+                            onIngredientListTap()
                         } label: {
                             SeeAllIngredientCard()
                         }
                         .buttonStyle(.plain)
+                        .frame(width: 88, height: 112)
+                        .contentShape(Rectangle())
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("See all ingredients")
+                        .accessibilityIdentifier("recipe.ingredientsSeeAll")
 
-                        ForEach(Array(vm.state.ingredients.items.prefix(20).enumerated()), id: \.element.id) { index, ingredient in
+                        ForEach(Array(visibleIngredients.enumerated()), id: \.element.id) { index, ingredient in
                             Button {
-                                vm.onIntent(.loadIngredientMeals(ingredient.name))
-                                appRouter.push(.ingredient(ingredient.name))
+                                onIngredientTap(ingredient.name)
                             } label: {
                                 IngredientSquareCard(name: ingredient.name)
                             }
@@ -128,9 +179,9 @@ struct HomeScreen: View {
             // 5) Random 10 horizontal
             SectionHeader("Discover")
             Button {
-                appRouter.presentRandomPick()
+                onRandomPickTap()
             } label: {
-                RandomPickFeatureCard(items: Array(vm.state.home.randomTen.prefix(3)))
+                RandomPickFeatureCard(items: previewItems)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Random Pick")
@@ -140,23 +191,14 @@ struct HomeScreen: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(Array(vm.state.home.randomTen.enumerated()), id: \.element.id) { index, item in
+                    ForEach(Array(home.randomTen.enumerated()), id: \.element.id) { index, item in
                         RecipeCardSmall(item: item, width: 150)
                             .accessibilityIdentifier("recipe.randomRecipeCard.\(index)")
-                            .onTapGesture { appRouter.presentRecipeDetail(item) }
+                            .onTapGesture { onRecipeTap(item) }
                     }
                 }.padding(.horizontal, 16)
             }
         }
-    }
-
-    private var isInitialHomeLoading: Bool {
-        vm.state.home.phase == .loading
-        && vm.state.home.featured == nil
-        && vm.state.home.areas.isEmpty
-        && vm.state.home.categories.isEmpty
-        && vm.state.home.randomTen.isEmpty
-        && vm.state.ingredients.items.isEmpty
     }
 }
 
@@ -265,7 +307,6 @@ private struct SeeAllIngredientCard: View {
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("See all ingredients")
-        .accessibilityIdentifier("recipe.ingredientsSeeAll")
     }
 }
 

@@ -28,15 +28,42 @@ struct Step5SaveView: View {
     }
 
     private var summary: some View {
+        SavePlanSummary(
+            dayCount: vm.state.dayCount,
+            scheduleCount: vm.state.schedule.count,
+            ingredientCount: vm.state.ingredients.count,
+            checkedIngredientCount: vm.state.checkedIngredientCount,
+            dateRange: dateRange
+        )
+    }
+
+    private var dateRange: String {
+        let dates = vm.state.dayDates
+        guard let first = dates.first, let last = dates.last else { return "" }
+        let start = first.formatted(.dateTime.month(.abbreviated).day())
+        let end = last.formatted(.dateTime.month(.abbreviated).day())
+        return "\(start) – \(end)"
+    }
+}
+
+private struct SavePlanSummary: View {
+    let dayCount: Int
+    let scheduleCount: Int
+    let ingredientCount: Int
+    let checkedIngredientCount: Int
+    let dateRange: String
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            summaryRow(icon: "calendar", title: "\(vm.state.dayCount) days",
-                       subtitle: dateRange)
+            SavePlanSummaryRow(icon: "calendar", title: "\(dayCount) days", subtitle: dateRange)
             Divider()
-            summaryRow(icon: "fork.knife", title: "\(vm.state.schedule.count) meals",
-                       subtitle: "All slots filled")
+            SavePlanSummaryRow(icon: "fork.knife", title: "\(scheduleCount) meals", subtitle: "All slots filled")
             Divider()
-            summaryRow(icon: "cart", title: "\(vm.state.ingredients.count) ingredients",
-                       subtitle: "\(vm.state.checkedIngredientCount) checked")
+            SavePlanSummaryRow(
+                icon: "cart",
+                title: "\(ingredientCount) ingredients",
+                subtitle: "\(checkedIngredientCount) checked"
+            )
         }
         .padding(16)
         .background(
@@ -44,8 +71,14 @@ struct Step5SaveView: View {
                 .fill(Color(.secondarySystemGroupedBackground))
         )
     }
+}
 
-    private func summaryRow(icon: String, title: String, subtitle: String) -> some View {
+private struct SavePlanSummaryRow: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+
+    var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .foregroundStyle(Color.accentColor)
@@ -59,13 +92,5 @@ struct Step5SaveView: View {
             }
             Spacer()
         }
-    }
-
-    private var dateRange: String {
-        let dates = vm.state.dayDates
-        guard let first = dates.first, let last = dates.last else { return "" }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return "\(formatter.string(from: first)) – \(formatter.string(from: last))"
     }
 }

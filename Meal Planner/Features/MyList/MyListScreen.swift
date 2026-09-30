@@ -27,13 +27,13 @@ struct MyListScreen: View {
             .padding(.vertical, 12)
             .accessibilityIdentifier("myList.segment")
 
-            Group {
-                if shouldShowContent {
-                    contentView
-                } else {
-                    phaseView
-                }
-            }
+            MyListContent(
+                state: vm.state,
+                onLoadList: { vm.onIntent(.loadList(vm.state.selectedList)) },
+                onSelectArea: { vm.onIntent(.selectArea($0)) },
+                onSelectCategory: { vm.onIntent(.selectCategory($0)) },
+                onOpenRecipe: { appRouter.presentRecipeDetail($0) }
+            )
         }
         .background(Color(.systemGray6))
         .navigationTitle("My List")
@@ -50,28 +50,50 @@ struct MyListScreen: View {
             Text(vm.state.errorMessage ?? "")
         }
     }
+}
 
-    private var shouldShowContent: Bool {
-        !vm.state.items.isEmpty
+private struct MyListContent: View {
+    let state: MyListState
+    let onLoadList: () -> Void
+    let onSelectArea: (String?) -> Void
+    let onSelectCategory: (String?) -> Void
+    let onOpenRecipe: (UIRecipeItem) -> Void
+
+    var body: some View {
+        if !state.items.isEmpty {
+            MyListLoadedContent(
+                state: state,
+                onLoadList: onLoadList,
+                onSelectArea: onSelectArea,
+                onSelectCategory: onSelectCategory,
+                onOpenRecipe: onOpenRecipe
+            )
+        } else {
+            phaseView
+        }
     }
 
     @ViewBuilder
     private var phaseView: some View {
-        switch vm.state.phase {
+        switch state.phase {
         case .idle, .loading:
             SpiningCatLoadingView(message: "Loading your list...")
                 .accessibilityIdentifier("myList.loading")
         case .empty, .content:
-            emptyView
+            MyListEmptyView(emptyMessage: state.emptyMessage)
         case .error(let message):
             ErrorView(message: message) {
-                vm.onIntent(.loadList(vm.state.selectedList))
+                onLoadList()
             }
             .accessibilityIdentifier("myList.error")
         }
     }
+}
 
-    private var emptyView: some View {
+private struct MyListEmptyView: View {
+    let emptyMessage: String
+
+    var body: some View {
         VStack {
             Spacer()
 
@@ -81,7 +103,7 @@ struct MyListScreen: View {
 
             Spacer().frame(height: 50)
 
-            Text(vm.state.emptyMessage)
+            Text(emptyMessage)
                 .font(.headline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -92,59 +114,93 @@ struct MyListScreen: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityIdentifier("myList.empty")
     }
+}
 
-    private var contentView: some View {
+private struct MyListLoadedContent: View {
+    let state: MyListState
+    let onLoadList: () -> Void
+    let onSelectArea: (String?) -> Void
+    let onSelectCategory: (String?) -> Void
+    let onOpenRecipe: (UIRecipeItem) -> Void
+
+    var body: some View {
+        let filteredItems = state.filteredItems
+
         VStack(spacing: 0) {
-            if vm.state.showsFilters {
-                HStack(spacing: 12) {
-                    Picker("Area", selection: Binding(
-                        get: { vm.state.selectedArea },
-                        set: { vm.onIntent(.selectArea($0)) }
-                    )) {
-                        Text("All Areas").tag(String?.none)
-                        ForEach(vm.state.availableAreas, id: \.self) { area in
-                            Text(area).tag(Optional(area))
-                        }
-                    }
-                    .pickerStyle(.menu)
-
-                    Picker("Category", selection: Binding(
-                        get: { vm.state.selectedCategory },
-                        set: { vm.onIntent(.selectCategory($0)) }
-                    )) {
-                        Text("All Categories").tag(String?.none)
-                        ForEach(vm.state.availableCategories, id: \.self) { category in
-                            Text(category).tag(Optional(category))
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+            if state.showsFilters {
+                MyListFilters(
+                    selectedArea: state.selectedArea,
+                    selectedCategory: state.selectedCategory,
+                    availableAreas: state.availableAreas,
+                    availableCategories: state.availableCategories,
+                    onSelectArea: onSelectArea,
+                    onSelectCategory: onSelectCategory
+                )
             }
 
             List {
-                ForEach(vm.state.filteredItems, id: \.id) { item in
-                    row(for: item)
+                ForEach(filteredItems, id: \.id) { item in
+                    MyListRow(item: item) {
+                        onOpenRecipe(item)
+                    }
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            appRouter.presentRecipeDetail(item)
+                            onOpenRecipe(item)
                         }
                 }
             }
             .accessibilityIdentifier("myList.list")
             .listStyle(.plain)
-            .refreshable { vm.onIntent(.loadList(vm.state.selectedList)) }
+            .refreshable { onLoadList() }
         }
     }
+}
 
-    @ViewBuilder
-    private func row(for item: UIRecipeItem) -> some View {
+private struct MyListFilters: View {
+    let selectedArea: String?
+    let selectedCategory: String?
+    let availableAreas: [String]
+    let availableCategories: [String]
+    let onSelectArea: (String?) -> Void
+    let onSelectCategory: (String?) -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Picker("Area", selection: Binding(
+                get: { selectedArea },
+                set: onSelectArea
+            )) {
+                Text("All Areas").tag(String?.none)
+                ForEach(availableAreas, id: \.self) { area in
+                    Text(area).tag(Optional(area))
+                }
+            }
+            .pickerStyle(.menu)
+
+            Picker("Category", selection: Binding(
+                get: { selectedCategory },
+                set: onSelectCategory
+            )) {
+                Text("All Categories").tag(String?.none)
+                ForEach(availableCategories, id: \.self) { category in
+                    Text(category).tag(Optional(category))
+                }
+            }
+            .pickerStyle(.menu)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+    }
+}
+
+private struct MyListRow: View {
+    let item: UIRecipeItem
+    let onOpen: () -> Void
+
+    var body: some View {
         RecipeListRow(item: item) {
-            Button {
-                appRouter.presentRecipeDetail(item)
-            } label: {
+            Button(action: onOpen) {
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
                     .imageScale(.small)

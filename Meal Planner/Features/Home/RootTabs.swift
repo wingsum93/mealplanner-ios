@@ -26,16 +26,19 @@ struct RootTabs: View {
         
         TabView(selection: $appRouter.selectedTab) {
             PlanHomeScreen()
+                .accessibilityHidden(appRouter.selectedTab != .home)
                 .tabItem{Label("Home", systemImage: "calendar")}
                 .tag(AppTab.home)
 
             RecipeMainPage(viewModel: vm, heroNamespace: heroNS)
+                .accessibilityHidden(appRouter.selectedTab != .recipe)
                 .tabItem{Label("Recipe", systemImage: "fork.knife")}
                 .tag(AppTab.recipe)
             
             NavigationStack {
                 MyListScreen()
             }
+                .accessibilityHidden(appRouter.selectedTab != .myList)
                 .tabItem{
                     Label("My List", systemImage: "list.star")
                 }
@@ -43,6 +46,7 @@ struct RootTabs: View {
             SettingScreen(
                 settingsViewModel: settingsViewModel
             )
+            .accessibilityHidden(appRouter.selectedTab != .setting)
             .tabItem{
                 Label("Setting", systemImage: "person.circle")
             }

@@ -188,6 +188,10 @@ struct ProcurementPlan: Identifiable, Equatable {
     }
 
     var checkedIngredientCount: Int {
-        ingredients.filter(\.isChecked).count
+        ingredients.reduce(into: 0) { count, ingredient in
+            if ingredient.isChecked {
+                count += 1
+            }
+        }
     }
 }

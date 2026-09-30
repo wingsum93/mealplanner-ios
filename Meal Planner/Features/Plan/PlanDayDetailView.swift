@@ -19,8 +19,11 @@ struct PlanDayDetailView: View {
     var body: some View {
         Group {
             if let plan = vm.plan(id: planId) {
+                let slots = plan.slots.filter { Calendar.current.isDate($0.date, inSameDayAs: displayedDate) }
+                let availableTimeboxes = PlanTimebox.allCases.filter { plan.availableTimeboxes.contains($0) }
+
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
+                    LazyVStack(alignment: .leading, spacing: 16) {
                         Text(displayedDate.formatted(date: .complete, time: .omitted))
                             .font(.title2.bold())
                         PlanMonthCalendar(plan: plan, month: $month, onSelect: { displayedDate = $0 }) { date, sourceId in
@@ -29,11 +32,10 @@ struct PlanDayDetailView: View {
                             if valid { pendingDrop = (sourceId, date) }
                             return valid
                         }
-                        let slots = plan.slots.filter { Calendar.current.isDate($0.date, inSameDayAs: displayedDate) }
                         if slots.isEmpty {
                             ContentUnavailableView("No meals for this day", systemImage: "fork.knife")
                         }
-                        ForEach(PlanTimebox.allCases.filter { plan.availableTimeboxes.contains($0) }) { box in
+                        ForEach(availableTimeboxes) { box in
                             if let slot = slots.first(where: { $0.timebox == box }) {
                                 mealCard(slot, plan: plan)
                             } else {
@@ -110,14 +112,7 @@ struct PlanDayDetailView: View {
                 .font(.headline)
                 .accessibilityIdentifier("planDay.meal.\(slot.id.uuidString)")
             if let snapshot {
-                if snapshot.ingredients.isEmpty {
-                    Text("No ingredients saved for this meal.").foregroundStyle(.secondary)
-                } else {
-                    ForEach(Array(snapshot.ingredients.enumerated()), id: \.offset) { _, ingredient in
-                        Text(ingredient.measure.isEmpty ? ingredient.name : "\(ingredient.name) · \(ingredient.measure)")
-                            .font(.subheadline)
-                    }
-                }
+                SavedMealIngredients(ingredients: snapshot.ingredients)
             } else {
                 Text("Ingredient details were not saved with this older plan.")
                     .font(.subheadline).foregroundStyle(.secondary)
@@ -150,5 +145,22 @@ struct PlanDayDetailView: View {
                 vm.onIntent(.moveSavedMeal(planId: planId, sourceId: sourceId, date: displayedDate, timebox: box))
                 return true
             }
+    }
+}
+
+private struct SavedMealIngredients: View {
+    let ingredients: [PlanMealIngredient]
+
+    var body: some View {
+        if ingredients.isEmpty {
+            Text("No ingredients saved for this meal.")
+                .foregroundStyle(.secondary)
+        } else {
+            ForEach(ingredients.indices, id: \.self) { index in
+                let ingredient = ingredients[index]
+                Text(ingredient.measure.isEmpty ? ingredient.name : "\(ingredient.name) · \(ingredient.measure)")
+                    .font(.subheadline)
+            }
+        }
     }
 }

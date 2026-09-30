@@ -13,7 +13,13 @@ struct PlanHomeScreen: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            content
+            PlanHomeContent(
+                phase: vm.state.phase,
+                plans: vm.state.plans,
+                onLoadPlans: { vm.onIntent(.loadPlans) },
+                onOpenWizard: { vm.onIntent(.openWizard) },
+                onSelectPlan: { path.append($0) }
+            )
                 .navigationTitle("Meal Plans")
                 .navigationDestination(for: UUID.self) { planId in
                     PlanDetailView(planId: planId)
@@ -56,47 +62,70 @@ struct PlanHomeScreen: View {
             set: { if !$0 { vm.onIntent(.closeWizard) } }
         )
     }
+}
 
-    @ViewBuilder
-    private var content: some View {
-        switch vm.state.phase {
+private struct PlanHomeContent: View {
+    let phase: LoadPhase
+    let plans: [ProcurementPlan]
+    let onLoadPlans: () -> Void
+    let onOpenWizard: () -> Void
+    let onSelectPlan: (UUID) -> Void
+
+    var body: some View {
+        switch phase {
         case .idle, .loading:
             ProgressView("Loading your plans…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityIdentifier("planHome.loading")
         case .empty, .content:
-            if vm.state.plans.isEmpty {
-                emptyState
+            if plans.isEmpty {
+                PlanHomeEmptyState(onOpenWizard: onOpenWizard)
             } else {
-                planList
+                PlanList(
+                    plans: plans,
+                    onOpenWizard: onOpenWizard,
+                    onSelectPlan: onSelectPlan,
+                    onRefresh: onLoadPlans
+                )
             }
         case .error(let message):
             ErrorView(message: message) {
-                vm.onIntent(.loadPlans)
+                onLoadPlans()
             }
             .accessibilityIdentifier("planHome.error")
         }
     }
+}
 
-    private var emptyState: some View {
+private struct PlanHomeEmptyState: View {
+    let onOpenWizard: () -> Void
+
+    var body: some View {
         EmptyStateView(
             title: "No meal plans yet",
             description: "Plan your week and turn it into a shopping list.",
             systemImage: "calendar.badge.plus",
             actionTitle: "New Meal Plan",
-            onAction: { vm.onIntent(.openWizard) }
+            onAction: onOpenWizard
         )
         .accessibilityIdentifier("planHome.empty")
     }
+}
 
-    private var planList: some View {
+private struct PlanList: View {
+    let plans: [ProcurementPlan]
+    let onOpenWizard: () -> Void
+    let onSelectPlan: (UUID) -> Void
+    let onRefresh: () -> Void
+
+    var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                newPlanButton
+            LazyVStack(spacing: 16) {
+                NewPlanButton(action: onOpenWizard)
 
-                ForEach(vm.state.plans) { plan in
+                ForEach(plans) { plan in
                     Button {
-                        path.append(plan.id)
+                        onSelectPlan(plan.id)
                     } label: {
                         PlanCard(plan: plan)
                     }
@@ -107,13 +136,15 @@ struct PlanHomeScreen: View {
             .padding(16)
         }
         .background(Color(.systemGroupedBackground))
-        .refreshable { vm.onIntent(.loadPlans) }
+        .refreshable { onRefresh() }
     }
+}
 
-    private var newPlanButton: some View {
-        Button {
-            vm.onIntent(.openWizard)
-        } label: {
+private struct NewPlanButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
             Label("New Meal Plan", systemImage: "plus.circle.fill")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
@@ -156,8 +187,8 @@ private struct PlanCard: View {
     }
 
     static func rangeText(_ plan: ProcurementPlan) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return "\(formatter.string(from: plan.startDate)) – \(formatter.string(from: plan.endDate))"
+        let start = plan.startDate.formatted(.dateTime.month(.abbreviated).day())
+        let end = plan.endDate.formatted(.dateTime.month(.abbreviated).day())
+        return "\(start) – \(end)"
     }
 }
