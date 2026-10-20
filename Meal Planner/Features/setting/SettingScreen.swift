@@ -19,12 +19,27 @@ struct SettingScreen: View {
     
     var body: some View {
         List {
-            Section("Storage Overview") {
-                SettingsSummaryRow(
-                    title: "Saved recipes",
-                    value: settingsViewModel.state.summary.savedRecipeCount,
-                    systemImage: "fork.knife"
-                )
+            Section {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Settings")
+                        .font(.system(.largeTitle, design: .serif, weight: .bold))
+                        .accessibilityAddTraits(.isHeader)
+                    Divider()
+                    Text(settingsViewModel.state.summary.savedRecipeCount.formatted())
+                        .font(.system(.largeTitle, design: .serif, weight: .bold))
+                        .monospacedDigit()
+                    Text("Saved recipes")
+                        .font(.headline)
+                    Text("Your personal cookbook")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .listRowBackground(Color.clear)
+            }
+
+            Section("Your collection") {
                 SettingsSummaryRow(
                     title: "Favorites",
                     value: settingsViewModel.state.summary.favoriteRecipeCount,
@@ -35,6 +50,9 @@ struct SettingScreen: View {
                     value: settingsViewModel.state.summary.masteredRecipeCount,
                     systemImage: "checkmark.seal.fill"
                 )
+            }
+
+            Section("Storage Overview") {
                 SettingsSummaryRow(
                     title: "Categories",
                     value: settingsViewModel.state.summary.cachedCategoryCount,
@@ -135,6 +153,7 @@ struct SettingScreen: View {
             }
         }
         .listStyle(.insetGrouped)
+        .environment(\.defaultMinListRowHeight, 52)
         .accessibilityIdentifier("settings.screen")
         .task {
             settingsViewModel.onIntent(.loadSummary)

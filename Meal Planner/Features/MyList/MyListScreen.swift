@@ -6,26 +6,30 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct MyListScreen: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject var vm: MyListViewModel
     @EnvironmentObject private var appRouter: AppRouter
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("List", selection: Binding(
-                get: { vm.state.selectedList },
-                set: { vm.onIntent(.selectList($0)) }
-            )) {
-                ForEach(RecipeListType.allCases) { type in
-                    Label(type.title, systemImage: type.systemImage)
-                        .tag(type)
+            VStack(alignment: .leading, spacing: 16) {
+                Text("My List")
+                    .font(.system(.largeTitle, design: .serif, weight: .bold))
+                    .accessibilityAddTraits(.isHeader)
+                Group {
+                    if dynamicTypeSize >= .xxxLarge {
+                        collectionPicker.pickerStyle(.menu)
+                    } else {
+                        collectionPicker.pickerStyle(.segmented)
+                    }
                 }
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("myList.segment")
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .accessibilityIdentifier("myList.segment")
+            .padding(16)
 
             MyListContent(
                 state: vm.state,
@@ -37,6 +41,7 @@ struct MyListScreen: View {
         }
         .background(Color(.systemGray6))
         .navigationTitle("My List")
+        .navigationBarTitleDisplayMode(.inline)
         .task { vm.onIntent(.loadList(vm.state.selectedList)) }
         .alert(
             "Unable to update your list",
@@ -50,6 +55,18 @@ struct MyListScreen: View {
             Text(vm.state.errorMessage ?? "")
         }
     }
+
+    private var collectionPicker: some View {
+        Picker("List", selection: Binding(
+            get: { vm.state.selectedList },
+            set: { vm.onIntent(.selectList($0)) }
+        )) {
+            ForEach(RecipeListType.allCases) { type in
+                Text(type.title).tag(type)
+            }
+        }
+    }
+
 }
 
 private struct MyListContent: View {
@@ -95,24 +112,26 @@ private struct MyListEmptyView: View {
 
     var body: some View {
         VStack {
-            Spacer()
-
-            LottieView(animationName: "empty_bookmark", loopMode: .loop)
-                .frame(width: 200, height: 200)
-                .scaleEffect(0.3)
-
-            Spacer().frame(height: 50)
-
-            Text(emptyMessage)
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            ScrollView {
+                VStack(spacing: 24) {
+                    Image(systemName: "books.vertical")
+                        .font(.system(.largeTitle, design: .serif))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                    Text(emptyMessage)
+                        .font(.system(.title2, design: .serif, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-            Spacer(minLength: 32)
+                .padding(.vertical, 48)
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("myList.empty")
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityIdentifier("myList.empty")
     }
 }
 
@@ -139,14 +158,29 @@ private struct MyListLoadedContent: View {
             }
 
             List {
+                Text(filteredItems.count == 1 ? "1 recipe" : "\(filteredItems.count) recipes")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .listRowSeparator(.hidden)
+                if filteredItems.isEmpty {
+                    ContentUnavailableView {
+                        Label("No matching recipes", systemImage: "line.3.horizontal.decrease.circle")
+                    } description: {
+                        Text("Try clearing your filters to see your collection.")
+                    } actions: {
+                        Button("Clear filters") {
+                            onSelectArea(nil)
+                            onSelectCategory(nil)
+                        }
+                        .frame(minHeight: 44)
+                    }
+                    .listRowSeparator(.hidden)
+                }
                 ForEach(filteredItems, id: \.id) { item in
                     MyListRow(item: item) {
                         onOpenRecipe(item)
                     }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            onOpenRecipe(item)
-                        }
+                        .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
                 }
             }
             .accessibilityIdentifier("myList.list")
@@ -165,32 +199,40 @@ private struct MyListFilters: View {
     let onSelectCategory: (String?) -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Picker("Area", selection: Binding(
-                get: { selectedArea },
-                set: onSelectArea
-            )) {
-                Text("All Areas").tag(String?.none)
-                ForEach(availableAreas, id: \.self) { area in
-                    Text(area).tag(Optional(area))
-                }
-            }
-            .pickerStyle(.menu)
-
-            Picker("Category", selection: Binding(
-                get: { selectedCategory },
-                set: onSelectCategory
-            )) {
-                Text("All Categories").tag(String?.none)
-                ForEach(availableCategories, id: \.self) { category in
-                    Text(category).tag(Optional(category))
-                }
-            }
-            .pickerStyle(.menu)
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) { filterControls }
+            VStack(alignment: .leading, spacing: 8) { filterControls }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
-        .padding(.bottom, 12)
+        .padding(.bottom, 16)
+    }
+
+    @ViewBuilder
+    private var filterControls: some View {
+        Picker("Area", selection: Binding(
+            get: { selectedArea },
+            set: onSelectArea
+        )) {
+            Text("All Areas").tag(String?.none)
+            ForEach(availableAreas, id: \.self) { area in
+                Text(area).tag(Optional(area))
+            }
+        }
+        .pickerStyle(.menu)
+        .frame(minHeight: 44)
+
+        Picker("Category", selection: Binding(
+            get: { selectedCategory },
+            set: onSelectCategory
+        )) {
+            Text("All Categories").tag(String?.none)
+            ForEach(availableCategories, id: \.self) { category in
+                Text(category).tag(Optional(category))
+            }
+        }
+        .pickerStyle(.menu)
+        .frame(minHeight: 44)
     }
 }
 
@@ -199,16 +241,35 @@ private struct MyListRow: View {
     let onOpen: () -> Void
 
     var body: some View {
-        RecipeListRow(item: item) {
-            Button(action: onOpen) {
+        Button(action: onOpen) {
+            HStack(alignment: .top, spacing: 16) {
+                KFImage(item.thumbURL)
+                    .placeholder { Color.secondary.opacity(0.12) }
+                    .onFailureView { ImageLoadFailureView() }
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 88, height: 88)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(item.name)
+                        .font(.system(.title3, design: .serif, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text([item.area, item.category].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
-                    .imageScale(.small)
                     .foregroundStyle(.secondary)
-                    .frame(width: 24, height: 24)
+                    .accessibilityHidden(true)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Open \(item.name)")
+            .frame(minHeight: 88)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
     }
 }

@@ -52,7 +52,7 @@ final class Meal_PlannerUITests: XCTestCase {
         let myListTitle = app.navigationBars.staticTexts["My List"]
         XCTAssertTrue(myListTitle.waitForExistence(timeout: 5), "My List navigation title did not appear.")
 
-        let emptyState = app.otherElements["myList.empty"]
+        let emptyState = app.descendants(matching: .any)["myList.empty"].firstMatch
         XCTAssertTrue(emptyState.waitForExistence(timeout: 5), "My List empty state did not appear after loading.")
     }
 

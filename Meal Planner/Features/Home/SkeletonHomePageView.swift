@@ -8,7 +8,7 @@ import SwiftUI
 
 struct SkeletonHomePageView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 16) {
             SkeletonHeroCard()
                 .padding(.horizontal, 16)
 
@@ -22,20 +22,17 @@ struct SkeletonHomePageView: View {
 
 private struct SkeletonHeroCard: View {
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            SkeletonRoundedRectangle(cornerRadius: 14)
-                .frame(height: 200)
-
-            VStack(alignment: .leading, spacing: 8) {
-                SkeletonRoundedRectangle(cornerRadius: 5)
-                    .frame(width: 190, height: 18)
-
-                SkeletonRoundedRectangle(cornerRadius: 4)
-                    .frame(width: 86, height: 14)
-            }
-            .padding(12)
+        VStack(alignment: .leading, spacing: 16) {
+            SkeletonRoundedRectangle(cornerRadius: 16)
+                .frame(height: 240)
+            SkeletonRoundedRectangle(cornerRadius: 4)
+                .frame(width: 100, height: 12)
+            SkeletonRoundedRectangle(cornerRadius: 4)
+                .frame(height: 32)
+            SkeletonRoundedRectangle(cornerRadius: 4)
+                .frame(width: 86, height: 16)
         }
-        .frame(height: 200)
+        .padding(.vertical, 16)
     }
 }
 
@@ -43,7 +40,7 @@ private struct SkeletonSquareChipSection: View {
     let title: LocalizedStringKey
 
     var body: some View {
-        SectionHeader(title)
+        CookbookSectionHeading(title)
 
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
@@ -75,7 +72,7 @@ private struct SkeletonSquareChip: View {
 
 private struct SkeletonDiscoverSection: View {
     var body: some View {
-        SectionHeader("Discover")
+        CookbookSectionHeading("Discover")
 
         HStack(spacing: 8) {
             SkeletonRoundedRectangle(cornerRadius: 7)

@@ -15,6 +15,12 @@ struct HomeScreen: View {
 
     var body: some View {
         ScrollView {
+            Text("Recipes")
+                .font(.system(.largeTitle, design: .serif, weight: .bold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .accessibilityAddTraits(.isHeader)
+
             searchEntry
 
             if isInitialHomeLoading {
@@ -52,6 +58,7 @@ struct HomeScreen: View {
             vm.onIntent(.refreshHome)
         }
         .navigationTitle("Recipes")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var searchEntry: some View {
@@ -97,13 +104,13 @@ private struct HomeContent: View {
         let previewItems = Array(home.randomTen.prefix(3))
         let visibleIngredientCount = min(ingredients.count, 20)
 
-        Group {
+        VStack(alignment: .leading, spacing: 16) {
             // 1) Featured random recipe
             if let featured = home.featured {
                 Button {
                     onFeaturedTap(featured)
                 } label: {
-                    RecipeHeroCard(item: featured)
+                    EditorialFeaturedRecipe(item: featured)
                         .accessibilityIdentifier("recipe.featuredRecipe")
                 }
                 .buttonStyle(.plain)
@@ -112,9 +119,9 @@ private struct HomeContent: View {
             }
 
             // 2) Areas horizontal
-            SectionHeader("Areas")
+            CookbookSectionHeading("Areas")
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 12) {
+                LazyHStack(spacing: 16) {
                     ForEach(home.areas.indices, id: \.self) { index in
                         let area = home.areas[index]
                         Button {
@@ -130,9 +137,9 @@ private struct HomeContent: View {
             }
 
             // 3) Categories horizontal
-            SectionHeader("Categories")
+            CookbookSectionHeading("Categories")
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 12) {
+                LazyHStack(spacing: 16) {
                     ForEach(home.categories.indices, id: \.self) { index in
                         let cat = home.categories[index]
                         Button {
@@ -149,16 +156,15 @@ private struct HomeContent: View {
 
             // 4) Ingredients horizontal
             if visibleIngredientCount > 0 {
-                SectionHeader("Ingredients")
+                CookbookSectionHeading("Ingredients")
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 12) {
+                    LazyHStack(spacing: 8) {
                         Button {
                             onIngredientListTap()
                         } label: {
-                            SeeAllIngredientCard()
+                            IngredientBrowseCapsule(name: "", isSeeAll: true)
                         }
                         .buttonStyle(.plain)
-                        .frame(width: 88, height: 112)
                         .contentShape(Rectangle())
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel("See all ingredients")
@@ -169,7 +175,7 @@ private struct HomeContent: View {
                             Button {
                                 onIngredientTap(ingredient.name)
                             } label: {
-                                IngredientSquareCard(name: ingredient.name)
+                                IngredientBrowseCapsule(name: ingredient.name)
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("recipe.ingredientChip.\(index)")
@@ -180,7 +186,7 @@ private struct HomeContent: View {
             }
 
             // 5) Random 10 horizontal
-            SectionHeader("Discover")
+            CookbookSectionHeading("Discover")
             Button {
                 onRandomPickTap()
             } label: {
@@ -193,12 +199,14 @@ private struct HomeContent: View {
             .padding(.bottom, 8)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 12) {
+                LazyHStack(spacing: 16) {
                     ForEach(home.randomTen.indices, id: \.self) { index in
                         let item = home.randomTen[index]
-                        RecipeCardSmall(item: item, width: 150)
-                            .accessibilityIdentifier("recipe.randomRecipeCard.\(index)")
-                            .onTapGesture { onRecipeTap(item) }
+                        Button { onRecipeTap(item) } label: {
+                            RecipeCardSmall(item: item, width: 150)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("recipe.randomRecipeCard.\(index)")
                     }
                 }.padding(.horizontal, 16)
             }
@@ -211,10 +219,10 @@ private struct RandomPickFeatureCard: View {
     @Environment(\.displayScale) private var displayScale
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 16) {
             iconBadge
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Random Pick")
                     .font(.headline.weight(.bold))
                     .foregroundStyle(.primary)
@@ -255,13 +263,7 @@ private struct RandomPickFeatureCard: View {
             .frame(width: 44, height: 44)
             .background(
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.orange, Color.pink],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color.accentColor)
             )
     }
 
@@ -325,5 +327,55 @@ private struct SeeAllIngredientCard: View {
 private extension CGRect {
     var center: CGPoint {
         CGPoint(x: midX, y: midY)
+    }
+}
+
+// Local presentation keeps the shared recipe cards unchanged on other screens.
+private struct EditorialFeaturedRecipe: View {
+    let item: UIRecipeItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            KFImage(item.thumbURL)
+                .placeholder { Color.secondary.opacity(0.12) }
+                .onFailureView { ImageLoadFailureView() }
+                .resizable()
+                .scaledToFill()
+                .frame(height: 240)
+                .frame(maxWidth: .infinity)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("ON THE MENU")
+                    .font(.caption.weight(.semibold))
+                    .tracking(2)
+                    .foregroundStyle(.secondary)
+                Text(item.name)
+                    .font(.system(.title, design: .serif, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let area = item.area, !area.isEmpty {
+                    Text(area).font(.subheadline).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 16)
+        .contentShape(Rectangle())
+    }
+}
+
+struct CookbookSectionHeading: View {
+    let title: LocalizedStringKey
+
+    init(_ title: LocalizedStringKey) { self.title = title }
+
+    var body: some View {
+        Text(title)
+            .font(.system(.title2, design: .serif, weight: .semibold))
+            .accessibilityAddTraits(.isHeader)
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
     }
 }
